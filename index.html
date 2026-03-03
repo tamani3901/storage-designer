@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Storage Designer</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="topbar">
+  <div>
+    FitGap:
+    <select id="fitGap">
+      <option value="0.15">0.15</option>
+      <option value="0.25" selected>0.25</option>
+      <option value="0.35">0.35</option>
+    </select>
+  </div>
+
+  <div>
+    ModelStep:
+    <select id="modelStep">
+      <option value="0.1">0.1</option>
+      <option value="0.25" selected>0.25</option>
+      <option value="0.5">0.5</option>
+      <option value="1">1</option>
+    </select>
+  </div>
+</div>
+
+<div id="sidebar">
+  <h3>Drawer</h3>
+  Width<input id="w" type="number" value="100" step="0.1">
+  Depth<input id="d" type="number" value="120" step="0.1">
+  Height<input id="h" type="number" value="40" step="0.1">
+  Wall<input id="wall" type="number" value="2" step="0.1">
+  Bottom<input id="bottom" type="number" value="2" step="0.1">
+
+  <button id="addV">Add Vertical Divider</button>
+  <button id="addH">Add Horizontal Divider</button>
+</div>
+
+<div id="view3d"></div>
+<canvas id="editor2d"></canvas>
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>
