@@ -1,177 +1,125 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Drawer Designer</title>
-
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-
-<style>
-body{
-  margin:0;
-  overflow:hidden;
-  font-family:sans-serif;
-}
-
-#ui{
-  position:fixed;
-  top:0;
-  left:0;
-  width:260px;
-  height:100vh;
-  background:#f0f0f0;
-  padding:10px;
-  box-sizing:border-box;
-  overflow:auto;
-  z-index:10;
-}
-
-#ui h3{
-  margin-top:0;
-}
-
-#ui input{
-  width:80px;
-  margin-bottom:8px;
-}
-
-canvas{
-  display:block;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D Storage Designer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <style>
+        body { margin: 0; display: grid; grid-template: "header header" 50px "side main" 1fr "side foot" 250px / 250px 1fr; height: 100vh; font-family: sans-serif; }
+        header { grid-area: header; background: #333; color: white; display: flex; align-items: center; padding: 0 20px; gap: 20px; }
+        aside { grid-area: side; background: #f0f0f0; padding: 15px; border-right: 1px solid #ccc; overflow-y: auto; }
+        main { grid-area: main; background: #eee; position: relative; }
+        footer { grid-area: foot; background: #fff; border-top: 2px solid #333; }
+        .input-group { margin-bottom: 10px; }
+        label { display: block; font-size: 12px; }
+        input, select { width: 100%; }
+        canvas { width: 100% !important; height: 100% !important; display: block; }
+    </style>
 </head>
 <body>
 
-<div id="ui">
-<h3>Drawer</h3>
-Width <input id="w" type="number" value="100"><br>
-Depth <input id="d" type="number" value="120"><br>
-Height <input id="h" type="number" value="40"><br>
-Wall <input id="wall" type="number" value="2"><br>
-Bottom <input id="bottom" type="number" value="2"><br>
-<br>
-Clearance
-<select id="gap">
-<option value="0.15">0.15</option>
-<option value="0.25" selected>0.25</option>
-<option value="0.35">0.35</option>
-</select>
-</div>
+<header>
+    <strong>Storage Designer</strong>
+    <div>
+        クリアランス: 
+        <select id="clearance">
+            <option value="0.15">0.15mm</option>
+            <option value="0.25" selected>0.25mm</option>
+            <option value="0.35">0.35mm</option>
+        </select>
+    </div>
+</header>
+
+<aside id="controls">
+    <div class="input-group">
+        <label>内寸 幅 (mm)</label>
+        <input type="number" id="width" value="100">
+    </div>
+    <div class="input-group">
+        <label>内寸 奥行 (mm)</label>
+        <input type="number" id="depth" value="150">
+    </div>
+    <div class="input-group">
+        <label>内寸 高さ (mm)</label>
+        <input type="number" id="height" value="50">
+    </div>
+    <hr>
+    <div class="input-group">
+        <label>壁厚 (mm)</label>
+        <input type="number" id="wallThick" value="2" step="0.1">
+    </div>
+</aside>
+
+<main id="container3d"></main>
+
+<footer>
+    <div style="padding:10px; color:#666;">2D Edit View (Drag partitions here)</div>
+</footer>
 
 <script>
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf5f5f5);
+    // --- Three.js Setup ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xeeeeee);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(200, 200, 200);
+    camera.lookAt(0, 0, 0);
 
-const camera = new THREE.PerspectiveCamera(
-  45,
-  window.innerWidth/window.innerHeight,
-  0.1,
-  2000
-);
-camera.position.set(200,150,200);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    document.getElementById('container3d').appendChild(renderer.domElement);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-document.body.appendChild(renderer.domElement);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(100, 200, 100);
+    scene.add(directionalLight);
 
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(200,300,200);
-scene.add(light);
+    // --- Mesh Generation ---
+    let drawerGroup = new THREE.Group();
+    scene.add(drawerGroup);
 
-scene.add(new THREE.AmbientLight(0xffffff,0.6));
+    function updateModel() {
+        drawerGroup.clear();
+        
+        const w = parseFloat(document.getElementById('width').value);
+        const d = parseFloat(document.getElementById('depth').value);
+        const h = parseFloat(document.getElementById('height').value);
+        const t = parseFloat(document.getElementById('wallThick').value);
 
-const grid = new THREE.GridHelper(500,50);
-scene.add(grid);
+        const material = new THREE.MeshPhongMaterial({ color: 0x00aaff, transparent: true, opacity: 0.8 });
 
-let drawerParts=[];
+        // 底板
+        const bottomGeo = new THREE.BoxGeometry(w + 2*t, t, d + 2*t);
+        const bottom = new THREE.Mesh(bottomGeo, material);
+        bottom.position.y = -h/2 - t/2;
+        drawerGroup.add(bottom);
 
-function clearDrawer(){
-  drawerParts.forEach(m=>{
-    scene.remove(m);
-    m.geometry.dispose();
-    m.material.dispose();
-  });
-  drawerParts=[];
-}
+        // 側面（簡易的な4面配置）
+        // 実際にはここでクリアランス計算やスリットのロジックを追加
+    }
 
-function buildDrawer(){
-  clearDrawer();
+    // --- Interaction ---
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
 
-  const innerW = parseFloat(w.value);
-  const innerD = parseFloat(d.value);
-  const innerH = parseFloat(h.value);
-  const wall = parseFloat(wallInput.value);
-  const bottom = parseFloat(bottomInput.value);
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('container3d');
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
 
-  const outerW = innerW + wall*2;
-  const outerD = innerD + wall*2;
-  const outerH = innerH + bottom;
+    // 初期化
+    const container = document.getElementById('container3d');
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    updateModel();
+    animate();
 
-  const material = new THREE.MeshStandardMaterial({
-    color:0x999999,
-    metalness:0.1,
-    roughness:0.6
-  });
+    // 入力監視
+    document.querySelectorAll('input').forEach(el => el.addEventListener('input', updateModel));
 
-  // 底
-  const bottomGeo = new THREE.BoxGeometry(outerW, bottom, outerD);
-  const bottomMesh = new THREE.Mesh(bottomGeo, material);
-  bottomMesh.position.y = bottom/2;
-  scene.add(bottomMesh);
-  drawerParts.push(bottomMesh);
-
-  // 左壁
-  const leftGeo = new THREE.BoxGeometry(wall, innerH, outerD);
-  const leftMesh = new THREE.Mesh(leftGeo, material);
-  leftMesh.position.set(-innerW/2-wall/2, innerH/2+bottom, 0);
-  scene.add(leftMesh);
-  drawerParts.push(leftMesh);
-
-  // 右壁
-  const rightMesh = leftMesh.clone();
-  rightMesh.position.x = innerW/2+wall/2;
-  scene.add(rightMesh);
-  drawerParts.push(rightMesh);
-
-  // 前壁
-  const frontGeo = new THREE.BoxGeometry(outerW, innerH, wall);
-  const frontMesh = new THREE.Mesh(frontGeo, material);
-  frontMesh.position.set(0, innerH/2+bottom, -innerD/2-wall/2);
-  scene.add(frontMesh);
-  drawerParts.push(frontMesh);
-
-  // 後壁
-  const backMesh = frontMesh.clone();
-  backMesh.position.z = innerD/2+wall/2;
-  scene.add(backMesh);
-  drawerParts.push(backMesh);
-}
-
-const w = document.getElementById("w");
-const d = document.getElementById("d");
-const h = document.getElementById("h");
-const wallInput = document.getElementById("wall");
-const bottomInput = document.getElementById("bottom");
-
-[w,d,h,wallInput,bottomInput].forEach(input=>{
-  input.addEventListener("input", buildDrawer);
-});
-
-buildDrawer();
-
-function animate(){
-  requestAnimationFrame(animate);
-  renderer.render(scene,camera);
-}
-animate();
-
-window.addEventListener("resize",()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth,window.innerHeight);
-});
 </script>
-
 </body>
 </html>
