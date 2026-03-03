@@ -1,113 +1,182 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>モジュラー収納ツール</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Drawer Designer</title>
 
-  <!-- ✅ Three.js CDN -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+<style>
+body{
+  margin:0;
+  overflow:hidden;
+  font-family:sans-serif;
+}
 
-    #ui {
-      display: flex;
-      height: 100%;
-    }
+#ui{
+  position:fixed;
+  top:0;
+  left:0;
+  width:260px;
+  height:100vh;
+  background:#f0f0f0;
+  padding:10px;
+  box-sizing:border-box;
+  overflow:auto;
+  z-index:10;
+}
 
-    #sidebar {
-      width: 250px;
-      padding: 10px;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      background-color: #f0f0f0;
-      box-sizing: border-box;
-    }
+#ui h3{
+  margin-top:0;
+}
 
-    #preview {
-      flex-grow: 1;
-      position: relative;
-    }
+#ui input{
+  width:80px;
+  margin-bottom:8px;
+}
 
-    #threeCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    input[type="number"] {
-      width: 60px;
-      margin-bottom: 10px;
-    }
-  </style>
+canvas{
+  display:block;
+}
+</style>
 </head>
 <body>
 
-  <div id="ui">
-    <div id="sidebar">
-      <label>幅: <input type="number" id="inputWidth" value="100" /></label><br>
-      <label>高さ: <input type="number" id="inputHeight" value="50" /></label><br>
-    </div>
+<div id="ui">
+<h3>Drawer</h3>
+Width <input id="w" type="number" value="100"><br>
+Depth <input id="d" type="number" value="120"><br>
+Height <input id="h" type="number" value="40"><br>
+Wall <input id="wall" type="number" value="2"><br>
+Bottom <input id="bottom" type="number" value="2"><br>
+<br>
+Clearance
+<select id="gap">
+<option value="0.15">0.15</option>
+<option value="0.25" selected>0.25</option>
+<option value="0.35">0.35</option>
+</select>
+</div>
 
-    <div id="preview">
-      <canvas id="threeCanvas"></canvas>
-    </div>
-  </div>
+<script>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf5f5f5);
 
-  <script>
-    const canvas = document.getElementById('threeCanvas');
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas });
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+const camera = new THREE.PerspectiveCamera(
+  45,
+  window.innerWidth/window.innerHeight,
+  0.1,
+  2000
+);
+camera.position.set(200,150,200);
 
-    // 簡易光源
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(100, 100, 100).normalize();
-    scene.add(light);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-    // カメラ位置
-    camera.position.z = 200;
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
 
-    // 初期ボックス
-    let cube;
-    function createBox(w, h) {
-      if (cube) scene.remove(cube);
-      const geometry = new THREE.BoxGeometry(w, h, 100);
-      const material = new THREE.MeshNormalMaterial();
-      cube = new THREE.Mesh(geometry, material);
-      scene.add(cube);
-    }
+const light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(200,300,200);
+scene.add(light);
 
-    // 初期表示
-    createBox(100, 50);
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
-    // 入力イベント
-    document.getElementById('inputWidth').addEventListener('input', () => {
-      const w = parseFloat(document.getElementById('inputWidth').value);
-      const h = parseFloat(document.getElementById('inputHeight').value);
-      createBox(w, h);
-    });
-    document.getElementById('inputHeight').addEventListener('input', () => {
-      const w = parseFloat(document.getElementById('inputWidth').value);
-      const h = parseFloat(document.getElementById('inputHeight').value);
-      createBox(w, h);
-    });
+const grid = new THREE.GridHelper(500,50);
+scene.add(grid);
 
-    // アニメーション
-    function animate() {
-      requestAnimationFrame(animate);
-      if (cube) cube.rotation.y += 0.01;
-      renderer.render(scene, camera);
-    }
-    animate();
-  </script>
+let drawerParts=[];
+
+function clearDrawer(){
+  drawerParts.forEach(m=>{
+    scene.remove(m);
+    m.geometry.dispose();
+    m.material.dispose();
+  });
+  drawerParts=[];
+}
+
+function buildDrawer(){
+  clearDrawer();
+
+  const innerW = parseFloat(w.value);
+  const innerD = parseFloat(d.value);
+  const innerH = parseFloat(h.value);
+  const wall = parseFloat(wallInput.value);
+  const bottom = parseFloat(bottomInput.value);
+
+  const outerW = innerW + wall*2;
+  const outerD = innerD + wall*2;
+  const outerH = innerH + bottom;
+
+  const material = new THREE.MeshStandardMaterial({
+    color:0x999999,
+    metalness:0.1,
+    roughness:0.6
+  });
+
+  // 底
+  const bottomGeo = new THREE.BoxGeometry(outerW, bottom, outerD);
+  const bottomMesh = new THREE.Mesh(bottomGeo, material);
+  bottomMesh.position.y = bottom/2;
+  scene.add(bottomMesh);
+  drawerParts.push(bottomMesh);
+
+  // 左壁
+  const leftGeo = new THREE.BoxGeometry(wall, innerH, outerD);
+  const leftMesh = new THREE.Mesh(leftGeo, material);
+  leftMesh.position.set(-innerW/2-wall/2, innerH/2+bottom, 0);
+  scene.add(leftMesh);
+  drawerParts.push(leftMesh);
+
+  // 右壁
+  const rightMesh = leftMesh.clone();
+  rightMesh.position.x = innerW/2+wall/2;
+  scene.add(rightMesh);
+  drawerParts.push(rightMesh);
+
+  // 前壁
+  const frontGeo = new THREE.BoxGeometry(outerW, innerH, wall);
+  const frontMesh = new THREE.Mesh(frontGeo, material);
+  frontMesh.position.set(0, innerH/2+bottom, -innerD/2-wall/2);
+  scene.add(frontMesh);
+  drawerParts.push(frontMesh);
+
+  // 後壁
+  const backMesh = frontMesh.clone();
+  backMesh.position.z = innerD/2+wall/2;
+  scene.add(backMesh);
+  drawerParts.push(backMesh);
+}
+
+const w = document.getElementById("w");
+const d = document.getElementById("d");
+const h = document.getElementById("h");
+const wallInput = document.getElementById("wall");
+const bottomInput = document.getElementById("bottom");
+
+[w,d,h,wallInput,bottomInput].forEach(input=>{
+  input.addEventListener("input", buildDrawer);
+});
+
+buildDrawer();
+
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener("resize",()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+</script>
 
 </body>
 </html>
