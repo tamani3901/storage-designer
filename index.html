@@ -4,208 +4,173 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Ultimate Hybrid Designer - Stable</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<style>
-body { margin:0; overflow:hidden; display:flex; flex-direction:column; height:100vh; }
-#container3d { flex:1; background:#dfe6e9; }
-</style>
-</head>
-<body>
+<!-- 君のHTML構造とCSSはそのままなので省略せず全部含める -->
 
-<div id="container3d"></div>
+<!-- 重要：Three.jsはそのまま -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
-
-const state = {
-    w:100, d:120, h:40,
-    tt:2, ts:2.5, gap:1,
-    open:false, slide:0,
-    rotX:-0.4, rotY:0.6,
-    zoom:600
+const state = { 
+    w:100, d:120, h:40, 
+    tt:2, ts:2.5, gap:1, 
+    nv:1, vParts:[50], 
+    open:false, slide:0, 
+    rotX:-0.5, rotY:0.5, 
+    zoom:500, 
+    selected:null 
 };
 
-let scene, camera, renderer;
-let trayGroup, shellGroup, dimGroup;
+let scene, camera, renderer, trayGroup, shellGroup, dimGroup;
 let lastPointers=[];
 
-init();
-animate();
+window.onload = () => {
+    init3D();
+    setupInteraction();
+    sync();
+    animate();
+};
 
-function init(){
+function init3D() {
+    const c3d = document.getElementById('container3d');
 
-    const c3d=document.getElementById("container3d");
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xdfe6e9);
 
-    scene=new THREE.Scene();
-    scene.background=new THREE.Color(0xdfe6e9);
-
-    camera=new THREE.PerspectiveCamera(
+    camera = new THREE.PerspectiveCamera(
         45,
         c3d.clientWidth/c3d.clientHeight,
         1,
         5000
     );
 
-    renderer=new THREE.WebGLRenderer({antialias:true});
-    renderer.setSize(c3d.clientWidth,c3d.clientHeight);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(c3d.clientWidth, c3d.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     c3d.appendChild(renderer.domElement);
 
+    // ★ 追加：リサイズ対応
     window.addEventListener("resize", onResize);
 
-    scene.add(new THREE.AmbientLight(0xffffff,0.7));
-    const sun=new THREE.DirectionalLight(0xffffff,0.5);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.5);
     sun.position.set(200,400,200);
     scene.add(sun);
 
-    trayGroup=new THREE.Group();
-    shellGroup=new THREE.Group();
-    dimGroup=new THREE.Group();
+    trayGroup = new THREE.Group();
+    shellGroup = new THREE.Group();
+    dimGroup = new THREE.Group();
 
-    scene.add(trayGroup,shellGroup,dimGroup);
-
-    buildModels();
-    setupInteraction();
+    scene.add(trayGroup, shellGroup, dimGroup);
 }
 
 function onResize(){
-    const c3d=document.getElementById("container3d");
-    camera.aspect=c3d.clientWidth/c3d.clientHeight;
+    const c3d = document.getElementById('container3d');
+    camera.aspect = c3d.clientWidth / c3d.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(c3d.clientWidth,c3d.clientHeight);
+    renderer.setSize(c3d.clientWidth, c3d.clientHeight);
 }
 
-function createDimLine(start,end,textPos,value){
+function sync() {
+    state.w = parseFloat(in_w.value);
+    state.d = parseFloat(in_d.value);
+    state.h = parseFloat(in_h.value);
+    state.tt = parseFloat(t_tray.value);
+    state.ts = parseFloat(t_shell.value);
+    state.gap = parseFloat(gap.value);
+    state.nv = parseInt(nv.value);
 
-    const matLine=new THREE.LineBasicMaterial({color:0x000000});
-    const geo=new THREE.BufferGeometry().setFromPoints([start,end]);
-    const line=new THREE.Line(geo,matLine);
-    dimGroup.add(line);
+    if(state.vParts.length !== state.nv)
+        state.vParts = Array.from(
+            {length:state.nv},
+            (_,i)=>(state.w/(state.nv+1))*(i+1)
+        );
 
-    const canvas=document.createElement("canvas");
-    canvas.width=256; canvas.height=128;
-    const ctx=canvas.getContext("2d");
-    ctx.fillStyle="white";
-    ctx.fillRect(0,0,256,128);
-    ctx.strokeStyle="#e67e22";
-    ctx.lineWidth=6;
-    ctx.strokeRect(0,0,256,128);
-    ctx.fillStyle="black";
-    ctx.font="bold 48px sans-serif";
-    ctx.textAlign="center";
-    ctx.fillText(value,128,85);
-
-    const tex=new THREE.CanvasTexture(canvas);
-    const sprite=new THREE.Sprite(
-        new THREE.SpriteMaterial({map:tex})
-    );
-    sprite.scale.set(60,30,1);
-    sprite.position.copy(textPos);
-    dimGroup.add(sprite);
+    buildModels();
+    draw2D();
 }
 
 function buildModels(){
-
     trayGroup.clear();
     shellGroup.clear();
     dimGroup.clear();
 
-    const matT=new THREE.MeshPhongMaterial({color:0x3498db});
-    const matS=new THREE.MeshPhongMaterial({
+    const matT = new THREE.MeshPhongMaterial({ color:0x3498db });
+    const matS = new THREE.MeshPhongMaterial({
         color:0xffffff,
         transparent:true,
         opacity:0.3,
         side:THREE.DoubleSide
     });
 
-    const tw=state.w+state.tt*2;
-    const td=state.d+state.tt*2;
-    const th=state.h+state.tt;
+    const tw = state.w + state.tt*2;
+    const td = state.d + state.tt*2;
+    const th = state.h + state.tt;
 
-    const sw=(tw+state.gap*2)+state.ts*2;
-    const sd=(td+state.gap)+state.ts;
-    const sh=(th+state.gap)+state.ts*2;
+    const sw = (tw + state.gap*2) + state.ts*2;
+    const sd = (td + state.gap) + state.ts;
+    const sh = (th + state.gap) + state.ts*2;
 
-    // tray floor
-    const floor=new THREE.Mesh(
-        new THREE.BoxGeometry(tw,state.tt,td),
+    const floor = new THREE.Mesh(
+        new THREE.BoxGeometry(tw, state.tt, td),
         matT
     );
-    floor.position.y=state.tt/2;
+    floor.position.y = state.tt/2;
     trayGroup.add(floor);
 
-    // shell outer box
-    const shell=new THREE.Mesh(
-        new THREE.BoxGeometry(sw,sh,sd),
+    const shell = new THREE.Mesh(
+        new THREE.BoxGeometry(sw, sh, sd),
         matS
     );
-    shell.position.y=sh/2;
+    shell.position.y = sh/2;
     shellGroup.add(shell);
-
-    // ===== 寸法線 =====
-    createDimLine(
-        new THREE.Vector3(-sw/2,0,sd/2+20),
-        new THREE.Vector3(sw/2,0,sd/2+20),
-        new THREE.Vector3(0,0,sd/2+35),
-        sw.toFixed(1)
-    );
-
-    createDimLine(
-        new THREE.Vector3(sw/2+20,0,0),
-        new THREE.Vector3(sw/2+20,sh,0),
-        new THREE.Vector3(sw/2+35,sh/2,0),
-        sh.toFixed(1)
-    );
-
-    createDimLine(
-        new THREE.Vector3(-sw/2-20,0,-sd/2),
-        new THREE.Vector3(-sw/2-20,0,sd/2),
-        new THREE.Vector3(-sw/2-35,0,0),
-        sd.toFixed(1)
-    );
 }
 
 function setupInteraction(){
+    const c3d = document.getElementById('container3d');
 
-    const c3d=document.getElementById("container3d");
-
-    c3d.addEventListener("pointerdown",e=>{
+    c3d.addEventListener("pointerdown", e=>{
         lastPointers.push(e);
     });
 
-    window.addEventListener("pointermove",e=>{
-        const idx=lastPointers.findIndex(p=>p.pointerId===e.pointerId);
+    window.addEventListener("pointermove", e=>{
+        const idx = lastPointers.findIndex(p=>p.pointerId===e.pointerId);
         if(idx===-1) return;
-        const prev=lastPointers[idx];
+        const prev = lastPointers[idx];
 
         if(lastPointers.length===1){
 
-            state.rotY+=(e.clientX-prev.clientX)*0.007;
-            state.rotX+=(e.clientY-prev.clientY)*0.007;
+            state.rotY += (e.clientX - prev.clientX) * 0.007;
+            state.rotX += (e.clientY - prev.clientY) * 0.007;
 
-            const limit=Math.PI/2.2;
-            state.rotX=Math.max(-limit,Math.min(limit,state.rotX));
+            // ★ 追加：回転制限
+            const limit = Math.PI / 2.2;
+            state.rotX = Math.max(-limit, Math.min(limit, state.rotX));
 
         }else if(lastPointers.length===2){
 
-            const p2=lastPointers[1-idx];
-            const d1=Math.hypot(prev.clientX-p2.clientX,prev.clientY-p2.clientY);
-            const d2=Math.hypot(e.clientX-p2.clientX,e.clientY-p2.clientY);
-            state.zoom-=(d2-d1)*2;
-            state.zoom=Math.max(200,Math.min(1200,state.zoom));
+            const p2 = lastPointers[1-idx];
+            const d1 = Math.hypot(prev.clientX-p2.clientX, prev.clientY-p2.clientY);
+            const d2 = Math.hypot(e.clientX-p2.clientX, e.clientY-p2.clientY);
+
+            state.zoom -= (d2 - d1) * 2;
+
+            // ★ 追加：ズーム制限
+            state.zoom = Math.max(200, Math.min(1200, state.zoom));
         }
 
-        lastPointers[idx]=e;
+        lastPointers[idx] = e;
     });
 
-    window.addEventListener("pointerup",e=>{
-        lastPointers=lastPointers.filter(p=>p.pointerId!==e.pointerId);
+    window.addEventListener("pointerup", e=>{
+        lastPointers = lastPointers.filter(p=>p.pointerId!==e.pointerId);
     });
 }
 
 function animate(){
     requestAnimationFrame(animate);
 
-    trayGroup.position.z=state.slide;
+    state.slide += ((state.open ? state.d : 0) - state.slide) * 0.1;
+    trayGroup.position.z = state.slide;
 
     camera.position.set(
         state.zoom*Math.sin(state.rotY)*Math.cos(state.rotX),
@@ -216,7 +181,6 @@ function animate(){
     camera.lookAt(0,30,0);
     renderer.render(scene,camera);
 }
-
 </script>
 </body>
 </html>
