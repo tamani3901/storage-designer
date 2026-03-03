@@ -3,122 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Storage Designer</title>
+    <title>3D Storage Designer v2</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
-        body { margin: 0; display: grid; grid-template: "header header" 50px "side main" 1fr "side foot" 250px / 250px 1fr; height: 100vh; font-family: sans-serif; }
-        header { grid-area: header; background: #333; color: white; display: flex; align-items: center; padding: 0 20px; gap: 20px; }
-        aside { grid-area: side; background: #f0f0f0; padding: 15px; border-right: 1px solid #ccc; overflow-y: auto; }
-        main { grid-area: main; background: #eee; position: relative; }
-        footer { grid-area: foot; background: #fff; border-top: 2px solid #333; }
-        .input-group { margin-bottom: 10px; }
-        label { display: block; font-size: 12px; }
-        input, select { width: 100%; }
-        canvas { width: 100% !important; height: 100% !important; display: block; }
+        body { margin: 0; display: grid; grid-template: "header header" 50px "side main" 1fr "side foot" 200px / 250px 1fr; height: 100vh; font-family: sans-serif; overflow: hidden; }
+        header { grid-area: header; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; gap: 20px; z-index: 10; }
+        aside { grid-area: side; background: #ecf0f1; padding: 15px; border-right: 1px solid #bdc3c7; overflow-y: auto; z-index: 5; }
+        main { grid-area: main; background: #fdfdfd; position: relative; cursor: move; }
+        footer { grid-area: foot; background: #fff; border-top: 2px solid #2c3e50; overflow: hidden; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+        input, select { width: 100%; box-sizing: border-box; padding: 5px; }
+        h3 { margin-top: 0; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <header>
     <strong>Storage Designer</strong>
-    <div>
-        クリアランス: 
-        <select id="clearance">
-            <option value="0.15">0.15mm</option>
-            <option value="0.25" selected>0.25mm</option>
-            <option value="0.35">0.35mm</option>
-        </select>
-    </div>
+    <small>Clearance: <span id="curClearance">0.1mm (Fixed)</span></small>
 </header>
 
-<aside id="controls">
+<aside>
+    <h3>基本サイズ (内寸)</h3>
     <div class="input-group">
-        <label>内寸 幅 (mm)</label>
-        <input type="number" id="width" value="100">
+        <label>幅 W (mm)</label>
+        <input type="number" id="w_val" value="100" min="10">
     </div>
     <div class="input-group">
-        <label>内寸 奥行 (mm)</label>
-        <input type="number" id="depth" value="150">
+        <label>奥行 D (mm)</label>
+        <input type="number" id="d_val" value="150" min="10">
     </div>
     <div class="input-group">
-        <label>内寸 高さ (mm)</label>
-        <input type="number" id="height" value="50">
+        <label>高さ H (mm)</label>
+        <input type="number" id="h_val" value="50" min="5">
     </div>
     <hr>
+    <h3>厚み設定</h3>
     <div class="input-group">
         <label>壁厚 (mm)</label>
-        <input type="number" id="wallThick" value="2" step="0.1">
+        <input type="number" id="wall_t" value="2" step="0.1" min="0.8">
+    </div>
+    <div class="input-group">
+        <label>底板厚 (mm)</label>
+        <input type="number" id="floor_t" value="2" step="0.1" min="0.8">
     </div>
 </aside>
 
-<main id="container3d"></main>
+<main id="view3d"></main>
 
 <footer>
-    <div style="padding:10px; color:#666;">2D Edit View (Drag partitions here)</div>
+    <div style="padding:10px; font-size: 12px; color: #999;">2D Layout View (Ready for development)</div>
 </footer>
 
 <script>
-    // --- Three.js Setup ---
+    // --- 初期設定 ---
+    const container = document.getElementById('view3d');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xeeeeee);
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(200, 200, 200);
-    camera.lookAt(0, 0, 0);
-
+    scene.background = new THREE.Color(0xf0f0f0);
+    
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 2000);
+    camera.position.set(150, 150, 250);
+    
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    document.getElementById('container3d').appendChild(renderer.domElement);
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(100, 200, 100);
-    scene.add(directionalLight);
+    // グリッドとライト
+    const grid = new THREE.GridHelper(400, 40, 0xcccccc, 0xeeeeee);
+    scene.add(grid);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const light = new THREE.PointLight(0xffffff, 0.8);
+    light.position.set(200, 300, 100);
+    scene.add(light);
 
-    // --- Mesh Generation ---
-    let drawerGroup = new THREE.Group();
-    scene.add(drawerGroup);
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
 
+    // --- 3Dモデル生成ロジック ---
     function updateModel() {
-        drawerGroup.clear();
-        
-        const w = parseFloat(document.getElementById('width').value);
-        const d = parseFloat(document.getElementById('depth').value);
-        const h = parseFloat(document.getElementById('height').value);
-        const t = parseFloat(document.getElementById('wallThick').value);
+        modelGroup.clear();
 
-        const material = new THREE.MeshPhongMaterial({ color: 0x00aaff, transparent: true, opacity: 0.8 });
+        const w = parseFloat(document.getElementById('w_val').value);
+        const d = parseFloat(document.getElementById('d_val').value);
+        const h = parseFloat(document.getElementById('h_val').value);
+        const tw = parseFloat(document.getElementById('wall_t').value);
+        const tf = parseFloat(document.getElementById('floor_t').value);
 
-        // 底板
-        const bottomGeo = new THREE.BoxGeometry(w + 2*t, t, d + 2*t);
-        const bottom = new THREE.Mesh(bottomGeo, material);
-        bottom.position.y = -h/2 - t/2;
-        drawerGroup.add(bottom);
+        const material = new THREE.MeshPhongMaterial({ color: 0x3498db, transparent: true, opacity: 0.9, side: THREE.DoubleSide });
 
-        // 側面（簡易的な4面配置）
-        // 実際にはここでクリアランス計算やスリットのロジックを追加
+        // 1. 底板
+        const floorGeo = new THREE.BoxGeometry(w + 2*tw, tf, d + 2*tw);
+        const floor = new THREE.Mesh(floorGeo, material);
+        floor.position.y = tf / 2;
+        modelGroup.add(floor);
+
+        // 2. 壁（左・右）
+        const sideWallGeo = new THREE.BoxGeometry(tw, h, d + 2*tw);
+        const wallL = new THREE.Mesh(sideWallGeo, material);
+        wallL.position.set(-(w/2 + tw/2), h/2 + tf, 0);
+        modelGroup.add(wallL);
+
+        const wallR = new THREE.Mesh(sideWallGeo, material);
+        wallR.position.set((w/2 + tw/2), h/2 + tf, 0);
+        modelGroup.add(wallR);
+
+        // 3. 壁（前・後）
+        const frontWallGeo = new THREE.BoxGeometry(w, h, tw);
+        const wallF = new THREE.Mesh(frontWallGeo, material);
+        wallF.position.set(0, h/2 + tf, (d/2 + tw/2));
+        modelGroup.add(wallF);
+
+        const wallB = new THREE.Mesh(frontWallGeo, material);
+        wallB.position.set(0, h/2 + tf, -(d/2 + tw/2));
+        modelGroup.add(wallB);
     }
 
-    // --- Interaction ---
-    function animate() {
-        requestAnimationFrame(animate);
-        renderer.render(scene, camera);
+    // --- 簡易Orbit操作（マウス＆タッチ対応） ---
+    let isDragging = false;
+    let previousMouse = { x: 0, y: 0 };
+    let theta = Math.PI / 4;
+    let phi = Math.PI / 4;
+    let radius = 400;
+
+    function updateCameraPosition() {
+        camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+        camera.position.y = radius * Math.cos(phi);
+        camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+        camera.lookAt(0, h_val.value/2, 0);
     }
 
+    container.addEventListener('mousedown', (e) => { isDragging = true; previousMouse = { x: e.clientX, y: e.clientY }; });
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        theta -= (e.clientX - previousMouse.x) * 0.01;
+        phi -= (e.clientY - previousMouse.y) * 0.01;
+        phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
+        previousMouse = { x: e.clientX, y: e.clientY };
+        updateCameraPosition();
+    });
+
+    // iPad等のタッチ対応
+    container.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        previousMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, {passive: false});
+    container.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        theta -= (e.touches[0].clientX - previousMouse.x) * 0.01;
+        phi -= (e.touches[0].clientY - previousMouse.y) * 0.01;
+        phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
+        previousMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        updateCameraPosition();
+        e.preventDefault();
+    }, {passive: false});
+
+    // ホイールズーム
+    container.addEventListener('wheel', (e) => {
+        radius += e.deltaY * 0.5;
+        radius = Math.max(100, Math.min(1000, radius));
+        updateCameraPosition();
+    }, {passive: false});
+
+    // --- 実行 ---
     window.addEventListener('resize', () => {
-        const container = document.getElementById('container3d');
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(container.clientWidth, container.clientHeight);
     });
 
-    // 初期化
-    const container = document.getElementById('container3d');
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    updateModel();
-    animate();
-
-    // 入力監視
     document.querySelectorAll('input').forEach(el => el.addEventListener('input', updateModel));
+    
+    updateCameraPosition();
+    updateModel();
+    function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+    animate();
 
 </script>
 </body>
