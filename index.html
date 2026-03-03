@@ -3,228 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Storage Designer Pro - Master Edition</title>
+    <title>Ultimate Storage Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
-        :root { --primary: #2c3e50; --accent: #e67e22; --sidebar: #ffffff; --bg: #ecf0f1; }
-        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: 'Segoe UI', sans-serif; background: var(--bg); overflow: hidden; }
-        header { height: 50px; background: var(--primary); color: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 100; }
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #ecf0f1; }
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; background: var(--bg); overflow: hidden; }
+        header { height: 45px; background: var(--primary); color: white; display: flex; align-items: center; padding: 0 15px; flex-shrink: 0; }
+        
         .main-layout { display: flex; flex: 1; overflow: hidden; }
         
-        aside { width: 320px; background: var(--sidebar); border-right: 1px solid #ccc; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-        .view-container { flex: 1; display: flex; flex-direction: column; position: relative; }
+        /* サイドバー */
+        aside { width: 300px; background: white; border-right: 1px solid #ccc; overflow-y: auto; padding: 15px; flex-shrink: 0; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
         
-        #container3d { flex: 1.2; background: #dfe6e9; position: relative; }
-        #container2d { flex: 1; background: white; border-top: 3px solid var(--primary); display: flex; }
-        .canvas-half { flex: 1; border-right: 1px solid #eee; position: relative; overflow: hidden; }
+        /* 3D・2Dエリア */
+        .view-container { flex: 1; display: flex; flex-direction: column; }
+        #container3d { flex: 1; min-height: 0; position: relative; background: #dfe6e9; }
+        #container2d { height: 260px; background: white; border-top: 3px solid var(--primary); display: flex; }
         
-        .section-title { font-size: 12px; font-weight: bold; color: var(--primary); border-left: 4px solid var(--accent); padding-left: 8px; margin: 15px 0 10px 0; text-transform: uppercase; }
-        .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        .input-group { flex: 1; }
-        label { display: block; font-size: 10px; color: #7f8c8d; margin-bottom: 2px; }
-        input, select { width: 100%; padding: 6px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; }
+        canvas { width: 100% !important; height: 100% !important; display: block; }
         
-        .warning { color: #e74c3c; font-size: 10px; margin-top: 4px; font-weight: bold; display: none; }
-        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-        .btn { border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-        .btn-primary { background: var(--accent); }
-        .btn-success { background: #27ae60; }
-        .tag { position: absolute; top: 8px; left: 12px; font-size: 10px; font-weight: bold; color: rgba(0,0,0,0.3); pointer-events: none; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; font-weight: bold; color: #666; margin-bottom: 3px; }
+        .row { display: flex; gap: 5px; }
+        input { width: 100%; padding: 7px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+        
+        .btn { background: var(--accent); color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .info { font-size: 11px; background: #f8f9fa; padding: 10px; border-radius: 4px; margin-top: 15px; border: 1px solid #eee; }
+        .tag { position: absolute; top: 10px; left: 10px; font-size: 10px; font-weight: bold; color: rgba(0,0,0,0.2); pointer-events: none; }
     </style>
 </head>
 <body>
 
 <header>
-    <strong>STORAGE DESIGNER <span style="font-weight: 200;">PRO v7.0</span></strong>
-    <div style="font-size: 11px;">2026 Stable Build</div>
+    <strong>STORAGE ENGINE PRO</strong>
 </header>
 
 <div class="main-layout">
     <aside>
-        <div class="section-title">引き出し設定 (内寸基準)</div>
-        <div class="input-row">
-            <div class="input-group"><label>幅 W</label><input type="number" id="in_w" value="80"></div>
-            <div class="input-group"><label>奥行 D</label><input type="number" id="in_d" value="120"></div>
-            <div class="input-group"><label>高さ H</label><input type="number" id="in_h" value="40"></div>
+        <div class="input-group">
+            <label>引き出し内寸 W / D / H (mm)</label>
+            <div class="row">
+                <input type="number" id="w_val" value="100" oninput="sync()">
+                <input type="number" id="d_val" value="120" oninput="sync()">
+                <input type="number" id="h_val" value="40" oninput="sync()">
+            </div>
         </div>
-        <div class="input-row">
-            <div class="input-group"><label>肉厚 (引出し)</label><input type="number" id="t_tray" value="2.0" step="0.1"></div>
-            <div class="input-group"><label>仕切り数 (V/H)</label><div style="display:flex; gap:2px;">
-                <input type="number" id="n_v" value="1" min="0"><input type="number" id="n_h" value="1" min="0">
-            </div></div>
+        <div class="input-group">
+            <label>肉厚 (引き出し / 外枠)</label>
+            <div class="row">
+                <input type="number" id="t_tray" value="2.0" step="0.1" oninput="sync()">
+                <input type="number" id="t_shell" value="2.5" step="0.1" oninput="sync()">
+            </div>
         </div>
-
-        <div class="section-title">外枠 & クリアランス</div>
-        <div class="input-row">
-            <div class="input-group"><label>遊び (Gap)</label><input type="number" id="gap" value="1.0" step="0.1"></div>
-            <div class="input-group"><label>肉厚 (外枠)</label><input type="number" id="t_shell" value="2.5" step="0.1"></div>
+        <div class="input-group">
+            <label>クリアランス (隙間 mm)</label>
+            <input type="number" id="gap" value="1.0" step="0.1" oninput="sync()">
         </div>
-        <div class="input-row">
-            <div class="input-group"><label>持ち手穴 (W)</label><input type="number" id="h_w" value="30"></div>
-            <div class="input-group"><label>スタッキング</label><select id="stack"><option value="on">あり</option><option value="off">なし</option></select></div>
+        <div class="info" id="out_dim">
+            計算結果を表示中...
         </div>
-        <div id="overlap_warn" class="warning">⚠️ 重なりを検出: サイズを調整してください</div>
-
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="toggleView()">モデルを並べる / 重ねる</button>
-            <button class="btn btn-success" onclick="exportZip()">STLを一括エクスポート (.ZIP)</button>
-        </div>
-
-        <div id="info_panel" style="margin-top:20px; font-size:11px; background:#f9f9f9; padding:10px; border-radius:4px; border:1px solid #eee;">
-            <strong>計算結果:</strong><br>
-            外枠外寸: <span id="res_w">0</span> x <span id="res_d">0</span> x <span id="res_h">0</span> mm
-        </div>
+        <button class="btn" onclick="exportSTL()">STLエクスポート</button>
     </aside>
 
     <div class="view-container">
-        <div id="container3d"><div class="tag">3D REALTIME PREVIEW</div></div>
+        <div id="container3d">
+            <div class="tag">3D PREVIEW (DRAG TO ROTATE / WHEEL TO ZOOM)</div>
+        </div>
         <div id="container2d">
-            <div class="canvas-half"><div class="tag">2D TOP VIEW (PARTITIONS)</div><canvas id="canvasTop"></canvas></div>
-            <div class="canvas-half"><div class="tag">2D FRONT VIEW (SHELL & HANDLE)</div><canvas id="canvasFront"></canvas></div>
+            <div id="canvasTopWrapper" style="flex:1; position:relative; border-right:1px solid #eee;">
+                <div class="tag">TOP VIEW</div>
+                <canvas id="canvasTop"></canvas>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- State ---
-    const state = {
-        inW:80, inD:120, inH:40, tTray:2.0, tShell:2.5, gap:1.0, 
-        nv:1, nh:1, vParts:[40], hParts:[60],
-        separated: true, selected: null
-    };
-
-    // --- 3D Engine Setup ---
-    const container3d = document.getElementById('container3d');
-    const scene = new THREE.Scene(); scene.background = new THREE.Color(0xdfe6e9);
-    const camera = new THREE.PerspectiveCamera(45, 1, 1, 3000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    container3d.appendChild(renderer.domElement);
-    const trayGroup = new THREE.Group(); const shellGroup = new THREE.Group();
-    scene.add(trayGroup); scene.add(shellGroup);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const light = new THREE.DirectionalLight(0xffffff, 0.4); light.position.set(200, 500, 300); scene.add(light);
+    // --- Global State ---
+    const state = { w:100, d:120, h:40, tt:2, ts:2.5, gap:1.0 };
     
+    // --- Three.js Initialization ---
+    const c3d = document.getElementById('container3d');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, c3d.clientWidth / c3d.clientHeight, 1, 5000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    c3d.appendChild(renderer.domElement);
+
+    const trayGroup = new THREE.Group();
+    const shellGroup = new THREE.Group();
+    scene.add(trayGroup, shellGroup);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const light = new THREE.DirectionalLight(0xffffff, 0.5);
+    light.position.set(200, 500, 300);
+    scene.add(light);
+    scene.add(new THREE.GridHelper(1000, 50));
+
     let theta = -Math.PI/4, phi = Math.PI/3, radius = 500;
+    
     function updateCamera() {
         camera.position.set(radius*Math.sin(phi)*Math.cos(theta), radius*Math.cos(phi), radius*Math.sin(phi)*Math.sin(theta));
         camera.lookAt(0, 0, 0);
     }
-    function toggleView() { state.separated = !state.separated; sync(); }
 
-    // --- Logic: Inside-Out Calculation ---
-    function updateModel() {
+    // --- Core Modeling Logic ---
+    function sync() {
+        state.w = parseFloat(w_val.value);
+        state.d = parseFloat(d_val.value);
+        state.h = parseFloat(h_val.value);
+        state.tt = parseFloat(t_tray.value);
+        state.ts = parseFloat(t_shell.value);
+        state.gap = parseFloat(gap.value);
+
         trayGroup.clear(); shellGroup.clear();
-        const matTray = new THREE.MeshPhongMaterial({ color: 0x3498db });
-        const matShell = new THREE.MeshPhongMaterial({ color: 0x2c3e50, transparent: true, opacity: 0.4 });
+        const mTray = new THREE.MeshPhongMaterial({ color: 0x3498db });
+        const mShell = new THREE.MeshPhongMaterial({ color: 0x2c3e50, transparent: true, opacity: 0.4 });
 
-        // 1. Tray (引き出し)
-        const tw = state.inW + state.tTray*2;
-        const td = state.inD + state.tTray*2;
-        const th = state.inH + state.tTray;
+        // Tray (引き出し)
+        const tw = state.w + state.tt*2, td = state.d + state.tt*2, th = state.h + state.tt;
+        const f = new THREE.Mesh(new THREE.BoxGeometry(tw, state.tt, td), mTray);
+        f.position.y = state.tt/2; trayGroup.add(f);
         
-        const trayFloor = new THREE.Mesh(new THREE.BoxGeometry(tw, state.tTray, td), matTray);
-        trayFloor.position.y = state.tTray/2; trayGroup.add(trayFloor);
-        
-        const trayWalls = [
-            {s:[state.tTray, state.inH, td], p:[-(state.inW/2+state.tTray/2), state.inH/2+state.tTray, 0]},
-            {s:[state.tTray, state.inH, td], p:[(state.inW/2+state.tTray/2), state.inH/2+state.tTray, 0]},
-            {s:[state.inW, state.inH, state.tTray], p:[0, state.inH/2+state.tTray, -(state.inD/2+state.tTray/2)]},
-            {s:[state.inW, state.inH, state.tTray], p:[0, state.inH/2+state.tTray, (state.inD/2+state.tTray/2)]}
+        const walls = [
+            {s:[state.tt, state.h, td], p:[-(state.w/2+state.tt/2), state.h/2+state.tt, 0]},
+            {s:[state.tt, state.h, td], p:[(state.w/2+state.tt/2), state.h/2+state.tt, 0]},
+            {s:[state.w, state.h, state.tt], p:[0, state.h/2+state.tt, -(state.d/2+state.tt/2)]},
+            {s:[state.w, state.h, state.tt], p:[0, state.h/2+state.tt, (state.d/2+state.tt/2)]}
         ];
-        trayWalls.forEach(w => { const m = new THREE.Mesh(new THREE.BoxGeometry(...w.s), matTray); m.position.set(...w.p); trayGroup.add(m); });
-
-        // 2. Shell (外枠) - 自動計算ロジック
-        const sw_in = tw + state.gap * 2;
-        const sd_in = td + state.gap;
-        const sh_in = th + state.gap;
-        
-        const sw_out = sw_in + state.tShell * 2;
-        const sd_out = sd_in + state.tShell;
-        const sh_out = sh_in + state.tShell * 2; // 天板と底板分
-
-        const shellWalls = [
-            {s:[state.tShell, sh_out, sd_out], p:[-(sw_in/2+state.tShell/2), sh_out/2, -state.tShell/2]}, // Left
-            {s:[state.tShell, sh_out, sd_out], p:[(sw_in/2+state.tShell/2), sh_out/2, -state.tShell/2]},  // Right
-            {s:[sw_out, state.tShell, sd_out], p:[0, state.tShell/2, -state.tShell/2]},                  // Bottom
-            {s:[sw_out, state.tShell, sd_out], p:[0, sh_out - state.tShell/2, -state.tShell/2]},        // Top
-            {s:[sw_in, sh_in, state.tShell], p:[0, sh_out/2, -(sd_in/2+state.tShell/2)]}                // Back
-        ];
-        shellWalls.forEach(w => { const m = new THREE.Mesh(new THREE.BoxGeometry(...w.s), matShell); m.position.set(...w.p); shellGroup.add(m); });
-
-        // 3. Layout Control
-        if(state.separated) {
-            trayGroup.position.x = -(sw_out/2 + 20);
-            shellGroup.position.x = (sw_out/2 + 20);
-        } else {
-            trayGroup.position.x = 0;
-            trayGroup.position.y = state.tShell + state.gap/2;
-            shellGroup.position.x = 0;
-            shellGroup.position.y = 0;
-        }
-
-        // Info Update
-        document.getElementById('res_w').innerText = sw_out.toFixed(1);
-        document.getElementById('res_d').innerText = sd_out.toFixed(1);
-        document.getElementById('res_h').innerText = sh_out.toFixed(1);
-    }
-
-    // --- 2D Drawing (Top & Front) ---
-    const cTop = document.getElementById('canvasTop'), cFront = document.getElementById('canvasFront');
-    function draw2D() {
-        [cTop, cFront].forEach(c => { c.width = c.offsetWidth; c.height = c.offsetHeight; });
-        const ctxT = cTop.getContext('2d'), ctxF = cFront.getContext('2d');
-        const sc = Math.min((cTop.width-60)/state.inW, (cTop.height-60)/state.inD);
-        const ox = cTop.width/2, oy = cTop.height/2;
-
-        // Top View
-        ctxT.strokeStyle = "#2c3e50"; ctxT.strokeRect(ox - (state.inW*sc)/2, oy - (state.inD*sc)/2, state.inW*sc, state.inD*sc);
-        state.vParts.forEach((p,i) => {
-            ctxT.strokeStyle = (state.selected?.type==='v'&&state.selected.i===i) ? "red" : "#3498db";
-            ctxT.lineWidth = 4; ctxT.beginPath(); ctxT.moveTo(ox-state.inW*sc/2+p*sc, oy-state.inD*sc/2); ctxT.lineTo(ox-state.inW*sc/2+p*sc, oy+state.inD*sc/2); ctxT.stroke();
+        walls.forEach(w => {
+            const m = new THREE.Mesh(new THREE.BoxGeometry(...w.s), mTray);
+            m.position.set(...w.p); trayGroup.add(m);
         });
 
-        // Front View (Shell with Clearance)
-        const fsc = Math.min((cFront.width-60)/(state.inW+20), (cFront.height-60)/(state.inH+20));
-        const fox = cFront.width/2, foy = cFront.height/2;
-        ctxF.strokeStyle = "#7f8c8d"; ctxF.strokeRect(fox-(state.inW*fsc)/2, foy-(state.inH*fsc)/2, state.inW*fsc, state.inH*fsc); // Tray Internal
-        ctxF.strokeStyle = "#e67e22"; ctxF.strokeRect(fox-((state.inW+state.tTray*2+state.gap*2+state.tShell*2)*fsc)/2, foy-((state.inH+state.tTray+state.gap+state.tShell*2)*fsc)/2, (state.inW+state.tTray*2+state.gap*2+state.tShell*2)*fsc, (state.inH+state.tTray+state.gap+state.tShell*2)*fsc);
+        // Shell (外枠) - Inside-Out Logic
+        const sw_in = tw + state.gap*2, sd_in = td + state.gap, sh_in = th + state.gap;
+        const sw_out = sw_in + state.ts*2, sd_out = sd_in + state.ts, sh_out = sh_in + state.ts*2;
+        
+        const shellParts = [
+            {s:[state.ts, sh_out, sd_out], p:[-(sw_in/2+state.ts/2), sh_out/2, -state.ts/2]},
+            {s:[state.ts, sh_out, sd_out], p:[(sw_in/2+state.ts/2), sh_out/2, -state.ts/2]},
+            {s:[sw_out, state.ts, sd_out], p:[0, state.ts/2, -state.ts/2]},
+            {s:[sw_out, state.ts, sd_out], p:[0, sh_out-state.ts/2, -state.ts/2]},
+            {s:[sw_in, sh_in, state.ts], p:[0, sh_out/2, -(sd_in/2+state.ts/2)]}
+        ];
+        shellParts.forEach(p => {
+            const m = new THREE.Mesh(new THREE.BoxGeometry(...p.s), mShell);
+            m.position.set(...p.p); shellGroup.add(m);
+        });
+
+        // 位置のオフセット表示
+        trayGroup.position.x = -sw_out; 
+        shellGroup.position.x = sw_out;
+
+        document.getElementById('out_dim').innerHTML = `<strong>外枠外寸:</strong><br>${sw_out.toFixed(1)} x ${sd_out.toFixed(1)} x ${sh_out.toFixed(1)} mm`;
     }
 
-    // --- Sync & Interaction ---
-    function sync() {
-        state.inW = parseFloat(in_w.value); state.inD = parseFloat(in_d.value); state.inH = parseFloat(in_h.value);
-        state.tTray = parseFloat(t_tray.value); state.tShell = parseFloat(t_shell.value); state.gap = parseFloat(gap.value);
-        const nv = parseInt(n_v.value), nh = parseInt(n_h.value);
-        if(state.vParts.length!==nv) state.vParts = Array.from({length:nv},(_,i)=>(state.inW/(nv+1))*(i+1));
-        if(state.hParts.length!==nh) state.hParts = Array.from({length:nh},(_,i)=>(state.inD/(nh+1))*(i+1));
-        updateModel(); draw2D(); updateCamera();
-    }
-
+    // --- Mouse Controls ---
     let isDragging = false, lastM = {x:0, y:0};
-    container3d.addEventListener('mousedown', e => { isDragging=true; lastM={x:e.clientX, y:e.clientY}; });
+    c3d.addEventListener('mousedown', e => { isDragging = true; lastM = {x:e.clientX, y:e.clientY}; });
     window.addEventListener('mousemove', e => {
-        if(isDragging) { theta+=(e.clientX-lastM.x)*0.01; phi-=(e.clientY-lastM.y)*0.01; lastM={x:e.clientX, y:e.clientY}; updateCamera(); }
-        if(state.selected) {
-            const r = cTop.getBoundingClientRect(); const sc = Math.min((cTop.width-60)/state.inW, (cTop.height-60)/state.inD);
-            const px = (e.clientX-r.left-cTop.width/2)/sc + state.inW/2;
-            state.vParts[state.selected.i] = Math.max(0, Math.min(state.inW, px));
-            updateModel(); draw2D();
-        }
+        if (!isDragging) return;
+        theta += (e.clientX - lastM.x) * 0.01;
+        phi -= (e.clientY - lastM.y) * 0.01;
+        phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
+        lastM = {x:e.clientX, y:e.clientY};
+        updateCamera();
     });
-    window.addEventListener('mouseup', () => { isDragging=false; state.selected=null; });
-    cTop.addEventListener('mousedown', e => {
-        const r = cTop.getBoundingClientRect(); const sc = Math.min((cTop.width-60)/state.inW, (cTop.height-60)/state.inD);
-        const px = (e.clientX-r.left-cTop.width/2)/sc + state.inW/2;
-        state.vParts.forEach((p,i) => { if(Math.abs(p-px)<10) state.selected={type:'v', i}; });
-    });
+    window.addEventListener('mouseup', () => isDragging = false);
+    c3d.addEventListener('wheel', e => { radius += e.deltaY * 0.5; radius = Math.max(100, Math.min(2000, radius)); updateCamera(); e.preventDefault(); }, {passive:false});
 
-    function exportZip() { alert("STL生成中... (各パーツのメッシュデータを一括パッケージ化します)"); }
+    // --- Responsive ---
+    function onResize() {
+        const w = c3d.clientWidth, h = c3d.clientHeight;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', onResize);
+    new ResizeObserver(onResize).observe(c3d);
 
-    window.addEventListener('resize', () => { renderer.setSize(container3d.clientWidth, container3d.clientHeight); camera.aspect = container3d.clientWidth/container3d.clientHeight; camera.updateProjectionMatrix(); draw2D(); });
-    document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', sync));
-    
     function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
-    sync(); updateCamera(); animate();
+    
+    // Initial Run
+    onResize(); sync(); updateCamera(); animate();
+
+    function exportSTL() { alert("STLデータを生成中..."); }
 </script>
 </body>
 </html>
