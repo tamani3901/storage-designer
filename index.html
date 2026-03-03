@@ -6,7 +6,6 @@
 <title>Drawer Designer</title>
 
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 
 <style>
 body{
@@ -75,9 +74,6 @@ camera.position.set(200,150,200);
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
 
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(200,300,200);
@@ -166,7 +162,6 @@ buildDrawer();
 
 function animate(){
   requestAnimationFrame(animate);
-  controls.update();
   renderer.render(scene,camera);
 }
 animate();
