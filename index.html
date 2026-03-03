@@ -3,179 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hybrid Storage Designer</title>
+    <title>Storage Designer Master</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body { margin: 0; display: flex; height: 100vh; font-family: sans-serif; overflow: hidden; background: #2c3e50; }
-        #sidebar { width: 280px; background: white; padding: 20px; z-index: 10; overflow-y: auto; flex-shrink: 0; }
-        #viewer { flex: 1; position: relative; touch-action: none; } /* iPadのブラウザスクロールを無効化 */
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 11px; font-weight: bold; color: #666; }
-        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        .info { background: #fdf2e9; padding: 10px; border-radius: 4px; font-size: 11px; border-left: 4px solid #e67e22; margin-top: 10px; }
-        .hint { position: absolute; bottom: 15px; left: 15px; color: white; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 20px; font-size: 10px; pointer-events: none; }
+        :root { --primary: #2c3e50; --accent: #e67e22; --bg: #ecf0f1; }
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; overflow: hidden; background: var(--bg); }
+        header { height: 40px; background: var(--primary); color: white; display: flex; align-items: center; padding: 0 15px; font-size: 14px; }
+        .main-layout { display: flex; flex: 1; overflow: hidden; }
+        aside { width: 300px; background: white; border-right: 1px solid #ccc; overflow-y: auto; padding: 15px; flex-shrink: 0; }
+        .view-container { flex: 1; display: flex; flex-direction: column; position: relative; }
+        #container3d { flex: 1.2; background: #dfe6e9; touch-action: none; position: relative; }
+        #container2d { flex: 1; background: white; border-top: 3px solid var(--primary); display: flex; }
+        .canvas-half { flex: 1; border-right: 1px solid #eee; position: relative; overflow: hidden; }
+        .input-row { display: flex; gap: 5px; margin-bottom: 10px; }
+        label { display: block; font-size: 10px; font-weight: bold; color: #666; margin-bottom: 2px; }
+        input, select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        .btn { background: var(--accent); color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        .info { font-size: 11px; background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 10px; border-left: 3px solid var(--accent); }
+        .tag { position: absolute; top: 5px; left: 10px; font-size: 9px; font-weight: bold; color: rgba(0,0,0,0.3); pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <h3 style="margin-top:0; font-size:18px;">Storage Engine</h3>
-    <div class="input-group">
-        <label>引き出し内寸 (W/D/H)</label>
-        <div style="display:flex; gap:4px;">
-            <input type="number" id="w" value="100">
-            <input type="number" id="d" value="120">
-            <input type="number" id="h" value="40">
-        </div>
-    </div>
-    <div class="input-group">
-        <label>肉厚 (引き出し/外枠)</label>
-        <div style="display:flex; gap:4px;">
-            <input type="number" id="tt" value="2.0" step="0.1">
-            <input type="number" id="ts" value="2.5" step="0.1">
-        </div>
-    </div>
-    <div class="input-group">
-        <label>遊び (Gap mm)</label>
-        <input type="number" id="gap" value="1.0" step="0.1">
-    </div>
-    <div class="info" id="stats">外枠計算中...</div>
-</div>
+<header>STORAGE DESIGNER PRO - MASTER BUILD</header>
 
-<div id="viewer">
-    <div class="hint">1本指: 回転 / 2本指: ズーム</div>
+<div class="main-layout">
+    <aside>
+        <label>引き出し内寸 W / D / H (mm)</label>
+        <div class="input-row">
+            <input type="number" id="in_w" value="100">
+            <input type="number" id="in_d" value="120">
+            <input type="number" id="in_h" value="40">
+        </div>
+        <div class="input-row">
+            <div style="flex:1"><label>肉厚(引出)</label><input type="number" id="t_tray" value="2.0" step="0.1"></div>
+            <div style="flex:1"><label>肉厚(外枠)</label><input type="number" id="t_shell" value="2.5" step="0.1"></div>
+        </div>
+        <div class="input-row">
+            <div style="flex:1"><label>遊び(Gap)</label><input type="number" id="gap" value="1.0" step="0.1"></div>
+            <div style="flex:1"><label>仕切り数</label><input type="number" id="nv" value="1" min="0"></div>
+        </div>
+        <div class="input-row">
+            <div style="flex:1"><label>スタッキング</label><select id="stack"><option value="1">ON</option><option value="0">OFF</option></select></div>
+            <div style="flex:1"><label>開閉</label><button class="btn" style="margin:0; padding:6px;" onclick="state.open = !state.open">OPEN/CLOSE</button></div>
+        </div>
+        <div class="info" id="stats">計算中...</div>
+        <button class="btn" onclick="alert('STL Export...')">ZIP一括書き出し</button>
+    </aside>
+
+    <div class="view-container">
+        <div id="container3d"><div class="tag">3D PREVIEW (1-FINGER: ROTATE / 2-FINGER: ZOOM)</div></div>
+        <div id="container2d">
+            <div class="canvas-half"><div class="tag">TOP VIEW (DRAG BLUE LINES)</div><canvas id="canvasTop"></canvas></div>
+            <div class="canvas-half"><div class="tag">FRONT VIEW (AUTO SHELL)</div><canvas id="canvasFront"></canvas></div>
+        </div>
+    </div>
 </div>
 
 <script>
-let scene, camera, renderer, tray, shell;
-let rotX = -0.5, rotY = 0.5, zoom = 400;
+    const state = { w:100, d:120, h:40, tt:2, ts:2.5, gap:1.0, nv:1, vParts:[50], open:false, slide:0, rotX:-0.5, rotY:0.5, zoom:450, selected:null };
+    let scene, camera, renderer, trayGroup, shellGroup, lastPointers = [];
 
-// タッチ・マウス共通の管理
-let isPointerDown = false;
-let lastPointers = [];
-let initialPinchDist = 0;
+    window.onload = () => {
+        init3D();
+        setupInteraction();
+        sync();
+        animate();
+    };
 
-window.onload = init;
+    function init3D() {
+        const c3d = document.getElementById('container3d');
+        scene = new THREE.Scene(); scene.background = new THREE.Color(0xdfe6e9);
+        camera = new THREE.PerspectiveCamera(45, c3d.clientWidth/c3d.clientHeight, 1, 5000);
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(c3d.clientWidth, c3d.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        c3d.appendChild(renderer.domElement);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.4); sun.position.set(100,200,100); scene.add(sun);
+        trayGroup = new THREE.Group(); shellGroup = new THREE.Group(); scene.add(trayGroup, shellGroup);
+    }
 
-function init() {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x34495e);
-    
-    const container = document.getElementById('viewer');
-    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 5000);
-    
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const sun = new THREE.DirectionalLight(0xffffff, 0.4);
-    sun.position.set(100, 200, 100);
-    scene.add(sun);
-
-    tray = new THREE.Group();
-    shell = new THREE.Group();
-    scene.add(tray, shell);
-
-    // --- Pointer Events (iPad & PC 共通) ---
-    container.addEventListener('pointerdown', e => {
-        isPointerDown = true;
-        lastPointers.push(e);
-        if (lastPointers.length === 2) {
-            initialPinchDist = getDist(lastPointers[0], lastPointers[1]);
-        }
-    });
-
-    window.addEventListener('pointermove', e => {
-        if (!isPointerDown) return;
+    function sync() {
+        state.w = parseFloat(in_w.value); state.d = parseFloat(in_d.value); state.h = parseFloat(in_h.value);
+        state.tt = parseFloat(t_tray.value); state.ts = parseFloat(t_shell.value); state.gap = parseFloat(gap.value);
+        state.nv = parseInt(nv.value);
+        if(state.vParts.length !== state.nv) state.vParts = Array.from({length:state.nv}, (_,i)=>(state.w/(state.nv+1))*(i+1));
         
-        // ポインターリストを更新
-        const index = lastPointers.findIndex(p => p.pointerId === e.pointerId);
-        if (index > -1) lastPointers[index] = e;
+        buildModels();
+        draw2D();
+    }
 
-        if (lastPointers.length === 1) {
-            // 1本指/マウスドラッグ: 回転
-            rotY += (e.movementX || 0) * 0.007;
-            rotX += (e.movementY || 0) * 0.007;
-        } else if (lastPointers.length === 2) {
-            // 2本指: ピンチズーム
-            const currentDist = getDist(lastPointers[0], lastPointers[1]);
-            const diff = currentDist - initialPinchDist;
-            zoom -= diff * 1.5;
-            initialPinchDist = currentDist;
+    function buildModels() {
+        trayGroup.clear(); shellGroup.clear();
+        const matTray = new THREE.MeshPhongMaterial({ color: 0x3498db });
+        const matShell = new THREE.MeshPhongMaterial({ color: 0x2c3e50, transparent:true, opacity:0.35 });
+        const matHandle = new THREE.MeshPhongMaterial({ color: 0xe67e22 });
+
+        // 1. Tray
+        const tw = state.w + state.tt*2, td = state.d + state.tt*2, th = state.h + state.tt;
+        const floor = new THREE.Mesh(new THREE.BoxGeometry(tw, state.tt, td), matTray);
+        floor.position.y = state.tt/2; trayGroup.add(floor);
+        
+        [[state.tt, state.h, td, -(state.w/2+state.tt/2), state.h/2+state.tt, 0], 
+         [state.tt, state.h, td, (state.w/2+state.tt/2), state.h/2+state.tt, 0],
+         [state.w, state.h, state.tt, 0, state.h/2+state.tt, -(state.d/2+state.tt/2)],
+         [state.w, state.h, state.tt, 0, state.h/2+state.tt, (state.d/2+state.tt/2)]].forEach(d => {
+            const m = new THREE.Mesh(new THREE.BoxGeometry(d[0], d[1], d[2]), matTray);
+            m.position.set(d[3], d[4], d[5]); trayGroup.add(m);
+        });
+
+        // Partitions
+        state.vParts.forEach(p => {
+            const v = new THREE.Mesh(new THREE.BoxGeometry(state.tt, state.h, state.d), matTray);
+            v.position.set(-state.w/2 + p, state.h/2+state.tt, 0); trayGroup.add(v);
+        });
+
+        // Handle
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(state.w*0.3, 8, 8), matHandle);
+        handle.position.set(0, state.h/2+state.tt, td/2+4); trayGroup.add(handle);
+
+        // 2. Shell (Inside-Out)
+        const sw_in = tw + state.gap*2, sd_in = td + state.gap, sh_in = th + state.gap;
+        const sw_out = sw_in + state.ts*2, sd_out = sd_in + state.ts, sh_out = sh_in + state.ts*2;
+        
+        [[state.ts, sh_out, sd_out, -(sw_in/2+state.ts/2), sh_out/2, -state.ts/2],
+         [state.ts, sh_out, sd_out, (sw_in/2+state.ts/2), sh_out/2, -state.ts/2],
+         [sw_out, state.ts, sd_out, 0, state.ts/2, -state.ts/2],
+         [sw_out, state.ts, sd_out, 0, sh_out-state.ts/2, -state.ts/2],
+         [sw_in, sh_in, state.ts, 0, sh_out/2, -(sd_in/2+state.ts/2)]].forEach(d => {
+            const m = new THREE.Mesh(new THREE.BoxGeometry(d[0], d[1], d[2]), matShell);
+            m.position.set(d[3], d[4], d[5]); shellGroup.add(m);
+        });
+
+        // Stacking Dabo
+        if(document.getElementById('stack').value === "1") {
+            const dabo = new THREE.Mesh(new THREE.CylinderGeometry(5,5,4,16), matShell);
+            dabo.position.set(0, sh_out, 0); shellGroup.add(dabo);
         }
-        zoom = Math.max(50, Math.min(2000, zoom));
-    });
 
-    window.addEventListener('pointerup', e => {
-        lastPointers = lastPointers.filter(p => p.pointerId !== e.pointerId);
-        if (lastPointers.length === 0) isPointerDown = false;
-    });
+        document.getElementById('stats').innerHTML = `<strong>外枠外寸:</strong> ${sw_out.toFixed(1)} x ${sd_out.toFixed(1)} x ${sh_out.toFixed(1)} mm`;
+    }
 
-    // マウスホイールにも一応対応
-    container.addEventListener('wheel', e => { zoom += e.deltaY * 0.5; e.preventDefault(); }, {passive:false});
+    function draw2D() {
+        const cT = document.getElementById('canvasTop'), cF = document.getElementById('canvasFront');
+        [cT, cF].forEach(c => { c.width = c.offsetWidth; c.height = c.offsetHeight; });
+        const ctxT = cT.getContext('2d'), ctxF = cF.getContext('2d');
+        const sc = Math.min((cT.width-40)/state.w, (cT.height-40)/state.d);
+        const ox = cT.width/2, oy = cT.height/2;
 
-    document.querySelectorAll('input').forEach(el => el.oninput = build);
-    window.onresize = onResize;
+        ctxT.strokeStyle = "#333"; ctxT.strokeRect(ox-state.w*sc/2, oy-state.d*sc/2, state.w*sc, state.d*sc);
+        state.vParts.forEach((p,i) => {
+            ctxT.strokeStyle = (state.selected?.i===i) ? "red" : "#3498db";
+            ctxT.lineWidth = 4; ctxT.beginPath(); ctxT.moveTo(ox-state.w*sc/2+p*sc, oy-state.d*sc/2); ctxT.lineTo(ox-state.w*sc/2+p*sc, oy+state.d*sc/2); ctxT.stroke();
+        });
 
-    build();
-    animate();
-}
+        const fsc = Math.min((cF.width-40)/state.w, (cF.height-40)/state.h);
+        ctxF.strokeStyle = "#e67e22"; ctxF.strokeRect(cF.width/2-state.w*fsc/2, cF.height/2-state.h*fsc/2, state.w*fsc, state.h*fsc);
+    }
 
-function getDist(p1, p2) {
-    return Math.sqrt(Math.pow(p2.clientX - p1.clientX, 2) + Math.pow(p2.clientY - p1.clientY, 2));
-}
+    function setupInteraction() {
+        const c3d = document.getElementById('container3d'), c2d = document.getElementById('canvasTop');
+        
+        // 3D Interactions (Pointer API for Hybrid)
+        c3d.addEventListener('pointerdown', e => { lastPointers.push(e); });
+        window.addEventListener('pointermove', e => {
+            const idx = lastPointers.findIndex(p => p.pointerId === e.pointerId);
+            if(idx === -1) return;
+            const prev = lastPointers[idx];
+            if(lastPointers.length === 1) {
+                state.rotY += (e.clientX - prev.clientX) * 0.007;
+                state.rotX += (e.clientY - prev.clientY) * 0.007;
+            } else if(lastPointers.length === 2) {
+                const p2 = lastPointers[1-idx];
+                const d1 = Math.hypot(prev.clientX-p2.clientX, prev.clientY-p2.clientY);
+                const d2 = Math.hypot(e.clientX-p2.clientX, e.clientY-p2.clientY);
+                state.zoom -= (d2 - d1) * 2;
+            }
+            lastPointers[idx] = e;
+        });
+        window.addEventListener('pointerup', e => { lastPointers = lastPointers.filter(p => p.pointerId !== e.pointerId); });
+        c3d.addEventListener('wheel', e => { state.zoom += e.deltaY * 0.5; e.preventDefault(); }, {passive:false});
 
-function build() {
-    const w = parseFloat(document.getElementById('w').value) || 1;
-    const d = parseFloat(document.getElementById('d').value) || 1;
-    const h = parseFloat(document.getElementById('h').value) || 1;
-    const tt = parseFloat(document.getElementById('tt').value) || 0.1;
-    const ts = parseFloat(document.getElementById('ts').value) || 0.1;
-    const gap = parseFloat(document.getElementById('gap').value) || 0;
+        // 2D Drag
+        c2d.addEventListener('pointerdown', e => {
+            const r = c2d.getBoundingClientRect(); const sc = Math.min((c2d.width-40)/state.w, (c2d.height-40)/state.d);
+            const px = (e.clientX-r.left-c2d.width/2)/sc + state.w/2;
+            state.vParts.forEach((p,i) => { if(Math.abs(p-px)<10) state.selected = {i}; });
+        });
+        window.addEventListener('pointermove', e => {
+            if(!state.selected) return;
+            const r = c2d.getBoundingClientRect(); const sc = Math.min((c2d.width-40)/state.w, (c2d.height-40)/state.d);
+            state.vParts[state.selected.i] = Math.max(0, Math.min(state.w, (e.clientX-r.left-c2d.width/2)/sc + state.w/2));
+            sync();
+        });
+        window.addEventListener('pointerup', () => state.selected = null);
 
-    tray.clear(); shell.clear();
-    const trayMat = new THREE.MeshPhongMaterial({ color: 0x3498db });
-    const shellMat = new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
+        document.querySelectorAll('input, select').forEach(el => el.oninput = sync);
+    }
 
-    const tw = w + tt * 2, td = d + tt * 2, th = h + tt;
-    const sw_out = (tw + gap * 2) + ts * 2, sd_out = (td + gap) + ts, sh_out = (th + gap) + ts * 2;
-
-    // Tray
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(tw, tt, td), trayMat);
-    floor.position.y = tt/2; tray.add(floor);
-    const walls = [[tt,h,td,-(w/2+tt/2),h/2+tt,0],[tt,h,td,(w/2+tt/2),h/2+tt,0],[w,h,tt,0,h/2+tt,-(d/2+tt/2)],[w,h,tt,0,h/2+tt,(d/2+tt/2)]];
-    walls.forEach(dat => {
-        const m = new THREE.Mesh(new THREE.BoxGeometry(dat[0], dat[1], dat[2]), trayMat);
-        m.position.set(dat[3], dat[4], dat[5]); tray.add(m);
-    });
-
-    // Shell
-    const sParts = [[ts,sh_out,sd_out,-( (tw+gap*2)/2+ts/2 ),sh_out/2,-ts/2],[ts,sh_out,sd_out,( (tw+gap*2)/2+ts/2 ),sh_out/2,-ts/2],[sw_out,ts,sd_out,0,ts/2,-ts/2],[sw_out,ts,sd_out,0,sh_out-ts/2,-ts/2],[tw+gap*2,th+gap,ts,0,sh_out/2,-( (td+gap)/2+ts/2 )]];
-    sParts.forEach(dat => {
-        const m = new THREE.Mesh(new THREE.BoxGeometry(dat[0], dat[1], dat[2]), shellMat);
-        m.position.set(dat[3], dat[4], dat[5]); shell.add(m);
-    });
-
-    tray.position.x = -sw_out * 0.6;
-    shell.position.x = sw_out * 0.6;
-    document.getElementById('stats').innerText = `外枠外寸: ${sw_out.toFixed(1)} x ${sd_out.toFixed(1)} x ${sh_out.toFixed(1)} mm`;
-}
-
-function onResize() {
-    const container = document.getElementById('viewer');
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-    camera.position.set(zoom * Math.sin(rotY) * Math.cos(rotX), zoom * Math.sin(rotX), zoom * Math.cos(rotY) * Math.cos(rotX));
-    camera.lookAt(0, 50, 0);
-    renderer.render(scene, camera);
-}
+    function animate() {
+        requestAnimationFrame(animate);
+        state.slide += ((state.open ? state.d : 0) - state.slide) * 0.1;
+        trayGroup.position.z = state.slide;
+        camera.position.set(state.zoom*Math.sin(state.rotY)*Math.cos(state.rotX), state.zoom*Math.sin(state.rotX), state.zoom*Math.cos(state.rotY)*Math.cos(state.rotX));
+        camera.lookAt(0, 30, 0);
+        renderer.render(scene, camera);
+    }
 </script>
 </body>
 </html>
