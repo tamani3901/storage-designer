@@ -1,198 +1,98 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>Case Modeler - Stable Phase1</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-<style>
-body { margin:0; font-family:sans-serif; overflow:hidden; }
-#ui {
-  position:fixed;
-  left:0;
-  top:0;
-  width:280px;
-  height:100%;
-  background:#f0f0f0;
-  padding:10px;
-  box-sizing:border-box;
-  overflow:auto;
-  z-index:10;
-}
-canvas { display:block; }
-label { display:block; margin-top:8px; }
-input, select { width:100%; }
-.warning { color:red; font-weight:bold; }
-</style>
+    <meta charset="UTF-8">
+    <title>Storage Designer Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #viewport { width: 100%; height: 500px; background: #1a1a1a; }
+        .grid-canvas { border: 2px solid #444; cursor: crosshair; background: #eee; }
+    </style>
 </head>
-<body>
+<body class="bg-gray-900 text-white">
 
-<div id="ui">
-<h3>基本設定</h3>
+<div class="flex h-screen">
+    <div class="w-1/2 p-4 flex flex-col overflow-y-auto border-r border-gray-700">
+        <h2 class="text-xl font-bold mb-4">Edit Mode (2D)</h2>
+        <div class="mb-4 space-x-2">
+            <button class="bg-blue-600 px-3 py-1 rounded" onclick="setMode('horizontal')">横仕切り追加</button>
+            <button class="bg-green-600 px-3 py-1 rounded" onclick="setMode('vertical')">縦仕切り追加</button>
+            <button class="bg-red-600 px-3 py-1 rounded" onclick="exportSTL()">STL書き出し</button>
+        </div>
+        <canvas id="editorCanvas" class="grid-canvas w-full aspect-square"></canvas>
+        
+        <div class="mt-4 grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm">外枠厚さ (mm)</label>
+                <input type="number" id="wallThick" value="2" step="0.1" class="w-full bg-gray-800 p-2 rounded">
+            </div>
+            <div>
+                <label class="block text-sm">仕切り厚さ (mm)</label>
+                <input type="number" id="divThick" value="1.5" step="0.1" class="w-full bg-gray-800 p-2 rounded">
+            </div>
+        </div>
+    </div>
 
-<label>種類</label>
-<select id="type">
-  <option value="case">ケース</option>
-  <option value="drawer">引き出し</option>
-</select>
-
-<label>幅 (1-300mm)</label>
-<input type="number" id="width" value="120">
-
-<label>奥行 (1-300mm)</label>
-<input type="number" id="depth" value="100">
-
-<label>高さ (1-300mm)</label>
-<input type="number" id="height" value="60">
-
-<label>壁厚さ (1mm以上)</label>
-<input type="number" id="wall" value="3">
-
-<label>表示モード</label>
-<select id="mode">
-  <option value="view">3D表示</option>
-  <option value="edit">上から表示</option>
-</select>
-
-<div class="warning" id="warning"></div>
+    <div class="w-1/2 relative">
+        <h2 class="absolute top-4 left-4 z-10 text-xl font-bold">3D View</h2>
+        <div id="viewport"></div>
+        <div class="p-4 bg-gray-800 border-t border-gray-700 h-full">
+            <h3 class="font-bold">パーツリスト</h3>
+            <ul id="partList" class="text-sm opacity-70">
+                </ul>
+        </div>
+    </div>
 </div>
 
-<canvas id="canvas"></canvas>
-
 <script>
-/* ==== デバッグ ==== */
-window.onerror = function(msg, src, line){
-  document.body.innerHTML +=
-  "<div style='position:fixed;bottom:0;left:0;background:red;color:white;padding:5px;font-size:12px;z-index:9999;'>"
-  + msg + " (line:"+line+")</div>";
-};
+/**
+ * クラス構成案
+ * 1. CaseManager: 全体のサイズと壁の厚みを管理
+ * 2. DividerManager: 仕切りの位置、高さ(25-100%)、可動/固定を管理
+ * 3. GeometryEngine: CSG.js等を用いて3Dメッシュを生成
+ */
 
-document.body.innerHTML +=
-"<div style='position:fixed;top:0;right:0;background:blue;color:white;padding:3px;font-size:12px;z-index:9999;'>THREE:"
-+ typeof THREE + "</div>";
+// --- Three.js 基本設定 ---
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/2 / 500, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth / 2, 500);
+document.getElementById('viewport').appendChild(renderer.domElement);
 
-/* ==== Three基本 ==== */
-
-let scene = new THREE.Scene();
-scene.background = new THREE.Color(0xffffff);
-
-let renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById("canvas"),
-  antialias:true
-});
-
-let camera = new THREE.PerspectiveCamera(
-  45,
-  1,
-  0.1,
-  2000
-);
-
-camera.position.set(200,200,200);
-camera.lookAt(0,0,0);
-
-function resize(){
-  let w = Math.max(window.innerWidth-280,300);
-  let h = window.innerHeight;
-  renderer.setSize(w,h);
-  camera.aspect = w/h;
-  camera.updateProjectionMatrix();
-}
-window.addEventListener("resize",resize);
-resize();
-
-scene.add(new THREE.AmbientLight(0xffffff,0.6));
-let light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(200,300,200);
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 10, 7.5).normalize();
 scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040));
 
-let modelGroup = new THREE.Group();
-scene.add(modelGroup);
+camera.position.z = 150;
 
-/* ==== モデル生成 ==== */
-
-function validate(w,d,h,wall){
-  if(w<1||d<1||h<1||w>300||d>300||h>300)
-    return "サイズは1〜300mm";
-  if(wall<1) return "壁厚さは1mm以上";
-  if(wall*2>=w||wall*2>=d||wall>=h)
-    return "壁厚さが大きすぎる";
-  return "";
-}
-
-function updateModel(){
-
-  let w = parseFloat(width.value);
-  let d = parseFloat(depth.value);
-  let h = parseFloat(height.value);
-  let wall = parseFloat(wallInput.value);
-  let type = typeSelect.value;
-  let mode = modeSelect.value;
-
-  let warn = validate(w,d,h,wall);
-  warning.innerText = warn;
-  if(warn) return;
-
-  modelGroup.clear();
-
-  // 外側
-  let outer = new THREE.Mesh(
-    new THREE.BoxGeometry(w,h,d),
-    new THREE.MeshStandardMaterial({color:0xcccccc})
-  );
-  modelGroup.add(outer);
-
-  // 内側（空間表現）
-  let inner = new THREE.Mesh(
-    new THREE.BoxGeometry(w-wall*2,h-wall,d-wall*2),
-    new THREE.MeshStandardMaterial({color:0x888888, wireframe:true})
-  );
-  inner.position.y = wall/2;
-  modelGroup.add(inner);
-
-  if(type==="drawer"){
-    let drawer = new THREE.Mesh(
-      new THREE.BoxGeometry(w-wall*2,h-wall,d-wall*2),
-      new THREE.MeshStandardMaterial({color:0x999999})
-    );
-    drawer.position.z = -d/3;
-    modelGroup.add(drawer);
-  }
-
-  // モード切替
-  if(mode==="edit"){
-    camera.position.set(0,500,0);
-    camera.lookAt(0,0,0);
-  }else{
-    camera.position.set(200,200,200);
-    camera.lookAt(0,0,0);
-  }
-}
-
-/* ==== UI連動 ==== */
-
-let width = document.getElementById("width");
-let depth = document.getElementById("depth");
-let height = document.getElementById("height");
-let wallInput = document.getElementById("wall");
-let typeSelect = document.getElementById("type");
-let modeSelect = document.getElementById("mode");
-let warning = document.getElementById("warning");
-
-document.querySelectorAll("input,select").forEach(el=>{
-  el.addEventListener("input",updateModel);
-});
-
-updateModel();
-
-/* ==== 描画ループ ==== */
-function animate(){
-  requestAnimationFrame(animate);
-  renderer.render(scene,camera);
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
 }
 animate();
-</script>
 
+// --- 2D 編集ロジック (簡易版) ---
+const canvas = document.getElementById('editorCanvas');
+const ctx = canvas.getContext('2d');
+let dividers = []; // { axis: 'x'|'y', pos: number, height: 1.0 }
+
+canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // スナップ処理 (0.1mm単位など) をここに追加
+    update3DModel();
+});
+
+function update3DModel() {
+    // 1. 既存メッシュ削除
+    // 2. 外枠のBoxGeometry作成
+    // 3. 仕切りをMeshとして追加
+    // 4. 固定式なら切り欠き計算を実行
+    console.log("3Dモデル更新...");
+}
+</script>
 </body>
 </html>
