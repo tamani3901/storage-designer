@@ -3,208 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Storage Designer Mobile & PC</title>
+    <title>Advanced Case Designer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; touch-action: none; background: #111; font-family: sans-serif; }
+        body { margin: 0; touch-action: none; background: #0f172a; color: white; overflow: hidden; font-family: sans-serif; }
         canvas { display: block; }
-        .ui-panel { position: absolute; background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(8px); border: 1px solid #444; }
+        .ui-overlay { position: absolute; z-index: 10; pointer-events: none; }
+        .ui-overlay * { pointer-events: auto; }
+        .active-tab { background-color: #3b82f6 !important; color: white !important; }
+        #editor-container { position: relative; background: #f8fafc; cursor: crosshair; }
     </style>
 </head>
-<body>
+<body class="flex flex-col h-screen">
 
-<div class="ui-panel top-4 left-4 p-4 rounded-xl w-64 z-20 text-white shadow-2xl">
-    <h1 class="text-sm font-bold mb-3 flex items-center gap-2">
-        <span class="text-blue-400">●</span> Storage Pro 1.0
-    </h1>
-    
-    <div class="space-y-4">
-        <div>
-            <label class="text-[10px] text-gray-400 uppercase">View Mode</label>
-            <div class="flex bg-gray-800 rounded-lg p-1 mt-1">
-                <button onclick="setView('2D')" id="btn2D" class="flex-1 py-1 text-xs rounded bg-blue-600">2D</button>
-                <button onclick="setView('3D')" id="btn3D" class="flex-1 py-1 text-xs rounded">3D</button>
-            </div>
+<header class="h-14 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-4">
+    <div class="flex items-center gap-4">
+        <h1 class="font-bold text-blue-400">CASE BUILDER</h1>
+        <div class="flex bg-slate-800 rounded-lg p-1">
+            <button id="tab2D" onclick="switchMode('2D')" class="px-4 py-1 text-sm rounded active-tab">① 編集モード (2D)</button>
+            <button id="tab3D" onclick="switchMode('3D')" class="px-4 py-1 text-sm rounded ml-1 text-slate-400">② 表示モード (3D)</button>
         </div>
-
-        <div class="grid grid-cols-2 gap-2">
-            <div>
-                <label class="text-[10px] text-gray-400">幅(X) mm</label>
-                <input type="number" id="boxX" value="120" onchange="updateGeometry()" class="w-full bg-gray-700 p-1 rounded text-sm">
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-400">奥行(Y) mm</label>
-                <input type="number" id="boxY" value="120" onchange="updateGeometry()" class="w-full bg-gray-700 p-1 rounded text-sm">
-            </div>
-        </div>
-
-        <div>
-            <label class="text-[10px] text-gray-400">仕切り高さ</label>
-            <select id="divHeight" class="w-full bg-gray-700 p-1 rounded text-sm mt-1">
-                <option value="1.0">100%</option>
-                <option value="0.75">75%</option>
-                <option value="0.5">50%</option>
-                <option value="0.25">25%</option>
-            </select>
-        </div>
-
-        <button onclick="resetDividers()" class="w-full border border-red-900 text-red-400 text-[10px] py-1 rounded hover:bg-red-950 transition">RESET ALL</button>
     </div>
-</div>
+    <div class="flex gap-2 text-xs">
+        <span>スナップ:</span>
+        <select id="snapSelect" class="bg-slate-700 rounded px-2" onchange="state.snap = parseFloat(this.value)">
+            <option value="1">1.0mm</option>
+            <option value="0.5" selected>0.5mm</option>
+            <option value="0.25">0.25mm</option>
+            <option value="0.1">0.1mm</option>
+        </select>
+    </div>
+</header>
 
-<div id="guide" class="fixed bottom-10 left-1/2 -translate-x-1/2 ui-panel p-3 rounded-full flex gap-4 text-xs z-20 hidden">
-    <span>配置する方向を選択:</span>
-    <button onclick="confirmDivider('V')" class="text-blue-400 font-bold">縦方向 [ | ]</button>
-    <button onclick="confirmDivider('H')" class="text-green-400 font-bold">横方向 [ ― ]</button>
-</div>
+<main class="flex-1 flex overflow-hidden">
+    <aside class="w-64 bg-slate-900 border-r border-slate-700 p-4 space-y-6 overflow-y-auto">
+        <section>
+            <h2 class="text-xs font-bold text-slate-500 mb-3 uppercase">基本サイズ (mm)</h2>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[10px]">幅(X)</label><input type="number" id="boxX" value="150" class="w-full bg-slate-800 p-1 rounded text-sm outline-none border border-slate-700 focus:border-blue-500"></div>
+                <div><label class="text-[10px]">奥行(Y)</label><input type="number" id="boxY" value="100" class="w-full bg-slate-800 p-1 rounded text-sm outline-none border border-slate-700 focus:border-blue-500"></div>
+                <div class="col-span-2"><label class="text-[10px]">高さ(Z)</label><input type="number" id="boxZ" value="40" class="w-full bg-slate-800 p-1 rounded text-sm outline-none border border-slate-700 focus:border-blue-500"></div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-xs font-bold text-slate-500 mb-3 uppercase">厚さ設定</h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] flex justify-between">外枠厚さ: <span id="wallVal">2.0</span>mm</label>
+                    <input type="range" id="wallThick" min="1" max="10" step="0.5" value="2" class="w-full accent-blue-500">
+                </div>
+                <div>
+                    <label class="text-[10px] flex justify-between">仕切り厚さ: <span id="divVal">1.5</span>mm</label>
+                    <input type="range" id="divThick" min="0.5" max="5" step="0.1" value="1.5" class="w-full accent-blue-500">
+                </div>
+            </div>
+        </section>
+
+        <section id="selectionInfo" class="hidden bg-blue-900/30 border border-blue-500/50 p-2 rounded">
+            <h2 class="text-[10px] font-bold text-blue-300 mb-2">選択中の仕切り</h2>
+            <div class="space-y-2">
+                <select id="selType" class="w-full bg-slate-800 text-xs p-1 rounded">
+                    <option value="fixed">固定式</option>
+                    <option value="movable">可動式 (溝あり)</option>
+                </select>
+                <select id="selHeight" class="w-full bg-slate-800 text-xs p-1 rounded">
+                    <option value="1">高さ 100%</option>
+                    <option value="0.75">高さ 75%</option>
+                    <option value="0.5">高さ 50%</option>
+                    <option value="0.25">高さ 25%</option>
+                </select>
+                <button onclick="removeSelected()" class="w-full bg-red-600 py-1 rounded text-xs">削除</button>
+            </div>
+        </section>
+
+        <button onclick="addDivider('V')" class="w-full bg-slate-700 hover:bg-slate-600 py-2 rounded text-xs mb-2">＋ 縦仕切り追加</button>
+        <button onclick="addDivider('H')" class="w-full bg-slate-700 hover:bg-slate-600 py-2 rounded text-xs">＋ 横仕切り追加</button>
+    </aside>
+
+    <div class="flex-1 relative">
+        <div id="editor-container" class="w-full h-full flex items-center justify-center">
+            <canvas id="canvas2D"></canvas>
+        </div>
+        <div id="viewport3D" class="absolute inset-0 hidden"></div>
+    </div>
+</main>
 
 <script>
-let scene, camera, renderer, controls, raycaster, mouse;
-let wallMaterial, dividerMaterial, ghostMaterial;
-let dividers = [];
-let pendingPos = null;
+// --- グローバル状態 ---
+const state = {
+    mode: '2D',
+    x: 150, y: 100, z: 40,
+    wall: 2.0, divThick: 1.5,
+    snap: 0.5,
+    dividers: [],
+    selectedId: null,
+    isDragging: false,
+    viewScale: 4 // mm to px
+};
 
-const params = { x: 120, y: 120, h: 40, wall: 2, snap: 0.5 };
+// --- Three.js 関連 ---
+let scene, camera, renderer, controls;
+
+// --- Canvas 2D 関連 ---
+const canvas = document.getElementById('canvas2D');
+const ctx = canvas.getContext('2d');
+let dragTarget = null;
 
 init();
-animate();
 
 function init() {
+    setup3D();
+    setupEventListeners();
+    resizeCanvas();
+    render();
+}
+
+function setup3D() {
+    const container = document.getElementById('viewport3D');
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
-
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 200, 0); // 初期は真上(2D)
-
+    scene.background = new THREE.Color(0x1e293b);
+    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 2000);
+    camera.position.set(150, 150, 150);
+    
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.body.appendChild(renderer.domElement);
-
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+    
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.screenSpacePanning = true; // iPadでのスライド操作を快適に
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    dirLight.position.set(50, 150, 100);
-    scene.add(dirLight);
-
-    wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
-    dividerMaterial = new THREE.MeshPhongMaterial({ color: 0x3b82f6 });
-    ghostMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.3 });
-
-    raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2();
-
-    // タッチ & クリック両対応
-    window.addEventListener('pointerdown', onPointerDown, false);
-    updateGeometry();
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(1, 2, 1);
+    scene.add(light, new THREE.AmbientLight(0x404040, 2));
 }
 
-function setView(mode) {
-    document.getElementById('btn2D').className = mode === '2D' ? 'flex-1 py-1 text-xs rounded bg-blue-600' : 'flex-1 py-1 text-xs rounded';
-    document.getElementById('btn3D').className = mode === '3D' ? 'flex-1 py-1 text-xs rounded bg-blue-600' : 'flex-1 py-1 text-xs rounded';
+function setupEventListeners() {
+    // 数値入力の同期
+    document.getElementById('boxX').addEventListener('change', (e) => state.x = parseFloat(e.target.value));
+    document.getElementById('boxY').addEventListener('change', (e) => state.y = parseFloat(e.target.value));
+    document.getElementById('boxZ').addEventListener('change', (e) => state.z = parseFloat(e.target.value));
+    document.getElementById('wallThick').addEventListener('input', (e) => {
+        state.wall = parseFloat(e.target.value);
+        document.getElementById('wallVal').innerText = state.wall.toFixed(1);
+    });
+    document.getElementById('divThick').addEventListener('input', (e) => {
+        state.divThick = parseFloat(e.target.value);
+        document.getElementById('divVal').innerText = state.divThick.toFixed(1);
+    });
+
+    // 2D 操作 (PointerEvent で iPad 対応)
+    canvas.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
     
-    if (mode === '2D') {
-        camera.position.set(0, 220, 0);
-        controls.enableRotate = false;
-    } else {
-        camera.position.set(150, 150, 150);
-        controls.enableRotate = true;
-    }
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        renderer.setSize(document.getElementById('viewport3D').clientWidth, document.getElementById('viewport3D').clientHeight);
+    });
 }
 
-function updateGeometry() {
-    params.x = parseFloat(document.getElementById('boxX').value);
-    params.y = parseFloat(document.getElementById('boxY').value);
-    
-    while(scene.children.find(c => c.isMesh)) {
-        scene.remove(scene.children.find(c => c.isMesh));
-    }
-
-    const { x, y, h, wall } = params;
-
-    // 底板
-    const bottom = new THREE.Mesh(new THREE.BoxGeometry(x, wall, y), wallMaterial);
-    bottom.position.y = wall / 2;
-    scene.add(bottom);
-
-    // 外壁
-    const wallConfs = [
-        { w: x, d: wall, px: 0, pz: y/2-wall/2 }, { w: x, d: wall, px: 0, pz: -y/2+wall/2 },
-        { w: wall, d: y, px: x/2-wall/2, pz: 0 }, { w: wall, d: y, px: -x/2+wall/2, pz: 0 }
-    ];
-    wallConfs.forEach(c => {
-        const m = new THREE.Mesh(new THREE.BoxGeometry(c.w, h, c.d), wallMaterial);
-        m.position.set(c.px, h/2, c.pz);
-        scene.add(m);
+// --- 2D 編集ロジック ---
+function addDivider(axis) {
+    const id = Date.now();
+    state.dividers.push({
+        id, axis, pos: axis === 'V' ? state.x / 2 : state.y / 2,
+        type: 'fixed', height: 1.0
     });
-
-    // 配置済み仕切り
-    dividers.forEach(d => {
-        const dh = h * d.hRatio;
-        const dGeo = d.type === 'V' 
-            ? new THREE.BoxGeometry(wall, dh, y - wall * 2) 
-            : new THREE.BoxGeometry(x - wall * 2, dh, wall);
-        const m = new THREE.Mesh(dGeo, dividerMaterial);
-        m.position.set(d.x, dh/2 + wall/2, d.z);
-        scene.add(m);
-    });
-
-    // タッチ判定用プレート
-    const plate = new THREE.Mesh(new THREE.PlaneGeometry(x, y), new THREE.MeshBasicMaterial({visible:false}));
-    plate.rotation.x = -Math.PI/2;
-    plate.position.y = wall;
-    plate.name = "hitplate";
-    scene.add(plate);
+    state.selectedId = id;
+    render();
 }
 
 function onPointerDown(e) {
-    if (e.target.tagName !== 'CANVAS') return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / state.viewScale;
+    const my = (e.clientY - rect.top) / state.viewScale;
+
+    // ヒット判定
+    dragTarget = state.dividers.find(d => {
+        if (d.axis === 'V') return Math.abs(mx - d.pos) < 2;
+        return Math.abs(my - d.pos) < 2;
+    });
+
+    if (dragTarget) {
+        state.selectedId = dragTarget.id;
+        state.isDragging = true;
+        updateSelectionUI();
+    } else {
+        state.selectedId = null;
+        updateSelectionUI();
+    }
+    render();
+}
+
+function onPointerMove(e) {
+    if (!state.isDragging || !dragTarget) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / state.viewScale;
+    const my = (e.clientY - rect.top) / state.viewScale;
+
+    // スナップ処理
+    const snap = (val) => Math.round(val / state.snap) * state.snap;
     
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    if (dragTarget.axis === 'V') {
+        dragTarget.pos = Math.max(state.wall, Math.min(state.x - state.wall, snap(mx)));
+    } else {
+        dragTarget.pos = Math.max(state.wall, Math.min(state.y - state.wall, snap(my)));
+    }
+    render();
+}
 
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene.children);
-    const hit = intersects.find(i => i.object.name === "hitplate");
+function onPointerUp() {
+    state.isDragging = false;
+    dragTarget = null;
+}
 
-    if (hit) {
-        // 0.5mm スナップ
-        const snap = params.snap;
-        pendingPos = {
-            x: Math.round(hit.point.x / snap) * snap,
-            z: Math.round(hit.point.z / snap) * snap
-        };
-        document.getElementById('guide').classList.remove('hidden');
+// --- 描画コア ---
+function render() {
+    if (state.mode === '2D') draw2D();
+    else draw3D();
+}
+
+function draw2D() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const scale = state.viewScale;
+    
+    // センタリング
+    ctx.save();
+    ctx.translate((canvas.width - state.x * scale)/2, (canvas.height - state.y * scale)/2);
+
+    // 外枠
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = state.wall * scale;
+    ctx.strokeRect(0, 0, state.x * scale, state.y * scale);
+    
+    // 仕切り
+    state.dividers.forEach(d => {
+        ctx.beginPath();
+        ctx.lineWidth = state.divThick * scale;
+        ctx.strokeStyle = (d.id === state.selectedId) ? '#3b82f6' : (d.type === 'movable' ? '#94a3b8' : '#64748b');
+        
+        if (d.axis === 'V') {
+            ctx.moveTo(d.pos * scale, state.wall * scale);
+            ctx.lineTo(d.pos * scale, (state.y - state.wall) * scale);
+        } else {
+            ctx.moveTo(state.wall * scale, d.pos * scale);
+            ctx.lineTo((state.x - state.wall) * scale, d.pos * scale);
+        }
+        ctx.stroke();
+        
+        // 可動式なら点線
+        if (d.type === 'movable') {
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    });
+
+    ctx.restore();
+}
+
+function draw3D() {
+    while(scene.children.length > 0){ scene.remove(scene.children[0]); }
+    scene.add(new THREE.AmbientLight(0x404040, 2));
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(100, 200, 100);
+    scene.add(light);
+
+    const mat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0 });
+    const divMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.9 });
+
+    // 底
+    const bottom = new THREE.Mesh(new THREE.BoxGeometry(state.x, state.wall, state.y), mat);
+    bottom.position.y = state.wall / 2;
+    scene.add(bottom);
+
+    // 壁 4枚
+    const walls = [
+        { w: state.x, d: state.wall, x: 0, z: state.y/2 - state.wall/2 },
+        { w: state.x, d: state.wall, x: 0, z: -state.y/2 + state.wall/2 },
+        { w: state.wall, d: state.y, x: state.x/2 - state.wall/2, z: 0 },
+        { w: state.wall, d: state.y, x: -state.x/2 + state.wall/2, z: 0 }
+    ];
+    walls.forEach(w => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w.w, state.z, w.d), mat);
+        m.position.set(w.x, state.z/2, w.z);
+        scene.add(m);
+    });
+
+    // 仕切り
+    state.dividers.forEach(d => {
+        const h = state.z * d.height;
+        const geo = d.axis === 'V' 
+            ? new THREE.BoxGeometry(state.divThick, h, state.y - state.wall * 2)
+            : new THREE.BoxGeometry(state.x - state.wall * 2, h, state.divThick);
+        const m = new THREE.Mesh(geo, divMat);
+        
+        // 座標調整 (Three.jsは中心が0,0)
+        const px = d.axis === 'V' ? d.pos - state.x/2 : 0;
+        const pz = d.axis === 'H' ? d.pos - state.y/2 : 0;
+        m.position.set(px, h/2 + state.wall, pz);
+        scene.add(m);
+    });
+}
+
+// --- UI 補助 ---
+function switchMode(mode) {
+    state.mode = mode;
+    document.getElementById('tab2D').className = `px-4 py-1 text-sm rounded ${mode === '2D' ? 'active-tab' : 'text-slate-400'}`;
+    document.getElementById('tab3D').className = `px-4 py-1 text-sm rounded ${mode === '3D' ? 'active-tab' : 'text-slate-400'}`;
+    
+    document.getElementById('editor-container').style.display = mode === '2D' ? 'flex' : 'none';
+    document.getElementById('viewport3D').style.display = mode === '3D' ? 'block' : 'none';
+    
+    if (mode === '3D') {
+        draw3D();
+        animate3D();
+    } else {
+        render();
     }
 }
 
-function confirmDivider(type) {
-    if (!pendingPos) return;
-    const hRatio = parseFloat(document.getElementById('divHeight').value);
-    dividers.push({
-        type: type,
-        x: type === 'V' ? pendingPos.x : 0,
-        z: type === 'H' ? pendingPos.z : 0,
-        hRatio: hRatio
-    });
-    pendingPos = null;
-    document.getElementById('guide').classList.add('hidden');
-    updateGeometry();
+function updateSelectionUI() {
+    const info = document.getElementById('selectionInfo');
+    if (state.selectedId) {
+        info.classList.remove('hidden');
+        const d = state.dividers.find(i => i.id === state.selectedId);
+        document.getElementById('selType').value = d.type;
+        document.getElementById('selHeight').value = d.height;
+        
+        document.getElementById('selType').onchange = (e) => { d.type = e.target.value; render(); };
+        document.getElementById('selHeight').onchange = (e) => { d.height = parseFloat(e.target.value); render(); };
+    } else {
+        info.classList.add('hidden');
+    }
 }
 
-function resetDividers() {
-    dividers = [];
-    updateGeometry();
+function removeSelected() {
+    state.dividers = state.dividers.filter(d => d.id !== state.selectedId);
+    state.selectedId = null;
+    updateSelectionUI();
+    render();
 }
 
-function animate() {
-    requestAnimationFrame(animate);
+function resizeCanvas() {
+    const container = document.getElementById('editor-container');
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    render();
+}
+
+function animate3D() {
+    if (state.mode !== '3D') return;
+    requestAnimationFrame(animate3D);
     controls.update();
     renderer.render(scene, camera);
 }
