@@ -2,97 +2,192 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Storage Designer Pro</title>
+    <title>Storage Designer Proto</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        #viewport { width: 100%; height: 500px; background: #1a1a1a; }
-        .grid-canvas { border: 2px solid #444; cursor: crosshair; background: #eee; }
+        body { margin: 0; overflow: hidden; background: #111; color: white; }
+        canvas { display: block; }
+        #controls { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.8); p: 15px; border-radius: 8px; width: 280px; }
+        .hint { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
     </style>
 </head>
-<body class="bg-gray-900 text-white">
+<body>
 
-<div class="flex h-screen">
-    <div class="w-1/2 p-4 flex flex-col overflow-y-auto border-r border-gray-700">
-        <h2 class="text-xl font-bold mb-4">Edit Mode (2D)</h2>
-        <div class="mb-4 space-x-2">
-            <button class="bg-blue-600 px-3 py-1 rounded" onclick="setMode('horizontal')">横仕切り追加</button>
-            <button class="bg-green-600 px-3 py-1 rounded" onclick="setMode('vertical')">縦仕切り追加</button>
-            <button class="bg-red-600 px-3 py-1 rounded" onclick="exportSTL()">STL書き出し</button>
-        </div>
-        <canvas id="editorCanvas" class="grid-canvas w-full aspect-square"></canvas>
-        
-        <div class="mt-4 grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm">外枠厚さ (mm)</label>
-                <input type="number" id="wallThick" value="2" step="0.1" class="w-full bg-gray-800 p-2 rounded">
-            </div>
-            <div>
-                <label class="block text-sm">仕切り厚さ (mm)</label>
-                <input type="number" id="divThick" value="1.5" step="0.1" class="w-full bg-gray-800 p-2 rounded">
-            </div>
+<div id="controls" class="p-4 space-y-4">
+    <h1 class="text-lg font-bold border-b border-gray-600 pb-2">📦 Storage Designer</h1>
+    
+    <div>
+        <label class="block text-xs">外枠サイズ (X / Y / H)</label>
+        <div class="flex gap-1">
+            <input type="number" id="boxX" value="100" class="w-full bg-gray-700 p-1 rounded text-white text-center">
+            <input type="number" id="boxY" value="100" class="w-full bg-gray-700 p-1 rounded text-white text-center">
+            <input type="number" id="boxH" value="40" class="w-full bg-gray-700 p-1 rounded text-white text-center">
         </div>
     </div>
 
-    <div class="w-1/2 relative">
-        <h2 class="absolute top-4 left-4 z-10 text-xl font-bold">3D View</h2>
-        <div id="viewport"></div>
-        <div class="p-4 bg-gray-800 border-t border-gray-700 h-full">
-            <h3 class="font-bold">パーツリスト</h3>
-            <ul id="partList" class="text-sm opacity-70">
-                </ul>
-        </div>
+    <div>
+        <label class="block text-xs">壁の厚さ: <span id="wallVal">2</span>mm</label>
+        <input type="range" id="wallThick" min="1" max="10" step="0.5" value="2" class="w-full">
     </div>
+
+    <div class="bg-gray-800 p-2 rounded">
+        <p class="text-xs font-bold text-blue-400">操作ガイド:</p>
+        <p class="text-[10px]">1. 右クリック/ドラッグで視点変更</p>
+        <p class="text-[10px]">2. ボックス内を左クリックで仕切り追加</p>
+    </div>
+    
+    <button onclick="resetDividers()" class="w-full bg-red-600 hover:bg-red-500 text-xs py-2 rounded">仕切りをリセット</button>
 </div>
 
 <script>
-/**
- * クラス構成案
- * 1. CaseManager: 全体のサイズと壁の厚みを管理
- * 2. DividerManager: 仕切りの位置、高さ(25-100%)、可動/固定を管理
- * 3. GeometryEngine: CSG.js等を用いて3Dメッシュを生成
- */
+let scene, camera, renderer, controls, raycaster, mouse;
+let baseBox, wallMaterial, dividerMaterial;
+let dividers = [];
 
-// --- Three.js 基本設定 ---
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/2 / 500, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth / 2, 500);
-document.getElementById('viewport').appendChild(renderer.domElement);
+// 設定値
+const params = {
+    x: 100, y: 100, h: 40, wall: 2
+};
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 10, 7.5).normalize();
-scene.add(light);
-scene.add(new THREE.AmbientLight(0x404040));
+init();
+animate();
 
-camera.position.z = 150;
+function init() {
+    // Scene & Camera
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.set(120, 150, 150);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Controls
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    dirLight.position.set(100, 200, 100);
+    scene.add(dirLight);
+
+    // Helpers
+    scene.add(new THREE.GridHelper(200, 20));
+
+    // Materials
+    wallMaterial = new THREE.MeshPhongMaterial({ color: 0xeeeeee, side: THREE.DoubleSide });
+    dividerMaterial = new THREE.MeshPhongMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.8 });
+
+    // Interaction
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    window.addEventListener('mousedown', onDocumentMouseDown, false);
+
+    // UI Events
+    document.getElementById('wallThick').addEventListener('input', (e) => {
+        params.wall = parseFloat(e.target.value);
+        document.getElementById('wallVal').innerText = params.wall;
+        updateGeometry();
+    });
+    ['boxX', 'boxY', 'boxH'].forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+            params[id.replace('box','').toLowerCase()] = parseFloat(e.target.value);
+            updateGeometry();
+        });
+    });
+
+    updateGeometry();
+}
+
+function updateGeometry() {
+    // 古いオブジェクトの削除
+    while(scene.children.find(c => c.type === "Mesh")) {
+        scene.remove(scene.children.find(c => c.type === "Mesh"));
+    }
+
+    const { x, y, h, wall } = params;
+
+    // 底板
+    const bottomGeo = new THREE.BoxGeometry(x, wall, y);
+    const bottom = new THREE.Mesh(bottomGeo, wallMaterial);
+    bottom.position.y = wall / 2;
+    scene.add(bottom);
+
+    // 外壁 (4面)
+    const wallGeos = [
+        { w: x, h: h, d: wall, px: 0, pz: y/2 - wall/2 }, // 前
+        { w: x, h: h, d: wall, px: 0, pz: -y/2 + wall/2 }, // 後
+        { w: wall, h: h, d: y, px: x/2 - wall/2, pz: 0 }, // 右
+        { w: wall, h: h, d: y, px: -x/2 + wall/2, pz: 0 } // 左
+    ];
+
+    wallGeos.forEach(conf => {
+        const geo = new THREE.BoxGeometry(conf.w, conf.h, conf.d);
+        const mesh = new THREE.Mesh(geo, wallMaterial);
+        mesh.position.set(conf.px, h/2, conf.pz);
+        scene.add(mesh);
+    });
+
+    // 仕切りの再描画
+    dividers.forEach(d => {
+        const divGeo = d.axis === 'x' 
+            ? new THREE.BoxGeometry(x - wall*2, h, wall) 
+            : new THREE.BoxGeometry(wall, h, y - wall*2);
+        const mesh = new THREE.Mesh(divGeo, dividerMaterial);
+        mesh.position.set(d.x, h/2, d.z);
+        scene.add(mesh);
+    });
+
+    // レイキャスト判定用の透明な床
+    const floorGeo = new THREE.PlaneGeometry(x, y);
+    baseBox = new THREE.Mesh(floorGeo, new THREE.MeshBasicMaterial({visible: false}));
+    baseBox.rotation.x = -Math.PI / 2;
+    baseBox.position.y = wall;
+    scene.add(baseBox);
+}
+
+function onDocumentMouseDown(event) {
+    if (event.button !== 0) return; // 左クリック以外無視
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(baseBox);
+
+    if (intersects.length > 0) {
+        const point = intersects[0].point;
+        // 軸の決定（マウス位置が中心からどっちに離れているかで簡易判定）
+        const axis = Math.abs(point.x) > Math.abs(point.z) ? 'y' : 'x';
+        
+        dividers.push({
+            axis: axis,
+            x: axis === 'y' ? point.x : 0,
+            z: axis === 'x' ? point.z : 0
+        });
+        updateGeometry();
+    }
+}
+
+function resetDividers() {
+    dividers = [];
+    updateGeometry();
+}
 
 function animate() {
     requestAnimationFrame(animate);
+    controls.update();
     renderer.render(scene, camera);
 }
-animate();
 
-// --- 2D 編集ロジック (簡易版) ---
-const canvas = document.getElementById('editorCanvas');
-const ctx = canvas.getContext('2d');
-let dividers = []; // { axis: 'x'|'y', pos: number, height: 1.0 }
-
-canvas.addEventListener('mousedown', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    // スナップ処理 (0.1mm単位など) をここに追加
-    update3DModel();
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-function update3DModel() {
-    // 1. 既存メッシュ削除
-    // 2. 外枠のBoxGeometry作成
-    // 3. 仕切りをMeshとして追加
-    // 4. 固定式なら切り欠き計算を実行
-    console.log("3Dモデル更新...");
-}
 </script>
 </body>
 </html>
