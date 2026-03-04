@@ -2,174 +2,200 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Storage Designer Proto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Storage Designer Mobile & PC</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #111; color: white; }
+        body { margin: 0; touch-action: none; background: #111; font-family: sans-serif; }
         canvas { display: block; }
-        #controls { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.8); p: 15px; border-radius: 8px; width: 280px; }
-        .hint { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+        .ui-panel { position: absolute; background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(8px); border: 1px solid #444; }
     </style>
 </head>
 <body>
 
-<div id="controls" class="p-4 space-y-4">
-    <h1 class="text-lg font-bold border-b border-gray-600 pb-2">📦 Storage Designer</h1>
+<div class="ui-panel top-4 left-4 p-4 rounded-xl w-64 z-20 text-white shadow-2xl">
+    <h1 class="text-sm font-bold mb-3 flex items-center gap-2">
+        <span class="text-blue-400">●</span> Storage Pro 1.0
+    </h1>
     
-    <div>
-        <label class="block text-xs">外枠サイズ (X / Y / H)</label>
-        <div class="flex gap-1">
-            <input type="number" id="boxX" value="100" class="w-full bg-gray-700 p-1 rounded text-white text-center">
-            <input type="number" id="boxY" value="100" class="w-full bg-gray-700 p-1 rounded text-white text-center">
-            <input type="number" id="boxH" value="40" class="w-full bg-gray-700 p-1 rounded text-white text-center">
+    <div class="space-y-4">
+        <div>
+            <label class="text-[10px] text-gray-400 uppercase">View Mode</label>
+            <div class="flex bg-gray-800 rounded-lg p-1 mt-1">
+                <button onclick="setView('2D')" id="btn2D" class="flex-1 py-1 text-xs rounded bg-blue-600">2D</button>
+                <button onclick="setView('3D')" id="btn3D" class="flex-1 py-1 text-xs rounded">3D</button>
+            </div>
         </div>
-    </div>
 
-    <div>
-        <label class="block text-xs">壁の厚さ: <span id="wallVal">2</span>mm</label>
-        <input type="range" id="wallThick" min="1" max="10" step="0.5" value="2" class="w-full">
-    </div>
+        <div class="grid grid-cols-2 gap-2">
+            <div>
+                <label class="text-[10px] text-gray-400">幅(X) mm</label>
+                <input type="number" id="boxX" value="120" onchange="updateGeometry()" class="w-full bg-gray-700 p-1 rounded text-sm">
+            </div>
+            <div>
+                <label class="text-[10px] text-gray-400">奥行(Y) mm</label>
+                <input type="number" id="boxY" value="120" onchange="updateGeometry()" class="w-full bg-gray-700 p-1 rounded text-sm">
+            </div>
+        </div>
 
-    <div class="bg-gray-800 p-2 rounded">
-        <p class="text-xs font-bold text-blue-400">操作ガイド:</p>
-        <p class="text-[10px]">1. 右クリック/ドラッグで視点変更</p>
-        <p class="text-[10px]">2. ボックス内を左クリックで仕切り追加</p>
+        <div>
+            <label class="text-[10px] text-gray-400">仕切り高さ</label>
+            <select id="divHeight" class="w-full bg-gray-700 p-1 rounded text-sm mt-1">
+                <option value="1.0">100%</option>
+                <option value="0.75">75%</option>
+                <option value="0.5">50%</option>
+                <option value="0.25">25%</option>
+            </select>
+        </div>
+
+        <button onclick="resetDividers()" class="w-full border border-red-900 text-red-400 text-[10px] py-1 rounded hover:bg-red-950 transition">RESET ALL</button>
     </div>
-    
-    <button onclick="resetDividers()" class="w-full bg-red-600 hover:bg-red-500 text-xs py-2 rounded">仕切りをリセット</button>
+</div>
+
+<div id="guide" class="fixed bottom-10 left-1/2 -translate-x-1/2 ui-panel p-3 rounded-full flex gap-4 text-xs z-20 hidden">
+    <span>配置する方向を選択:</span>
+    <button onclick="confirmDivider('V')" class="text-blue-400 font-bold">縦方向 [ | ]</button>
+    <button onclick="confirmDivider('H')" class="text-green-400 font-bold">横方向 [ ― ]</button>
 </div>
 
 <script>
 let scene, camera, renderer, controls, raycaster, mouse;
-let baseBox, wallMaterial, dividerMaterial;
+let wallMaterial, dividerMaterial, ghostMaterial;
 let dividers = [];
+let pendingPos = null;
 
-// 設定値
-const params = {
-    x: 100, y: 100, h: 40, wall: 2
-};
+const params = { x: 120, y: 120, h: 40, wall: 2, snap: 0.5 };
 
 init();
 animate();
 
 function init() {
-    // Scene & Camera
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(120, 150, 150);
+    scene.background = new THREE.Color(0x111111);
+
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.set(0, 200, 0); // 初期は真上(2D)
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
     document.body.appendChild(renderer.domElement);
 
-    // Controls
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-    
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    controls.enableDamping = true;
+    controls.screenSpacePanning = true; // iPadでのスライド操作を快適に
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    dirLight.position.set(100, 200, 100);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    dirLight.position.set(50, 150, 100);
     scene.add(dirLight);
 
-    // Helpers
-    scene.add(new THREE.GridHelper(200, 20));
+    wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+    dividerMaterial = new THREE.MeshPhongMaterial({ color: 0x3b82f6 });
+    ghostMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.3 });
 
-    // Materials
-    wallMaterial = new THREE.MeshPhongMaterial({ color: 0xeeeeee, side: THREE.DoubleSide });
-    dividerMaterial = new THREE.MeshPhongMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.8 });
-
-    // Interaction
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
-    window.addEventListener('mousedown', onDocumentMouseDown, false);
 
-    // UI Events
-    document.getElementById('wallThick').addEventListener('input', (e) => {
-        params.wall = parseFloat(e.target.value);
-        document.getElementById('wallVal').innerText = params.wall;
-        updateGeometry();
-    });
-    ['boxX', 'boxY', 'boxH'].forEach(id => {
-        document.getElementById(id).addEventListener('change', (e) => {
-            params[id.replace('box','').toLowerCase()] = parseFloat(e.target.value);
-            updateGeometry();
-        });
-    });
-
+    // タッチ & クリック両対応
+    window.addEventListener('pointerdown', onPointerDown, false);
     updateGeometry();
 }
 
+function setView(mode) {
+    document.getElementById('btn2D').className = mode === '2D' ? 'flex-1 py-1 text-xs rounded bg-blue-600' : 'flex-1 py-1 text-xs rounded';
+    document.getElementById('btn3D').className = mode === '3D' ? 'flex-1 py-1 text-xs rounded bg-blue-600' : 'flex-1 py-1 text-xs rounded';
+    
+    if (mode === '2D') {
+        camera.position.set(0, 220, 0);
+        controls.enableRotate = false;
+    } else {
+        camera.position.set(150, 150, 150);
+        controls.enableRotate = true;
+    }
+}
+
 function updateGeometry() {
-    // 古いオブジェクトの削除
-    while(scene.children.find(c => c.type === "Mesh")) {
-        scene.remove(scene.children.find(c => c.type === "Mesh"));
+    params.x = parseFloat(document.getElementById('boxX').value);
+    params.y = parseFloat(document.getElementById('boxY').value);
+    
+    while(scene.children.find(c => c.isMesh)) {
+        scene.remove(scene.children.find(c => c.isMesh));
     }
 
     const { x, y, h, wall } = params;
 
     // 底板
-    const bottomGeo = new THREE.BoxGeometry(x, wall, y);
-    const bottom = new THREE.Mesh(bottomGeo, wallMaterial);
+    const bottom = new THREE.Mesh(new THREE.BoxGeometry(x, wall, y), wallMaterial);
     bottom.position.y = wall / 2;
     scene.add(bottom);
 
-    // 外壁 (4面)
-    const wallGeos = [
-        { w: x, h: h, d: wall, px: 0, pz: y/2 - wall/2 }, // 前
-        { w: x, h: h, d: wall, px: 0, pz: -y/2 + wall/2 }, // 後
-        { w: wall, h: h, d: y, px: x/2 - wall/2, pz: 0 }, // 右
-        { w: wall, h: h, d: y, px: -x/2 + wall/2, pz: 0 } // 左
+    // 外壁
+    const wallConfs = [
+        { w: x, d: wall, px: 0, pz: y/2-wall/2 }, { w: x, d: wall, px: 0, pz: -y/2+wall/2 },
+        { w: wall, d: y, px: x/2-wall/2, pz: 0 }, { w: wall, d: y, px: -x/2+wall/2, pz: 0 }
     ];
-
-    wallGeos.forEach(conf => {
-        const geo = new THREE.BoxGeometry(conf.w, conf.h, conf.d);
-        const mesh = new THREE.Mesh(geo, wallMaterial);
-        mesh.position.set(conf.px, h/2, conf.pz);
-        scene.add(mesh);
+    wallConfs.forEach(c => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(c.w, h, c.d), wallMaterial);
+        m.position.set(c.px, h/2, c.pz);
+        scene.add(m);
     });
 
-    // 仕切りの再描画
+    // 配置済み仕切り
     dividers.forEach(d => {
-        const divGeo = d.axis === 'x' 
-            ? new THREE.BoxGeometry(x - wall*2, h, wall) 
-            : new THREE.BoxGeometry(wall, h, y - wall*2);
-        const mesh = new THREE.Mesh(divGeo, dividerMaterial);
-        mesh.position.set(d.x, h/2, d.z);
-        scene.add(mesh);
+        const dh = h * d.hRatio;
+        const dGeo = d.type === 'V' 
+            ? new THREE.BoxGeometry(wall, dh, y - wall * 2) 
+            : new THREE.BoxGeometry(x - wall * 2, dh, wall);
+        const m = new THREE.Mesh(dGeo, dividerMaterial);
+        m.position.set(d.x, dh/2 + wall/2, d.z);
+        scene.add(m);
     });
 
-    // レイキャスト判定用の透明な床
-    const floorGeo = new THREE.PlaneGeometry(x, y);
-    baseBox = new THREE.Mesh(floorGeo, new THREE.MeshBasicMaterial({visible: false}));
-    baseBox.rotation.x = -Math.PI / 2;
-    baseBox.position.y = wall;
-    scene.add(baseBox);
+    // タッチ判定用プレート
+    const plate = new THREE.Mesh(new THREE.PlaneGeometry(x, y), new THREE.MeshBasicMaterial({visible:false}));
+    plate.rotation.x = -Math.PI/2;
+    plate.position.y = wall;
+    plate.name = "hitplate";
+    scene.add(plate);
 }
 
-function onDocumentMouseDown(event) {
-    if (event.button !== 0) return; // 左クリック以外無視
-
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+function onPointerDown(e) {
+    if (e.target.tagName !== 'CANVAS') return;
+    
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(baseBox);
+    const intersects = raycaster.intersectObjects(scene.children);
+    const hit = intersects.find(i => i.object.name === "hitplate");
 
-    if (intersects.length > 0) {
-        const point = intersects[0].point;
-        // 軸の決定（マウス位置が中心からどっちに離れているかで簡易判定）
-        const axis = Math.abs(point.x) > Math.abs(point.z) ? 'y' : 'x';
-        
-        dividers.push({
-            axis: axis,
-            x: axis === 'y' ? point.x : 0,
-            z: axis === 'x' ? point.z : 0
-        });
-        updateGeometry();
+    if (hit) {
+        // 0.5mm スナップ
+        const snap = params.snap;
+        pendingPos = {
+            x: Math.round(hit.point.x / snap) * snap,
+            z: Math.round(hit.point.z / snap) * snap
+        };
+        document.getElementById('guide').classList.remove('hidden');
     }
+}
+
+function confirmDivider(type) {
+    if (!pendingPos) return;
+    const hRatio = parseFloat(document.getElementById('divHeight').value);
+    dividers.push({
+        type: type,
+        x: type === 'V' ? pendingPos.x : 0,
+        z: type === 'H' ? pendingPos.z : 0,
+        hRatio: hRatio
+    });
+    pendingPos = null;
+    document.getElementById('guide').classList.add('hidden');
+    updateGeometry();
 }
 
 function resetDividers() {
@@ -182,12 +208,6 @@ function animate() {
     controls.update();
     renderer.render(scene, camera);
 }
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
 </script>
 </body>
 </html>
