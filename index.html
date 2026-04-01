@@ -6,2005 +6,591 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ケースモデラー</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+:root{
+  --bg:#0e0e10;--panel:#16161a;--panel2:#1e1e24;--border:#2a2a32;--border2:#3a3a46;
+  --accent:#f0c040;--accent2:#c89a28;--text:#e8e8ec;--text2:#888896;--text3:#484858;
+  --dc:#4a9eff;--danger:#ff5548;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;}
 
-:root {
-–bg: #0f0f0f;
-–panel: #1a1a1a;
-–panel2: #222;
-–border: #333;
-–border2: #444;
-–accent: #e8c547;
-–accent2: #c4a030;
-–text: #e8e8e8;
-–text2: #999;
-–text3: #666;
-–danger: #e85447;
-–success: #47e8a0;
-–divider-color: #4a9eff;
-–wall: 2;
-}
+header{background:var(–panel);border-bottom:1px solid var(–border);height:52px;display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0;}
+.logo{font-family:‘IBM Plex Mono’,monospace;font-size:14px;font-weight:600;color:var(–accent);letter-spacing:.08em;}
+.logo span{color:var(–text3);}
+.hsep{width:1px;height:28px;background:var(–border);}
+.type-bar{display:flex;gap:3px;background:var(–bg);padding:3px;border-radius:7px;border:1px solid var(–border);}
+.type-btn{padding:5px 11px;border-radius:5px;border:none;background:transparent;color:var(–text2);cursor:pointer;font-size:12px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;white-space:nowrap;}
+.type-btn:hover{color:var(–text);}
+.type-btn.active{background:var(–accent);color:#000;font-weight:600;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(–border2);background:var(–panel2);color:var(–text);cursor:pointer;font-size:12px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;white-space:nowrap;}
+.btn:hover{border-color:var(–accent);color:var(–accent);}
+.btn.active{background:var(–accent);color:#000;border-color:var(–accent);font-weight:600;}
 
-- { box-sizing: border-box; margin: 0; padding: 0; }
+.main{display:flex;flex:1;overflow:hidden;}
+.side{width:215px;flex-shrink:0;background:var(–panel);border-right:1px solid var(–border);display:flex;flex-direction:column;overflow-y:auto;}
+.side::-webkit-scrollbar{width:3px;}
+.side::-webkit-scrollbar-thumb{background:var(–border2);}
+.sec{padding:13px;border-bottom:1px solid var(–border);}
+.sec-title{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–text3);margin-bottom:10px;font-family:‘IBM Plex Mono’,monospace;}
+.field{margin-bottom:9px;}
+.field label{display:block;font-size:11px;color:var(–text2);margin-bottom:3px;}
+.nr{display:flex;align-items:center;gap:3px;}
+.sb{width:26px;height:28px;background:var(–panel2);border:1px solid var(–border);border-radius:5px;color:var(–text);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s;}
+.sb:hover{border-color:var(–accent);color:var(–accent);}
+.nr input{flex:1;text-align:center;padding:5px 3px;background:var(–bg);border:1px solid var(–border);border-radius:5px;color:var(–text);font-size:12px;font-family:‘IBM Plex Mono’,monospace;outline:none;min-width:0;}
+.nr input:focus{border-color:var(–accent);}
+.unit{font-size:10px;color:var(–text3);font-family:‘IBM Plex Mono’,monospace;white-space:nowrap;}
+.tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.tl{font-size:12px;color:var(–text2);}
+.tog{position:relative;width:36px;height:20px;}
+.tog input{opacity:0;width:0;height:0;}
+.ts{position:absolute;inset:0;background:var(–border2);border-radius:20px;cursor:pointer;transition:.2s;}
+.ts:before{content:’’;position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+.tog input:checked+.ts{background:var(–accent);}
+.tog input:checked+.ts:before{transform:translateX(16px);}
+.rg{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+.ro{padding:4px 9px;border:1px solid var(–border);border-radius:4px;cursor:pointer;font-size:11px;color:var(–text2);transition:all .15s;background:var(–bg);}
+.ro:hover{border-color:var(–accent);color:var(–text);}
+.ro.active{border-color:var(–accent);color:var(–accent);background:rgba(240,192,64,.08);}
+.hint{font-size:10px;color:var(–text3);line-height:1.5;margin-top:2px;}
 
-body {
-background: var(–bg);
-color: var(–text);
-font-family: ‘Noto Sans JP’, sans-serif;
-font-size: 13px;
-height: 100vh;
-display: flex;
-flex-direction: column;
-overflow: hidden;
-}
+.canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.cbar{background:var(–panel);border-bottom:1px solid var(–border);padding:7px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.bl{font-size:11px;color:var(–text3);font-family:‘IBM Plex Mono’,monospace;}
+.bi{font-size:11px;color:var(–text2);font-family:‘IBM Plex Mono’,monospace;}
+.cwrap{flex:1;overflow:hidden;position:relative;background:#06060e;}
+canvas{display:block;}
+.warn{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,85,72,.15);border:1px solid var(–danger);border-radius:6px;padding:6px 14px;font-size:11px;color:var(–danger);white-space:nowrap;pointer-events:none;display:none;z-index:50;}
+.warn.on{display:block;}
+.tip{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);border:1px solid var(–border2);border-radius:5px;padding:5px 14px;font-size:11px;color:var(–text2);font-family:‘IBM Plex Mono’,monospace;pointer-events:none;white-space:nowrap;}
 
-/* ── HEADER ── */
-header {
-background: var(–panel);
-border-bottom: 1px solid var(–border);
-padding: 0 16px;
-height: 48px;
-display: flex;
-align-items: center;
-gap: 16px;
-flex-shrink: 0;
-z-index: 100;
-}
-header h1 {
-font-family: ‘IBM Plex Mono’, monospace;
-font-size: 14px;
-font-weight: 600;
-color: var(–accent);
-letter-spacing: 0.1em;
-white-space: nowrap;
-}
-.header-sep { width: 1px; height: 24px; background: var(–border); }
-
-.mode-tabs {
-display: flex;
-gap: 4px;
-background: var(–bg);
-padding: 3px;
-border-radius: 6px;
-border: 1px solid var(–border);
-}
-.mode-tab {
-padding: 4px 14px;
-border-radius: 4px;
-cursor: pointer;
-font-size: 12px;
-font-weight: 500;
-transition: all 0.15s;
-border: none;
-background: transparent;
-color: var(–text2);
-font-family: ‘Noto Sans JP’, sans-serif;
-}
-.mode-tab.active {
-background: var(–accent);
-color: #000;
-}
-.mode-tab:hover:not(.active) { color: var(–text); background: var(–border); }
-
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-
-.btn {
-padding: 5px 12px;
-border-radius: 5px;
-border: 1px solid var(–border2);
-background: var(–panel2);
-color: var(–text);
-cursor: pointer;
-font-size: 12px;
-font-family: ‘Noto Sans JP’, sans-serif;
-transition: all 0.15s;
-white-space: nowrap;
-}
-.btn:hover { border-color: var(–accent); color: var(–accent); }
-.btn.primary { background: var(–accent); color: #000; border-color: var(–accent); font-weight: 600; }
-.btn.primary:hover { background: var(–accent2); border-color: var(–accent2); }
-.btn.danger { border-color: var(–danger); color: var(–danger); }
-.btn.danger:hover { background: var(–danger); color: #fff; }
-
-/* ── LAYOUT ── */
-.app-body {
-display: flex;
-flex: 1;
-overflow: hidden;
-}
-
-/* ── LEFT PANEL ── */
-.left-panel {
-width: 240px;
-flex-shrink: 0;
-background: var(–panel);
-border-right: 1px solid var(–border);
-display: flex;
-flex-direction: column;
-overflow-y: auto;
-}
-
-.panel-section {
-padding: 12px;
-border-bottom: 1px solid var(–border);
-}
-.panel-section-title {
-font-size: 10px;
-font-weight: 600;
-letter-spacing: 0.12em;
-text-transform: uppercase;
-color: var(–text3);
-margin-bottom: 10px;
-font-family: ‘IBM Plex Mono’, monospace;
-}
-
-/* Type selector */
-.type-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 6px;
-}
-.type-btn {
-padding: 8px 6px;
-border-radius: 5px;
-border: 1px solid var(–border);
-background: var(–bg);
-color: var(–text2);
-cursor: pointer;
-font-size: 11px;
-text-align: center;
-transition: all 0.15s;
-font-family: ‘Noto Sans JP’, sans-serif;
-line-height: 1.4;
-}
-.type-btn:hover { border-color: var(–accent); color: var(–accent); }
-.type-btn.active { border-color: var(–accent); color: var(–accent); background: rgba(232,197,71,0.08); }
-.type-btn .icon { font-size: 18px; display: block; margin-bottom: 3px; }
-
-/* Input fields */
-.field { margin-bottom: 8px; }
-.field label {
-display: block;
-font-size: 11px;
-color: var(–text2);
-margin-bottom: 3px;
-}
-.field-row {
-display: flex;
-align-items: center;
-gap: 4px;
-}
-.field input[type=number], .field select, .field input[type=text] {
-width: 100%;
-padding: 5px 8px;
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 4px;
-color: var(–text);
-font-size: 12px;
-font-family: ‘IBM Plex Mono’, monospace;
-outline: none;
-transition: border-color 0.15s;
-}
-.field input:focus, .field select:focus { border-color: var(–accent); }
-.field select option { background: var(–bg); }
-
-.unit { font-size: 10px; color: var(–text3); white-space: nowrap; font-family: ‘IBM Plex Mono’, monospace; }
-
-.stepper-row {
-display: flex;
-align-items: center;
-gap: 2px;
-}
-.stepper-row input {
-flex: 1;
-text-align: center;
-padding: 5px 4px;
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 4px;
-color: var(–text);
-font-size: 12px;
-font-family: ‘IBM Plex Mono’, monospace;
-outline: none;
-}
-.stepper-row input:focus { border-color: var(–accent); }
-.step-btn {
-width: 24px; height: 26px;
-background: var(–panel2);
-border: 1px solid var(–border);
-border-radius: 4px;
-color: var(–text);
-cursor: pointer;
-font-size: 14px;
-display: flex; align-items: center; justify-content: center;
-flex-shrink: 0;
-transition: all 0.1s;
-user-select: none;
-}
-.step-btn:hover { border-color: var(–accent); color: var(–accent); }
-
-.toggle-row {
-display: flex;
-align-items: center;
-justify-content: space-between;
-margin-bottom: 8px;
-}
-.toggle-label { font-size: 12px; color: var(–text2); }
-.toggle {
-position: relative;
-width: 36px; height: 20px;
-}
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-position: absolute;
-inset: 0;
-background: var(–border);
-border-radius: 20px;
-cursor: pointer;
-transition: 0.2s;
-}
-.toggle-slider:before {
-content: ‘’;
-position: absolute;
-width: 14px; height: 14px;
-left: 3px; top: 3px;
-background: #fff;
-border-radius: 50%;
-transition: 0.2s;
-}
-.toggle input:checked + .toggle-slider { background: var(–accent); }
-.toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
-
-.radio-group { display: flex; gap: 6px; flex-wrap: wrap; }
-.radio-option {
-display: flex;
-align-items: center;
-gap: 4px;
-padding: 4px 8px;
-border: 1px solid var(–border);
-border-radius: 4px;
-cursor: pointer;
-font-size: 11px;
-color: var(–text2);
-transition: all 0.15s;
-background: var(–bg);
-}
-.radio-option:hover { border-color: var(–accent); color: var(–text); }
-.radio-option.active { border-color: var(–accent); color: var(–accent); background: rgba(232,197,71,0.08); }
-.radio-option input { display: none; }
-
-/* ── CANVAS AREA ── */
-.canvas-area {
-flex: 1;
-display: flex;
-flex-direction: column;
-overflow: hidden;
-position: relative;
-background: var(–bg);
-}
-
-.canvas-toolbar {
-background: var(–panel);
-border-bottom: 1px solid var(–border);
-padding: 6px 12px;
-display: flex;
-align-items: center;
-gap: 8px;
-flex-shrink: 0;
-}
-.canvas-toolbar .tool-label {
-font-size: 11px;
-color: var(–text3);
-font-family: ‘IBM Plex Mono’, monospace;
-}
-
-.canvas-wrapper {
-flex: 1;
-display: flex;
-align-items: center;
-justify-content: center;
-overflow: hidden;
-position: relative;
-}
-
-/* 2D Canvas */
-#canvas2d {
-cursor: default;
-}
-
-/* 3D Canvas */
-#canvas3d {
-display: none;
-width: 100%;
-height: 100%;
-cursor: grab;
-}
-#canvas3d:active { cursor: grabbing; }
-
-/* ── RIGHT PANEL ── */
-.right-panel {
-width: 200px;
-flex-shrink: 0;
-background: var(–panel);
-border-left: 1px solid var(–border);
-display: flex;
-flex-direction: column;
-overflow-y: auto;
-}
-
-/* ── DIVIDER LIST ── */
-.divider-list { display: flex; flex-direction: column; gap: 4px; }
-.divider-item {
-display: flex;
-align-items: center;
-gap: 6px;
-padding: 5px 8px;
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 4px;
-cursor: pointer;
-transition: all 0.15s;
-}
-.divider-item:hover { border-color: var(–divider-color); }
-.divider-item.selected { border-color: var(–divider-color); background: rgba(74,158,255,0.1); }
-.divider-item .di-label { font-size: 11px; font-family: ‘IBM Plex Mono’, monospace; color: var(–text2); flex: 1; }
-.divider-item .di-pos { font-size: 10px; font-family: ‘IBM Plex Mono’, monospace; color: var(–divider-color); }
-.divider-del { background: none; border: none; color: var(–text3); cursor: pointer; padding: 2px 4px; border-radius: 3px; }
-.divider-del:hover { color: var(–danger); background: rgba(232,84,71,0.1); }
-
-/* ── WARNING ── */
-.warning-bar {
-background: rgba(232,84,71,0.15);
-border: 1px solid var(–danger);
-border-radius: 5px;
-padding: 6px 10px;
-font-size: 11px;
-color: var(–danger);
-margin: 8px;
-display: none;
-}
-.warning-bar.visible { display: block; }
-
-/* ── EXPORT MODAL ── */
-.modal-overlay {
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.8);
-display: none;
-align-items: center;
-justify-content: center;
-z-index: 1000;
-}
-.modal-overlay.visible { display: flex; }
-.modal {
-background: var(–panel);
-border: 1px solid var(–border2);
-border-radius: 10px;
-padding: 24px;
-width: 340px;
-max-width: 90vw;
-}
-.modal h2 { font-size: 16px; margin-bottom: 16px; font-family: ‘IBM Plex Mono’, monospace; color: var(–accent); }
-.modal-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
-
-/* Info bar */
-.info-bar {
-position: absolute;
-bottom: 12px;
-left: 50%;
-transform: translateX(-50%);
-background: rgba(0,0,0,0.75);
-border: 1px solid var(–border2);
-border-radius: 6px;
-padding: 5px 14px;
-font-size: 11px;
-color: var(–text2);
-font-family: ‘IBM Plex Mono’, monospace;
-pointer-events: none;
-white-space: nowrap;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 2px; }
-
-.divider-add-btn {
-width: 100%;
-padding: 6px;
-background: transparent;
-border: 1px dashed var(–border);
-border-radius: 4px;
-color: var(–text3);
-cursor: pointer;
-font-size: 11px;
-font-family: ‘Noto Sans JP’, sans-serif;
-transition: all 0.15s;
-margin-top: 4px;
-}
-.divider-add-btn:hover { border-color: var(–divider-color); color: var(–divider-color); }
-
-.section-header {
-font-size: 10px;
-font-weight: 600;
-letter-spacing: 0.12em;
-text-transform: uppercase;
-color: var(–text3);
-font-family: ‘IBM Plex Mono’, monospace;
-padding: 10px 12px 6px;
-border-bottom: 1px solid var(–border);
-}
-
-canvas { display: block; }
-
-.hint { font-size: 10px; color: var(–text3); line-height: 1.5; margin-top: 4px; }
-
-.selected-info {
-background: rgba(74,158,255,0.08);
-border: 1px solid var(–divider-color);
-border-radius: 5px;
-padding: 8px;
-margin-bottom: 8px;
-display: none;
-}
-.selected-info.visible { display: block; }
-.selected-info .si-title { font-size: 10px; color: var(–divider-color); margin-bottom: 6px; font-family: ‘IBM Plex Mono’, monospace; }
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:200;}
+.overlay.on{display:flex;}
+.modal{background:var(–panel);border:1px solid var(–border2);border-radius:12px;padding:28px;width:360px;max-width:90vw;}
+.modal h2{font-size:16px;font-family:‘IBM Plex Mono’,monospace;color:var(–accent);margin-bottom:18px;}
+.mbtns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
+.mnote{font-size:11px;color:var(–text2);margin-top:10px;line-height:1.6;}
 </style>
 
 </head>
 <body>
-
-<!-- HEADER -->
-
 <header>
-  <h1>◈ CASE MODELER</h1>
-  <div class="header-sep"></div>
-  <div class="mode-tabs">
-    <button class="mode-tab active" onclick="setMode('edit')">✏ 編集</button>
-    <button class="mode-tab" onclick="setMode('preview')">◉ 3D確認</button>
+  <div class="logo">◈ CASE<span>/</span>MODELER</div>
+  <div class="hsep"></div>
+  <div class="type-bar">
+    <button class="type-btn active" onclick="setType('case')" id="tb-case">ケース</button>
+    <button class="type-btn" onclick="setType('case-fixed')" id="tb-case-fixed">仕切り固定</button>
+    <button class="type-btn" onclick="setType('case-movable')" id="tb-case-movable">仕切り可動</button>
+    <button class="type-btn" onclick="setType('drawer')" id="tb-drawer">引き出し</button>
+    <button class="type-btn" onclick="setType('drawer-fixed')" id="tb-drawer-fixed">引き出し仕切り固定</button>
+    <button class="type-btn" onclick="setType('drawer-movable')" id="tb-drawer-movable">引き出し仕切り可動</button>
   </div>
-  <div class="header-right">
+  <div class="hright">
+    <button class="btn" id="btn3d" onclick="toggle3d()">◉ 3D確認</button>
     <button class="btn" onclick="openExport()">↓ エクスポート</button>
-    <button class="btn primary" onclick="resetAll()">新規作成</button>
   </div>
 </header>
 
-<!-- WARNING BAR -->
-
-<div class="warning-bar" id="warningBar">⚠ 要素が重なっています。位置を調整してください。</div>
-
-<!-- BODY -->
-
-<div class="app-body">
-
-  <!-- LEFT PANEL -->
-
-  <div class="left-panel">
-
-```
-<!-- Type -->
-<div class="panel-section">
-  <div class="panel-section-title">タイプ</div>
-  <div class="type-grid">
-    <button class="type-btn active" onclick="setType('case')" id="btn-case">
-      <span class="icon">◻</span>ケース
-    </button>
-    <button class="type-btn" onclick="setType('case-fixed')" id="btn-case-fixed">
-      <span class="icon">▦</span>仕切り固定
-    </button>
-    <button class="type-btn" onclick="setType('case-movable')" id="btn-case-movable">
-      <span class="icon">▧</span>仕切り可動
-    </button>
-    <button class="type-btn" onclick="setType('drawer')" id="btn-drawer">
-      <span class="icon">▬</span>引き出し
-    </button>
-    <button class="type-btn" onclick="setType('drawer-fixed')" id="btn-drawer-fixed">
-      <span class="icon">⊞</span>引き出し<br>仕切り固定
-    </button>
-    <button class="type-btn" onclick="setType('drawer-movable')" id="btn-drawer-movable">
-      <span class="icon">⊟</span>引き出し<br>仕切り可動
-    </button>
+<div class="main">
+<div class="side">
+  <div class="sec">
+    <div class="sec-title">内寸</div>
+    <div class="field"><label>幅 W</label><div class="nr"><button class="sb" onclick="step('iW',-1)">−</button><input type="number" id="iW" value="100" min="1" max="300" onchange="onChange()"><button class="sb" onclick="step('iW',1)">+</button><span class="unit">mm</span></div></div>
+    <div class="field"><label>奥行 D</label><div class="nr"><button class="sb" onclick="step('iD',-1)">−</button><input type="number" id="iD" value="60" min="1" max="300" onchange="onChange()"><button class="sb" onclick="step('iD',1)">+</button><span class="unit">mm</span></div></div>
+    <div class="field"><label>高さ H</label><div class="nr"><button class="sb" onclick="step('iH',-1)">−</button><input type="number" id="iH" value="40" min="1" max="300" onchange="onChange()"><button class="sb" onclick="step('iH',1)">+</button><span class="unit">mm</span></div></div>
   </div>
-</div>
-
-<!-- Dimensions -->
-<div class="panel-section">
-  <div class="panel-section-title">内寸</div>
-  <div class="field">
-    <label>幅 W</label>
-    <div class="stepper-row">
-      <button class="step-btn" onclick="stepVal('innerW',-1)">−</button>
-      <input type="number" id="innerW" value="100" min="1" max="300" onchange="updateModel()">
-      <button class="step-btn" onclick="stepVal('innerW',1)">+</button>
-      <span class="unit">mm</span>
+  <div class="sec">
+    <div class="sec-title">壁・仕切り</div>
+    <div class="field"><label>壁厚</label><div class="nr"><button class="sb" onclick="step('wT',-0.5)">−</button><input type="number" id="wT" value="2" min="1" max="20" step="0.5" onchange="onChange()"><button class="sb" onclick="step('wT',0.5)">+</button><span class="unit">mm</span></div></div>
+    <div class="field" id="divTF"><label>仕切り厚</label><div class="nr"><button class="sb" onclick="step('dT',-0.5)">−</button><input type="number" id="dT" value="1.5" min="1" max="20" step="0.5" onchange="onChange()"><button class="sb" onclick="step('dT',0.5)">+</button><span class="unit">mm</span></div></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">角丸め（外側）</div>
+    <div class="tr"><span class="tl">有効</span><label class="tog"><input type="checkbox" id="useR" onchange="onRound()"><span class="ts"></span></label></div>
+    <div class="field" id="rF" style="display:none"><label>半径</label><div class="nr"><button class="sb" onclick="step('rR',-0.5)">−</button><input type="number" id="rR" value="2" min="0.5" max="20" step="0.5" onchange="onChange()"><button class="sb" onclick="step('rR',0.5)">+</button><span class="unit">mm</span></div></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">スタック</div>
+    <div class="tr"><span class="tl">凸凹スタック</span><label class="tog"><input type="checkbox" id="useS" onchange="onChange()"><span class="ts"></span></label></div>
+    <p class="hint">ONで底面に凸、天面に凹を追加</p>
+  </div>
+  <div class="sec" id="drawSec" style="display:none">
+    <div class="sec-title">引き出しオプション</div>
+    <div class="field"><label>背面</label><div class="rg"><div class="ro active" id="rb-open" onclick="setBack('open')">開放</div><div class="ro" id="rb-closed" onclick="setBack('closed')">埋める</div></div></div>
+    <div class="field"><label>持ち手</label><div class="rg"><div class="ro active" id="rh-groove" onclick="setHandle('groove')">溝</div><div class="ro" id="rh-hole" onclick="setHandle('hole')">穴</div></div></div>
+    <div id="gF">
+      <div class="field"><label>溝：幅</label><div class="nr"><button class="sb" onclick="step('gW',-1)">−</button><input type="number" id="gW" value="40" min="5" max="200" onchange="onChange()"><button class="sb" onclick="step('gW',1)">+</button><span class="unit">mm</span></div></div>
+      <div class="field"><label>溝：高さ</label><div class="nr"><button class="sb" onclick="step('gH',-1)">−</button><input type="number" id="gH" value="8" min="3" max="50" onchange="onChange()"><button class="sb" onclick="step('gH',1)">+</button><span class="unit">mm</span></div></div>
     </div>
-  </div>
-  <div class="field">
-    <label>奥行 D</label>
-    <div class="stepper-row">
-      <button class="step-btn" onclick="stepVal('innerD',-1)">−</button>
-      <input type="number" id="innerD" value="60" min="1" max="300" onchange="updateModel()">
-      <button class="step-btn" onclick="stepVal('innerD',1)">+</button>
-      <span class="unit">mm</span>
-    </div>
-  </div>
-  <div class="field">
-    <label>高さ H</label>
-    <div class="stepper-row">
-      <button class="step-btn" onclick="stepVal('innerH',-1)">−</button>
-      <input type="number" id="innerH" value="40" min="1" max="300" onchange="updateModel()">
-      <button class="step-btn" onclick="stepVal('innerH',1)">+</button>
-      <span class="unit">mm</span>
+    <div id="hF" style="display:none">
+      <div class="field"><label>穴：直径</label><div class="nr"><button class="sb" onclick="step('hD',-1)">−</button><input type="number" id="hD" value="20" min="5" max="100" onchange="onChange()"><button class="sb" onclick="step('hD',1)">+</button><span class="unit">mm</span></div></div>
     </div>
   </div>
 </div>
 
-<!-- Wall -->
-<div class="panel-section">
-  <div class="panel-section-title">壁・仕切り</div>
-  <div class="field">
-    <label>壁厚</label>
-    <div class="stepper-row">
-      <button class="step-btn" onclick="stepVal('wallT',-0.5)">−</button>
-      <input type="number" id="wallT" value="2" min="1" max="20" step="0.5" onchange="updateModel()">
-      <button class="step-btn" onclick="stepVal('wallT',0.5)">+</button>
-      <span class="unit">mm</span>
-    </div>
+<div class="canvas-area">
+  <div class="cbar">
+    <span class="bl" id="mLbl">✏ 編集モード</span>
+    <span style="color:var(--border2)">|</span>
+    <span class="bi" id="dInfo">内寸 W:100 D:60 H:40mm</span>
+    <span style="color:var(--border2)">|</span>
+    <span class="bi" id="oInfo">外寸 W:104 D:64 H:44mm</span>
+    <span class="bi" id="h3d" style="display:none;margin-left:auto;color:var(--text3)">ドラッグ回転 / ホイールズーム</span>
   </div>
-  <div class="field" id="divThickField">
-    <label>仕切り厚</label>
-    <div class="stepper-row">
-      <button class="step-btn" onclick="stepVal('divT',-0.5)">−</button>
-      <input type="number" id="divT" value="1.5" min="1" max="20" step="0.5" onchange="updateModel()">
-      <button class="step-btn" onclick="stepVal('divT',0.5)">+</button>
-      <span class="unit">mm</span>
-    </div>
+  <div class="cwrap" id="cw">
+    <canvas id="c2"></canvas>
+    <canvas id="c3" style="display:none;cursor:grab;"></canvas>
+    <div class="warn" id="wb">⚠ 仕切りが重なっています</div>
+    <div class="tip" id="tipBox">クリックで縦仕切り追加 / Shift+クリックで横仕切り追加 | 仕切りをドラッグして移動</div>
   </div>
 </div>
-
-<!-- Rounding -->
-<div class="panel-section">
-  <div class="panel-section-title">角丸め（外側）</div>
-  <div class="toggle-row">
-    <span class="toggle-label">角丸め</span>
-    <label class="toggle">
-      <input type="checkbox" id="roundCorners" onchange="updateModel()">
-      <span class="toggle-slider"></span>
-    </label>
-  </div>
-  <div class="field" id="roundField" style="display:none">
-    <label>半径</label>
-    <div class="stepper-row">
-      <button class="step-btn" onclick="stepVal('roundR',-0.5)">−</button>
-      <input type="number" id="roundR" value="2" min="0.5" max="20" step="0.5" onchange="updateModel()">
-      <button class="step-btn" onclick="stepVal('roundR',0.5)">+</button>
-      <span class="unit">mm</span>
-    </div>
-  </div>
 </div>
 
-<!-- Stack -->
-<div class="panel-section">
-  <div class="panel-section-title">重ねる機能</div>
-  <div class="toggle-row">
-    <span class="toggle-label">凸凹スタック</span>
-    <label class="toggle">
-      <input type="checkbox" id="stackable" onchange="updateModel()">
-      <span class="toggle-slider"></span>
-    </label>
-  </div>
-  <p class="hint">ONにすると底部に凸、上部に凹を追加します</p>
-</div>
-
-<!-- Drawer options -->
-<div class="panel-section" id="drawerOptions" style="display:none">
-  <div class="panel-section-title">引き出しオプション</div>
-  <div class="field">
-    <label>背面タイプ</label>
-    <div class="radio-group">
-      <label class="radio-option active" id="back-open" onclick="setBack('open')">
-        <input type="radio" name="backType" value="open"> 開放
-      </label>
-      <label class="radio-option" id="back-closed" onclick="setBack('closed')">
-        <input type="radio" name="backType" value="closed"> 埋める
-      </label>
-    </div>
-  </div>
-  <div class="field">
-    <label>持ち手タイプ</label>
-    <div class="radio-group">
-      <label class="radio-option active" id="handle-groove" onclick="setHandle('groove')">
-        <input type="radio" name="handleType" value="groove"> 溝
-      </label>
-      <label class="radio-option" id="handle-hole" onclick="setHandle('hole')">
-        <input type="radio" name="handleType" value="hole"> 穴
-      </label>
-    </div>
-  </div>
-  <div class="field" id="grooveFields">
-    <label>溝：幅 × 高さ</label>
-    <div style="display:flex;gap:4px;align-items:center;">
-      <input type="number" id="grooveW" value="40" min="5" max="200" style="width:52px;padding:4px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;" onchange="updateModel()">
-      <span class="unit">×</span>
-      <input type="number" id="grooveH" value="8" min="3" max="50" style="width:52px;padding:4px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;" onchange="updateModel()">
-      <span class="unit">mm</span>
-    </div>
-  </div>
-  <div class="field" id="holeFields" style="display:none">
-    <label>穴：直径</label>
-    <div class="stepper-row">
-      <button class="step-btn" onclick="stepVal('holeDia',-1)">−</button>
-      <input type="number" id="holeDia" value="20" min="5" max="100" onchange="updateModel()">
-      <button class="step-btn" onclick="stepVal('holeDia',1)">+</button>
-      <span class="unit">mm</span>
-    </div>
-  </div>
-</div>
-```
-
-  </div><!-- /left-panel -->
-
-  <!-- CANVAS AREA -->
-
-  <div class="canvas-area">
-    <div class="canvas-toolbar">
-      <span class="tool-label" id="toolLabel">2D編集モード</span>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;" id="toolbar3d" style="display:none">
-        <span style="font-size:11px;color:var(--text3)">ドラッグで回転 / ホイールでズーム</span>
-      </div>
-    </div>
-    <div class="canvas-wrapper" id="canvasWrapper">
-      <canvas id="canvas2d" width="800" height="600"></canvas>
-      <canvas id="canvas3d"></canvas>
-      <div class="info-bar" id="infoBar">W: 100mm  D: 60mm  H: 40mm</div>
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL -->
-
-  <div class="right-panel">
-    <div class="section-header">仕切り管理</div>
-    <div style="padding:10px;">
-
-```
-  <!-- Selected divider info -->
-  <div class="selected-info" id="selectedInfo">
-    <div class="si-title">▶ 選択中の仕切り</div>
-    <div class="field">
-      <label>位置</label>
-      <div class="stepper-row">
-        <button class="step-btn" onclick="stepSelected(-1)">−</button>
-        <input type="number" id="selectedPos" value="0" min="1" max="299" onchange="moveSelectedDivider(this.value)">
-        <button class="step-btn" onclick="stepSelected(1)">+</button>
-        <span class="unit">mm</span>
-      </div>
-    </div>
-    <button class="btn danger" style="width:100%;margin-top:4px;font-size:11px;" onclick="deleteSelectedDivider()">削除</button>
-  </div>
-
-  <!-- X dividers -->
-  <div id="xDivSection">
-    <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;">─ X方向（幅）</div>
-    <div class="divider-list" id="xDivList"></div>
-    <button class="divider-add-btn" onclick="addDivider('x')">+ 幅方向に仕切り追加</button>
-  </div>
-
-  <div style="height:12px;"></div>
-
-  <!-- Y dividers (depth) -->
-  <div id="yDivSection">
-    <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;">─ Y方向（奥行）</div>
-    <div class="divider-list" id="yDivList"></div>
-    <button class="divider-add-btn" onclick="addDivider('y')">+ 奥行方向に仕切り追加</button>
-  </div>
-
-</div>
-```
-
-  </div>
-
-</div><!-- /app-body -->
-
-<!-- EXPORT MODAL -->
-
-<div class="modal-overlay" id="exportModal">
+<div class="overlay" id="expOv">
   <div class="modal">
     <h2>↓ エクスポート</h2>
-    <div class="field">
-      <label>フォーマット</label>
-      <div class="radio-group">
-        <label class="radio-option active" id="fmt-stl" onclick="setFmt('stl')">STL</label>
-        <label class="radio-option" id="fmt-obj" onclick="setFmt('obj')">OBJ</label>
-      </div>
-    </div>
-    <p style="font-size:11px;color:var(--text3);margin-top:10px;" id="exportNote"></p>
-    <div class="modal-btns">
-      <button class="btn primary" onclick="doExport()">ダウンロード</button>
-      <button class="btn" onclick="closeExport()">キャンセル</button>
-    </div>
+    <div class="field"><label>フォーマット</label><div class="rg"><div class="ro active" id="ef-stl" onclick="setFmt('stl')">STL</div><div class="ro" id="ef-obj" onclick="setFmt('obj')">OBJ</div></div></div>
+    <p class="mnote" id="eNote"></p>
+    <div class="mbtns"><button class="btn active" onclick="doExport()">ダウンロード</button><button class="btn" onclick="closeExp()">キャンセル</button></div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════
-const state = {
-  type: 'case',
-  innerW: 100, innerD: 60, innerH: 40,
-  wallT: 2, divT: 1.5,
-  roundCorners: false, roundR: 2,
-  stackable: false,
-  backType: 'open',    // open | closed
-  handleType: 'groove', // groove | hole
-  grooveW: 40, grooveH: 8,
-  holeDia: 20,
-  xDividers: [],   // positions in mm from inner left edge
-  yDividers: [],   // positions in mm from inner front edge
-  selectedDiv: null,  // {axis, index}
-  mode: 'edit',
-  fmt: 'stl',
-  dragDiv: null,
-};
+const S={type:'case',iW:100,iD:60,iH:40,wT:2,dT:1.5,useR:false,rR:2,useS:false,
+  backType:'open',handleType:'groove',gW:40,gH:8,hD:20,
+  xDiv:[],yDiv:[],selDiv:null,is3d:false,fmt:'stl'};
+const HD=t=>['case-fixed','case-movable','drawer-fixed','drawer-movable'].includes(t);
+const ID=t=>['drawer','drawer-fixed','drawer-movable'].includes(t);
 
-const TYPES_WITH_DIVIDERS = ['case-fixed','case-movable','drawer-fixed','drawer-movable'];
-const TYPES_DRAWER = ['drawer','drawer-fixed','drawer-movable'];
+let c2,ctx2,c3,ctx3,drag3=false,lm={x:0,y:0};
+let rot={x:.42,y:.68},zoom=1,dragDiv=null;
 
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
-window.addEventListener('load', () => {
-  syncInputs();
-  updateModel();
-  setupCanvas2d();
-  document.getElementById('roundCorners').addEventListener('change', () => {
-    document.getElementById('roundField').style.display = document.getElementById('roundCorners').checked ? 'block' : 'none';
-    updateModel();
-  });
+window.addEventListener('load',()=>{
+  c2=document.getElementById('c2'); ctx2=c2.getContext('2d');
+  c3=document.getElementById('c3'); ctx3=c3.getContext('2d');
+  resize(); window.addEventListener('resize',resize);
+  c2.addEventListener('mousedown',m2Down);
+  c2.addEventListener('mousemove',m2Move);
+  c2.addEventListener('mouseup',m2Up);
+  c2.addEventListener('mouseleave',m2Up);
+  c3.addEventListener('mousedown',e=>{drag3=true;lm={x:e.clientX,y:e.clientY};c3.style.cursor='grabbing';});
+  c3.addEventListener('mousemove',e=>{if(!drag3)return;rot.y+=(e.clientX-lm.x)*.012;rot.x+=(e.clientY-lm.y)*.012;lm={x:e.clientX,y:e.clientY};draw3();});
+  c3.addEventListener('mouseup',()=>{drag3=false;c3.style.cursor='grab';});
+  c3.addEventListener('mouseleave',()=>{drag3=false;c3.style.cursor='grab';});
+  c3.addEventListener('wheel',e=>{zoom=Math.max(.3,Math.min(3,zoom-e.deltaY*.001));draw3();e.preventDefault();},{passive:false});
+  onChange();
 });
 
-window.addEventListener('resize', () => { drawCanvas2d(); });
+function resize(){
+  const w=document.getElementById('cw');
+  c2.width=c3.width=w.clientWidth; c2.height=c3.height=w.clientHeight; draw();
+}
 
-// ═══════════════════════════════════════════════════
-// INPUT SYNC
-// ═══════════════════════════════════════════════════
-function syncInputs() {
-  ['innerW','innerD','innerH','wallT','divT','roundR','grooveW','grooveH','holeDia'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = state[id];
+const g=id=>document.getElementById(id);
+const gv=id=>parseFloat(g(id).value)||0;
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+function step(id,d){const el=g(id);el.value=cl(parseFloat(el.value)+d,parseFloat(el.min||0),parseFloat(el.max||9999));onChange();}
+
+function onChange(){
+  S.iW=cl(gv('iW'),1,300);S.iD=cl(gv('iD'),1,300);S.iH=cl(gv('iH'),1,300);
+  S.wT=cl(gv('wT'),1,20);S.dT=cl(gv('dT'),1,20);
+  S.rR=cl(gv('rR'),.5,20);S.gW=cl(gv('gW'),5,200);S.gH=cl(gv('gH'),3,50);S.hD=cl(gv('hD'),5,100);
+  S.useR=g('useR').checked;S.useS=g('useS').checked;
+  clampDivs();checkOv();
+  g('dInfo').textContent=`内寸 W:${S.iW} D:${S.iD} H:${S.iH}mm`;
+  g('oInfo').textContent=`外寸 W:${S.iW+S.wT*2} D:${S.iD+S.wT*2} H:${S.iH+S.wT*2}mm`;
+  draw();
+}
+function onRound(){g('rF').style.display=g('useR').checked?'block':'none';onChange();}
+function setType(t){
+  S.type=t;
+  ['case','case-fixed','case-movable','drawer','drawer-fixed','drawer-movable'].forEach(k=>g('tb-'+k).classList.toggle('active',k===t));
+  g('drawSec').style.display=ID(t)?'block':'none';
+  g('divTF').style.display=HD(t)?'block':'none';
+  const showTip=HD(t)&&!S.is3d;
+  g('tipBox').style.display=showTip?'block':'none';
+  if(!HD(t)){S.xDiv=[];S.yDiv=[];S.selDiv=null;}
+  onChange();
+}
+function setBack(v){S.backType=v;['open','closed'].forEach(k=>g('rb-'+k).classList.toggle('active',k===v));onChange();}
+function setHandle(v){S.handleType=v;['groove','hole'].forEach(k=>g('rh-'+k).classList.toggle('active',k===v));g('gF').style.display=v==='groove'?'block':'none';g('hF').style.display=v==='hole'?'block':'none';onChange();}
+function toggle3d(){
+  S.is3d=!S.is3d;
+  c2.style.display=S.is3d?'none':'block';c3.style.display=S.is3d?'block':'none';
+  g('btn3d').textContent=S.is3d?'✏ 編集に戻る':'◉ 3D確認';
+  g('btn3d').classList.toggle('active',S.is3d);
+  g('mLbl').textContent=S.is3d?'◉ 3D確認（編集不可）':'✏ 編集モード';
+  g('h3d').style.display=S.is3d?'block':'none';
+  g('tipBox').style.display=(HD(S.type)&&!S.is3d)?'block':'none';
+  if(S.is3d){rot={x:.42,y:.68};zoom=1;draw3();}else draw2();
+}
+function setFmt(v){S.fmt=v;['stl','obj'].forEach(k=>g('ef-'+k).classList.toggle('active',k===v));}
+function draw(){S.is3d?draw3():draw2();}
+
+// ── Dividers ──
+function addDiv(axis,pos){
+  const arr=axis==='x'?S.xDiv:S.yDiv,mx=axis==='x'?S.iW:S.iD;
+  arr.push(cl(Math.round(pos),1,mx-1));
+  clampDivs();checkOv();draw2();
+}
+function clampDivs(){
+  S.xDiv=S.xDiv.map(p=>cl(Math.round(p),1,S.iW-1));
+  S.yDiv=S.yDiv.map(p=>cl(Math.round(p),1,S.iD-1));
+}
+function checkOv(){
+  let w=false;
+  const chk=(arr,mx)=>{const s=[...arr].sort((a,b)=>a-b);s.forEach(p=>{if(p<1||p>mx-1)w=true;});for(let i=0;i<s.length-1;i++)if(s[i+1]-s[i]<S.dT+1)w=true;};
+  chk(S.xDiv,S.iW);chk(S.yDiv,S.iD);
+  g('wb').classList.toggle('on',w);
+}
+
+// ── 2D ──
+function getSc(){
+  const W=c2.width-120,H=c2.height-100;
+  const mW=S.iW+S.wT*2;
+  const mH=ID(S.type)?(S.iH+S.wT*2)*1.4+S.iD+S.wT*2+32:S.iD+S.wT*2;
+  return Math.min(W/mW,H/mH,5.5);
+}
+function rrect(c,x,y,w,h,r){
+  r=Math.min(r||0,w/2,h/2);
+  if(r<=0){c.rect(x,y,w,h);return;}
+  c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.arcTo(x+w,y,x+w,y+r,r);c.lineTo(x+w,y+h-r);c.arcTo(x+w,y+h,x+w-r,y+h,r);c.lineTo(x+r,y+h);c.arcTo(x,y+h,x,y+h-r,r);c.lineTo(x,y+r);c.arcTo(x,y,x+r,y,r);c.closePath();
+}
+
+function draw2(){
+  const c=ctx2,W=c2.width,H=c2.height;
+  c.clearRect(0,0,W,H);c.fillStyle='#06060e';c.fillRect(0,0,W,H);
+  drawGrid2(c,W,H);
+  ID(S.type)?drawDrawer2(c,W,H):drawCase2(c,W,H);
+}
+function drawGrid2(c,W,H){c.strokeStyle='#0f0f1a';c.lineWidth=1;for(let x=0;x<W;x+=24){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}for(let y=0;y<H;y+=24){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}}
+
+function getIO(){
+  const s=getSc(),wt=S.wT,iW=S.iW,iD=S.iD,W=c2.width,H=c2.height;
+  if(!ID(S.type)){
+    const oW=(iW+wt*2)*s,oH=(iD+wt*2)*s;
+    return{x:(W-oW)/2+wt*s,y:(H-oH)/2+wt*s,s};
+  }else{
+    const iH=S.iH,frontH=(iH+wt*2)*s,topH=(iD+wt*2)*s,gap=28;
+    const total=frontH+gap+topH,startY=(H-total)/2;
+    return{x:(W-(iW+wt*2)*s)/2+wt*s,y:startY+frontH+gap+wt*s,s};
+  }
+}
+
+function drawCase2(c,W,H){
+  const s=getSc(),iW=S.iW,iD=S.iD,wt=S.wT;
+  const oW=(iW+wt*2)*s,oH=(iD+wt*2)*s;
+  const ox=(W-oW)/2,oy=(H-oH)/2;
+  const rr=S.useR?S.rR*s:0;
+  c.fillStyle='#252534';rrect(c,ox,oy,oW,oH,rr);c.fill();
+  c.strokeStyle='#484860';c.lineWidth=1.5;rrect(c,ox,oy,oW,oH,rr);c.stroke();
+  c.fillStyle='#0a0a14';c.fillRect(ox+wt*s,oy+wt*s,iW*s,iD*s);
+  c.strokeStyle='#202030';c.lineWidth=1;c.strokeRect(ox+wt*s,oy+wt*s,iW*s,iD*s);
+  if(S.useS)stackNubs(c,ox,oy,oW,s);
+  if(HD(S.type)){
+    drawDivs(c,ox,oy,s,wt,iW,iD);
+    drawSegs(c,ox,oy,s,wt,iW,iD);
+    if(!S.xDiv.length&&!S.yDiv.length)drawHint(c,ox+wt*s,oy+wt*s,iW*s,iD*s);
+  }
+  dimL(c,ox,oy+oH+18,ox+oW,oy+oH+18,`W:${iW+wt*2}mm`);
+  dimL(c,ox+oW+18,oy,ox+oW+18,oy+oH,`D:${iD+wt*2}mm`);
+  c.fillStyle='#3a3a50';c.font='9px IBM Plex Mono';c.textAlign='left';c.textBaseline='bottom';
+  c.fillText('TOP VIEW',ox,oy-6);
+}
+
+function drawDrawer2(c,W,H){
+  const s=getSc(),iW=S.iW,iD=S.iD,iH=S.iH,wt=S.wT;
+  const oW=(iW+wt*2)*s,frontH=(iH+wt*2)*s,topH=(iD+wt*2)*s,gap=28;
+  const total=frontH+gap+topH,startY=(H-total)/2,ox=(W-oW)/2;
+  const rr=S.useR?S.rR*s:0;
+  // FRONT VIEW
+  const fy=startY;
+  c.fillStyle='#1a241a';rrect(c,ox,fy,oW,frontH,rr);c.fill();
+  c.strokeStyle='#304830';c.lineWidth=1.5;rrect(c,ox,fy,oW,frontH,rr);c.stroke();
+  c.fillStyle='#06060e';c.fillRect(ox+wt*s,fy+wt*s,iW*s,iH*s);
+  c.strokeStyle='#142014';c.lineWidth=1;c.strokeRect(ox+wt*s,fy+wt*s,iW*s,iH*s);
+  const hcy=fy+wt*s+iH*s*.82;
+  if(S.handleType==='groove'){
+    const gw=Math.min(S.gW,iW-4)*s,gh=S.gH*s,gx=ox+wt*s+(iW*s-gw)/2;
+    c.fillStyle='#020206';c.fillRect(gx,hcy-gh/2,gw,gh);
+    c.strokeStyle='#3a683a';c.lineWidth=1.5;c.strokeRect(gx,hcy-gh/2,gw,gh);
+    c.fillStyle='#3a683a';c.font='9px IBM Plex Mono';c.textAlign='center';c.textBaseline='top';
+    c.fillText(`溝 ${S.gW}×${S.gH}mm`,ox+wt*s+iW*s/2,hcy+gh/2+4);
+  }else{
+    const r=Math.min(S.hD/2,iW/4,iH/4)*s;
+    c.beginPath();c.arc(ox+wt*s+iW*s/2,hcy,r,0,Math.PI*2);c.fillStyle='#020206';c.fill();c.strokeStyle='#3a683a';c.lineWidth=1.5;c.stroke();
+    c.fillStyle='#3a683a';c.font='9px IBM Plex Mono';c.textAlign='center';c.textBaseline='top';c.fillText(`穴 ⌀${S.hD}mm`,ox+wt*s+iW*s/2,hcy+r+4);
+  }
+  if(S.useS)stackNubs(c,ox,fy,oW,s);
+  c.fillStyle='#2a482a';c.font='9px IBM Plex Mono';c.textAlign='left';c.textBaseline='bottom';c.fillText('FRONT VIEW — 外枠正面',ox,fy-5);
+  dimL(c,ox,fy+frontH+14,ox+oW,fy+frontH+14,`W:${iW+wt*2}mm`);
+  dimL(c,ox+oW+14,fy,ox+oW+14,fy+frontH,`H:${iH+wt*2}mm`);
+  // TOP VIEW
+  const ty=startY+frontH+gap;
+  c.fillStyle='#14182a';c.fillRect(ox,ty,oW,topH);c.strokeStyle='#283060';c.lineWidth=1.5;c.strokeRect(ox,ty,oW,topH);
+  c.fillStyle='#06060e';c.fillRect(ox+wt*s,ty+wt*s,iW*s,iD*s);c.strokeStyle='#111428';c.lineWidth=1;c.strokeRect(ox+wt*s,ty+wt*s,iW*s,iD*s);
+  if(HD(S.type)){
+    drawDivs(c,ox,ty,s,wt,iW,iD);
+    drawSegs(c,ox,ty,s,wt,iW,iD);
+    if(!S.xDiv.length&&!S.yDiv.length)drawHint(c,ox+wt*s,ty+wt*s,iW*s,iD*s);
+  }
+  c.fillStyle='#283060';c.font='9px IBM Plex Mono';c.textAlign='left';c.textBaseline='bottom';c.fillText('TOP VIEW — 引き出し内部（上から）',ox,ty-5);
+  dimL(c,ox,ty+topH+14,ox+oW,ty+topH+14,`W:${iW+wt*2}mm`);
+  dimL(c,ox+oW+14,ty,ox+oW+14,ty+topH,`D:${iD+wt*2}mm`);
+}
+
+function drawDivs(c,ox,oy,s,wt,iW,iD){
+  const iX=ox+wt*s,iY=oy+wt*s;
+  S.xDiv.forEach((p,i)=>{
+    const sel=S.selDiv&&S.selDiv.axis==='x'&&S.selDiv.idx===i;
+    const dx=iX+p*s;
+    c.fillStyle=sel?'rgba(74,158,255,.65)':'rgba(74,158,255,.3)';c.fillRect(dx-S.dT*s/2,iY,S.dT*s,iD*s);
+    c.strokeStyle=sel?'#7ac8ff':'#3a80cc';c.lineWidth=sel?2:1;c.strokeRect(dx-S.dT*s/2,iY,S.dT*s,iD*s);
+    c.fillStyle='#5ab0ff';c.font='9px IBM Plex Mono';c.textAlign='center';c.textBaseline='bottom';c.fillText(`${p}mm`,dx,iY-3);
+    if(sel){arw(c,dx-10,iY+iD*s/2,'L','#7ac8ff');arw(c,dx+10,iY+iD*s/2,'R','#7ac8ff');}
+  });
+  S.yDiv.forEach((p,i)=>{
+    const sel=S.selDiv&&S.selDiv.axis==='y'&&S.selDiv.idx===i;
+    const dy=iY+p*s;
+    c.fillStyle=sel?'rgba(74,158,255,.65)':'rgba(74,158,255,.3)';c.fillRect(iX,dy-S.dT*s/2,iW*s,S.dT*s);
+    c.strokeStyle=sel?'#7ac8ff':'#3a80cc';c.lineWidth=sel?2:1;c.strokeRect(iX,dy-S.dT*s/2,iW*s,S.dT*s);
+    c.fillStyle='#5ab0ff';c.font='9px IBM Plex Mono';c.textAlign='right';c.textBaseline='middle';c.fillText(`${p}mm`,iX-4,dy);
+    if(sel){arw(c,iX+iW*s/2,dy-10,'U','#7ac8ff');arw(c,iX+iW*s/2,dy+10,'D','#7ac8ff');}
   });
 }
 
-function getInput(id) {
-  const v = parseFloat(document.getElementById(id).value);
-  return isNaN(v) ? 0 : v;
-}
-
-function stepVal(id, delta) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  let v = parseFloat(el.value) + delta;
-  const mn = parseFloat(el.min || 0);
-  const mx = parseFloat(el.max || 9999);
-  v = Math.max(mn, Math.min(mx, v));
-  el.value = v;
-  updateModel();
-}
-
-// ═══════════════════════════════════════════════════
-// TYPE / MODE
-// ═══════════════════════════════════════════════════
-function setType(t) {
-  state.type = t;
-  ['case','case-fixed','case-movable','drawer','drawer-fixed','drawer-movable'].forEach(k => {
-    const el = document.getElementById('btn-'+k);
-    if (el) el.classList.toggle('active', k === t);
-  });
-  const isDrawer = TYPES_DRAWER.includes(t);
-  document.getElementById('drawerOptions').style.display = isDrawer ? 'block' : 'none';
-  const hasDividers = TYPES_WITH_DIVIDERS.includes(t);
-  document.getElementById('divThickField').style.display = hasDividers ? 'block' : 'none';
-  document.getElementById('xDivSection').style.display = hasDividers ? 'block' : 'none';
-  document.getElementById('yDivSection').style.display = hasDividers ? 'block' : 'none';
-  if (!hasDividers) {
-    state.xDividers = []; state.yDividers = [];
-    renderDividerLists();
+function drawSegs(c,ox,oy,s,wt,iW,iD){
+  const iX=ox+wt*s,iY=oy+wt*s;
+  c.font='10px IBM Plex Mono';c.fillStyle='#445566';c.textBaseline='middle';
+  const xs=[0,...[...S.xDiv].sort((a,b)=>a-b),iW];
+  for(let i=0;i<xs.length-1;i++){
+    const l=xs[i]+(i>0?S.dT/2:0),r=xs[i+1]-(i<xs.length-2?S.dT/2:0),seg=r-l;
+    if(seg>5){c.textAlign='center';c.fillText(`${Math.round(seg)}`,iX+(l+seg/2)*s,iY+iD*s/2);}
   }
-  updateModel();
-}
-
-function setMode(m) {
-  state.mode = m;
-  document.querySelectorAll('.mode-tab').forEach((el,i) => {
-    el.classList.toggle('active', (i===0 && m==='edit') || (i===1 && m==='preview'));
-  });
-  const c2 = document.getElementById('canvas2d');
-  const c3 = document.getElementById('canvas3d');
-  document.getElementById('toolLabel').textContent = m === 'edit' ? '2D編集モード' : '3D確認モード（編集不可）';
-  document.getElementById('toolbar3d').style.display = m === 'preview' ? 'flex' : 'none';
-  if (m === 'edit') {
-    c2.style.display = 'block';
-    c3.style.display = 'none';
-    drawCanvas2d();
-  } else {
-    c2.style.display = 'none';
-    c3.style.display = 'block';
-    init3d();
+  const ys=[0,...[...S.yDiv].sort((a,b)=>a-b),iD];
+  c.textAlign='left';
+  for(let i=0;i<ys.length-1;i++){
+    const t2=ys[i]+(i>0?S.dT/2:0),b=ys[i+1]-(i<ys.length-2?S.dT/2:0),seg=b-t2;
+    if(seg>5){c.fillText(`${Math.round(seg)}`,iX+iW*s+4,iY+(t2+seg/2)*s);}
   }
 }
 
-function setBack(v) {
-  state.backType = v;
-  ['open','closed'].forEach(k => document.getElementById('back-'+k).classList.toggle('active', k===v));
-  updateModel();
+function drawHint(c,ix,iy,iw,ih){
+  c.fillStyle='rgba(74,158,255,.1)';c.fillRect(ix,iy,iw,ih);
+  c.strokeStyle='rgba(74,158,255,.25)';c.lineWidth=1;c.setLineDash([4,4]);c.strokeRect(ix+2,iy+2,iw-4,ih-4);c.setLineDash([]);
 }
 
-function setHandle(v) {
-  state.handleType = v;
-  ['groove','hole'].forEach(k => document.getElementById('handle-'+k).classList.toggle('active', k===v));
-  document.getElementById('grooveFields').style.display = v==='groove' ? 'block' : 'none';
-  document.getElementById('holeFields').style.display = v==='hole' ? 'block' : 'none';
-  updateModel();
+function stackNubs(c,ox,oy,oW,s){
+  const nw=7*s,nh=2.5*s,sp=18*s,cnt=Math.max(1,Math.floor(oW/sp)-1),sx=ox+(oW-(cnt-1)*sp)/2;
+  c.fillStyle='#363646';c.strokeStyle='#505060';c.lineWidth=1;
+  for(let i=0;i<cnt;i++){c.fillRect(sx+i*sp-nw/2,oy-nh,nw,nh);c.strokeRect(sx+i*sp-nw/2,oy-nh,nw,nh);}
+}
+function arw(c,x,y,d,col){
+  c.fillStyle=col;c.beginPath();
+  if(d==='L'){c.moveTo(x-7,y);c.lineTo(x,y-4);c.lineTo(x,y+4);}
+  else if(d==='R'){c.moveTo(x+7,y);c.lineTo(x,y-4);c.lineTo(x,y+4);}
+  else if(d==='U'){c.moveTo(x,y-7);c.lineTo(x-4,y);c.lineTo(x+4,y);}
+  else{c.moveTo(x,y+7);c.lineTo(x-4,y);c.lineTo(x+4,y);}
+  c.closePath();c.fill();
+}
+function dimL(c,x1,y1,x2,y2,txt){
+  c.strokeStyle='#2a2a3c';c.lineWidth=1;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+  c.fillStyle='#4a4a60';c.font='10px IBM Plex Mono';c.textAlign='center';c.textBaseline='middle';
+  c.fillText(txt,(x1+x2)/2+(y1===y2?0:12),(y1+y2)/2+(y1===y2?-7:0));
 }
 
-function setFmt(v) {
-  state.fmt = v;
-  ['stl','obj'].forEach(k => document.getElementById('fmt-'+k).classList.toggle('active', k===v));
+// ── Mouse ──
+function cXY(e){const r=c2.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+function hitTest(mx,my){
+  const{x:iX,y:iY,s}=getIO(),HIT=9;
+  for(let i=0;i<S.xDiv.length;i++){if(Math.abs(mx-(iX+S.xDiv[i]*s))<HIT&&my>=iY&&my<=iY+S.iD*s)return{axis:'x',idx:i};}
+  for(let i=0;i<S.yDiv.length;i++){if(Math.abs(my-(iY+S.yDiv[i]*s))<HIT&&mx>=iX&&mx<=iX+S.iW*s)return{axis:'y',idx:i};}
+  return null;
 }
-
-// ═══════════════════════════════════════════════════
-// UPDATE MODEL
-// ═══════════════════════════════════════════════════
-function updateModel() {
-  state.innerW = clamp(getInput('innerW'), 1, 300);
-  state.innerD = clamp(getInput('innerD'), 1, 300);
-  state.innerH = clamp(getInput('innerH'), 1, 300);
-  state.wallT  = clamp(getInput('wallT'),  1, 20);
-  state.divT   = clamp(getInput('divT'),   1, 20);
-  state.roundCorners = document.getElementById('roundCorners').checked;
-  state.roundR = clamp(getInput('roundR'), 0.5, 20);
-  state.stackable = document.getElementById('stackable').checked;
-  state.grooveW = clamp(getInput('grooveW'), 5, 200);
-  state.grooveH = clamp(getInput('grooveH'), 3, 50);
-  state.holeDia = clamp(getInput('holeDia'), 5, 100);
-
-  // Clamp dividers
-  clampDividers();
-  checkOverlap();
-  renderDividerLists();
-  updateInfoBar();
-
-  if (state.mode === 'edit') drawCanvas2d();
-  else if (renderer3d) draw3d();
+function insideInner(mx,my){
+  const{x:iX,y:iY,s}=getIO();
+  return mx>=iX&&mx<=iX+S.iW*s&&my>=iY&&my<=iY+S.iD*s;
 }
-
-function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
-
-function clampDividers() {
-  const w = state.innerW, d = state.innerD, dt = state.divT;
-  state.xDividers = state.xDividers
-    .map(p => clamp(p, 1+dt/2, w-1-dt/2))
-    .filter((p,i,a) => true);
-  state.yDividers = state.yDividers
-    .map(p => clamp(p, 1+dt/2, d-1-dt/2))
-    .filter((p,i,a) => true);
+function m2Down(e){
+  if(S.is3d||!HD(S.type))return;
+  const{x,y}=cXY(e);
+  const hit=hitTest(x,y);
+  if(hit){dragDiv=hit;S.selDiv=hit;c2.style.cursor=hit.axis==='x'?'ew-resize':'ns-resize';draw2();}
+  else if(insideInner(x,y)){
+    const{x:iX,y:iY,s}=getIO();
+    if(e.shiftKey){addDiv('y',(y-iY)/s);S.selDiv={axis:'y',idx:S.yDiv.length-1};}
+    else{addDiv('x',(x-iX)/s);S.selDiv={axis:'x',idx:S.xDiv.length-1};}
+    dragDiv=S.selDiv;
+    c2.style.cursor=S.selDiv.axis==='x'?'ew-resize':'ns-resize';
+    draw2();
+  }else{S.selDiv=null;draw2();}
 }
-
-function checkOverlap() {
-  let warn = false;
-  const check = (arr, max) => {
-    const sorted = [...arr].sort((a,b)=>a-b);
-    for (let i = 0; i < sorted.length-1; i++) {
-      if (sorted[i+1] - sorted[i] < state.divT + 1) warn = true;
-    }
-    // edge checks
-    arr.forEach(p => { if (p < 1 || p > max - 1) warn = true; });
-  };
-  check(state.xDividers, state.innerW);
-  check(state.yDividers, state.innerD);
-  document.getElementById('warningBar').classList.toggle('visible', warn);
-}
-
-function updateInfoBar() {
-  const W = state.innerW, D = state.innerD, H = state.innerH;
-  const wt = state.wallT;
-  document.getElementById('infoBar').textContent =
-    `内寸 W:${W}mm D:${D}mm H:${H}mm  外寸 W:${W+wt*2} D:${D+wt*2} H:${H+wt*2}`;
-}
-
-// ═══════════════════════════════════════════════════
-// DIVIDER MANAGEMENT
-// ═══════════════════════════════════════════════════
-function addDivider(axis) {
-  const arr = axis === 'x' ? state.xDividers : state.yDividers;
-  const max = axis === 'x' ? state.innerW : state.innerD;
-  // Find a free spot
-  let pos = Math.round(max / 2);
-  if (arr.length > 0) {
-    pos = Math.round((arr[arr.length-1] + max) / 2);
-  }
-  pos = clamp(pos, 1 + state.divT, max - 1 - state.divT);
-  arr.push(pos);
-  updateModel();
-}
-
-function renderDividerLists() {
-  renderDivList('x', state.xDividers, state.innerW);
-  renderDivList('y', state.yDividers, state.innerD);
-}
-
-function renderDivList(axis, arr, max) {
-  const el = document.getElementById(axis+'DivList');
-  el.innerHTML = '';
-  const sorted = [...arr].map((p,i)=>({p,i})).sort((a,b)=>a.p-b.p);
-  sorted.forEach(({p, i}) => {
-    const isSelected = state.selectedDiv && state.selectedDiv.axis === axis && state.selectedDiv.index === i;
-    const div = document.createElement('div');
-    div.className = 'divider-item' + (isSelected ? ' selected' : '');
-    div.onclick = () => selectDivider(axis, i);
-    div.innerHTML = `
-      <span class="di-label">${axis.toUpperCase()}${i+1}</span>
-      <span class="di-pos">${p}mm</span>
-      <button class="divider-del" onclick="event.stopPropagation();deleteDivider('${axis}',${i})">✕</button>
-    `;
-    el.appendChild(div);
-  });
-}
-
-function selectDivider(axis, index) {
-  state.selectedDiv = {axis, index};
-  const arr = axis === 'x' ? state.xDividers : state.yDividers;
-  document.getElementById('selectedPos').value = arr[index];
-  document.getElementById('selectedInfo').classList.add('visible');
-  renderDividerLists();
-  drawCanvas2d();
-}
-
-function stepSelected(delta) {
-  if (!state.selectedDiv) return;
-  const {axis, index} = state.selectedDiv;
-  const arr = axis === 'x' ? state.xDividers : state.yDividers;
-  const max = axis === 'x' ? state.innerW : state.innerD;
-  arr[index] = clamp(arr[index] + delta, 1, max - 1);
-  document.getElementById('selectedPos').value = arr[index];
-  updateModel();
-}
-
-function moveSelectedDivider(val) {
-  if (!state.selectedDiv) return;
-  const {axis, index} = state.selectedDiv;
-  const arr = axis === 'x' ? state.xDividers : state.yDividers;
-  const max = axis === 'x' ? state.innerW : state.innerD;
-  arr[index] = clamp(parseFloat(val)||1, 1, max-1);
-  updateModel();
-}
-
-function deleteSelectedDivider() {
-  if (!state.selectedDiv) return;
-  deleteDivider(state.selectedDiv.axis, state.selectedDiv.index);
-  state.selectedDiv = null;
-  document.getElementById('selectedInfo').classList.remove('visible');
-}
-
-function deleteDivider(axis, index) {
-  if (axis === 'x') state.xDividers.splice(index, 1);
-  else state.yDividers.splice(index, 1);
-  if (state.selectedDiv && state.selectedDiv.axis === axis && state.selectedDiv.index === index) {
-    state.selectedDiv = null;
-    document.getElementById('selectedInfo').classList.remove('visible');
-  }
-  updateModel();
-}
-
-// ═══════════════════════════════════════════════════
-// 2D CANVAS
-// ═══════════════════════════════════════════════════
-const SCALE = 3; // px per mm baseline
-let canvas2dEl, ctx2d;
-let dragDivider = null; // {axis, index, startPos, startMouse}
-
-function setupCanvas2d() {
-  canvas2dEl = document.getElementById('canvas2d');
-  ctx2d = canvas2dEl.getContext('2d');
-
-  canvas2dEl.addEventListener('mousedown', onCanvasMouseDown);
-  canvas2dEl.addEventListener('mousemove', onCanvasMouseMove);
-  canvas2dEl.addEventListener('mouseup', onCanvasMouseUp);
-  canvas2dEl.addEventListener('mouseleave', onCanvasMouseUp);
-
-  resizeCanvas2d();
-  window.addEventListener('resize', resizeCanvas2d);
-}
-
-function resizeCanvas2d() {
-  const wrapper = document.getElementById('canvasWrapper');
-  canvas2dEl.width = wrapper.clientWidth;
-  canvas2dEl.height = wrapper.clientHeight;
-  drawCanvas2d();
-}
-
-function getScale() {
-  const W = canvas2dEl.width - 80;
-  const H = canvas2dEl.height - 80;
-  const isDrawer = TYPES_DRAWER.includes(state.type);
-  const modelW = state.innerW + state.wallT * 2;
-  const modelH = isDrawer ? (state.innerH + state.wallT * 2) * 1.3 : state.innerD + state.wallT * 2;
-  return Math.min(W / modelW, H / modelH, 5);
-}
-
-function drawCanvas2d() {
-  if (!ctx2d) return;
-  const c = ctx2d;
-  const W = canvas2dEl.width, H = canvas2dEl.height;
-  c.clearRect(0, 0, W, H);
-
-  // Background
-  c.fillStyle = '#0a0a0a';
-  c.fillRect(0, 0, W, H);
-
-  // Grid
-  drawGrid(c, W, H);
-
-  const s = getScale();
-  const isDrawer = TYPES_DRAWER.includes(state.type);
-  const hasDividers = TYPES_WITH_DIVIDERS.includes(state.type);
-
-  if (isDrawer) {
-    drawDrawer2d(c, W, H, s, hasDividers);
-  } else {
-    drawCase2d(c, W, H, s, hasDividers);
-  }
-}
-
-function drawGrid(c, W, H) {
-  c.strokeStyle = '#1a1a1a';
-  c.lineWidth = 1;
-  const step = 20;
-  for (let x = 0; x < W; x += step) {
-    c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke();
-  }
-  for (let y = 0; y < H; y += step) {
-    c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
-  }
-}
-
-function drawCase2d(c, W, H, s, hasDividers) {
-  const iW = state.innerW, iD = state.innerD, wt = state.wallT;
-  const outerW = (iW + wt*2) * s;
-  const outerH = (iD + wt*2) * s;
-  const ox = (W - outerW) / 2;
-  const oy = (H - outerH) / 2;
-
-  // Outer shell
-  c.fillStyle = '#2a2a2a';
-  roundedRect(c, ox, oy, outerW, outerH, state.roundCorners ? state.roundR * s : 0);
-  c.fill();
-  c.strokeStyle = '#555';
-  c.lineWidth = 1.5;
-  roundedRect(c, ox, oy, outerW, outerH, state.roundCorners ? state.roundR * s : 0);
-  c.stroke();
-
-  // Inner cavity
-  c.fillStyle = '#141414';
-  c.fillRect(ox + wt*s, oy + wt*s, iW*s, iD*s);
-  c.strokeStyle = '#3a3a3a';
-  c.lineWidth = 1;
-  c.strokeRect(ox + wt*s, oy + wt*s, iW*s, iD*s);
-
-  // Stack nubs
-  if (state.stackable) drawStackNubs2d(c, ox, oy, outerW, outerH, s, 'top');
-
-  if (!hasDividers) return;
-
-  // Dividers X (vertical lines across depth)
-  state.xDividers.forEach((pos, idx) => {
-    const isSelected = state.selectedDiv && state.selectedDiv.axis === 'x' && state.selectedDiv.index === idx;
-    const dx = ox + wt*s + pos*s;
-    c.fillStyle = isSelected ? 'rgba(74,158,255,0.5)' : 'rgba(74,158,255,0.25)';
-    c.fillRect(dx - state.divT*s/2, oy + wt*s, state.divT*s, iD*s);
-    c.strokeStyle = isSelected ? '#4a9eff' : '#2a6fcc';
-    c.lineWidth = isSelected ? 2 : 1;
-    c.strokeRect(dx - state.divT*s/2, oy + wt*s, state.divT*s, iD*s);
-
-    // Label segment sizes
-    drawSegmentLabel(c, ox + wt*s, dx - state.divT*s/2, oy + wt*s + iD*s/2, pos, 'x', isSelected);
-
-    // Arrow handles
-    if (isSelected || TYPES_WITH_DIVIDERS.includes(state.type)) {
-      drawArrowHandle(c, dx, oy + wt*s - 14, 'up', isSelected);
-      drawArrowHandle(c, dx, oy + wt*s + iD*s + 14, 'down', isSelected);
-    }
-
-    // Position label above
-    c.fillStyle = isSelected ? '#4a9eff' : '#2a6fcc';
-    c.font = `10px IBM Plex Mono, monospace`;
-    c.textAlign = 'center';
-    c.fillText(`${pos}mm`, dx, oy + wt*s - 22);
-  });
-
-  // Last segment label
-  {
-    const xs = [...state.xDividers].sort((a,b)=>a-b);
-    const lastX = xs.length > 0 ? xs[xs.length-1] + state.divT/2 : 0;
-    const segW = state.innerW - lastX;
-    if (segW > 5) {
-      const px = ox + wt*s + (lastX + segW/2 + (xs.length>0 ? state.divT/2 : 0)) * s;
-      drawCenteredLabel(c, px, oy + wt*s + iD*s/2, `${Math.round(segW)}mm`, false);
-    }
-  }
-
-  // Dividers Y (horizontal lines across width)
-  state.yDividers.forEach((pos, idx) => {
-    const isSelected = state.selectedDiv && state.selectedDiv.axis === 'y' && state.selectedDiv.index === idx;
-    const dy = oy + wt*s + pos*s;
-    c.fillStyle = isSelected ? 'rgba(74,158,255,0.5)' : 'rgba(74,158,255,0.25)';
-    c.fillRect(ox + wt*s, dy - state.divT*s/2, iW*s, state.divT*s);
-    c.strokeStyle = isSelected ? '#4a9eff' : '#2a6fcc';
-    c.lineWidth = isSelected ? 2 : 1;
-    c.strokeRect(ox + wt*s, dy - state.divT*s/2, iW*s, state.divT*s);
-
-    drawSegmentLabel(c, oy + wt*s, dy - state.divT*s/2, ox + wt*s + iW*s/2, pos, 'y', isSelected);
-    c.fillStyle = isSelected ? '#4a9eff' : '#2a6fcc';
-    c.font = '10px IBM Plex Mono, monospace';
-    c.textAlign = 'right';
-    c.fillText(`${pos}mm`, ox + wt*s - 6, dy + 3);
-  });
-
-  // Outer dimension labels
-  drawDimLabel(c, ox, oy + outerH + 18, ox + outerW, oy + outerH + 18, `W:${(iW + wt*2)}mm`);
-  drawDimLabel(c, ox + outerW + 18, oy, ox + outerW + 18, oy + outerH, `D:${(iD + wt*2)}mm`);
-}
-
-function drawDrawer2d(c, W, H, s, hasDividers) {
-  const iW = state.innerW, iD = state.innerD, iH = state.innerH, wt = state.wallT;
-  const outerW = (iW + wt*2) * s;
-  const outerH_front = (iH + wt*2) * s; // front view height
-  const innerH_top = iD * s;
-
-  const gapBetween = 20;
-  const totalH = outerH_front + gapBetween + innerH_top + wt*2*s;
-
-  const startY = (H - totalH) / 2;
-  const ox = (W - outerW) / 2;
-
-  // ─ FRONT VIEW (outer shell) ─
-  const frontOy = startY;
-  c.fillStyle = '#2a2a2a';
-  roundedRect(c, ox, frontOy, outerW, outerH_front, state.roundCorners ? state.roundR*s : 0);
-  c.fill();
-  c.strokeStyle = '#555'; c.lineWidth = 1.5;
-  roundedRect(c, ox, frontOy, outerW, outerH_front, state.roundCorners ? state.roundR*s : 0);
-  c.stroke();
-
-  // Opening
-  c.fillStyle = '#0a0a0a';
-  c.fillRect(ox + wt*s, frontOy + wt*s, iW*s, iH*s);
-  c.strokeStyle = '#333'; c.lineWidth = 1;
-  c.strokeRect(ox + wt*s, frontOy + wt*s, iW*s, iH*s);
-
-  // Handle
-  const hdY = frontOy + wt*s + iH*s * 0.85;
-  if (state.handleType === 'groove') {
-    const gw = Math.min(state.grooveW, iW - 2) * s;
-    const gh = state.grooveH * s;
-    const gx = ox + wt*s + (iW*s - gw) / 2;
-    c.fillStyle = '#0a0a0a';
-    c.strokeStyle = '#666'; c.lineWidth = 1.5;
-    c.fillRect(gx, hdY - gh/2, gw, gh);
-    c.strokeRect(gx, hdY - gh/2, gw, gh);
-    c.fillStyle = '#888'; c.font = '9px IBM Plex Mono'; c.textAlign = 'center';
-    c.fillText(`溝 ${state.grooveW}×${state.grooveH}mm`, ox + wt*s + iW*s/2, hdY + gh/2 + 10);
-  } else {
-    const r = Math.min(state.holeDia/2, iW/4, iH/4) * s;
-    const hx = ox + wt*s + iW*s/2;
-    c.beginPath(); c.arc(hx, hdY, r, 0, Math.PI*2);
-    c.fillStyle = '#0a0a0a'; c.fill();
-    c.strokeStyle = '#666'; c.lineWidth = 1.5; c.stroke();
-    c.fillStyle = '#888'; c.font = '9px IBM Plex Mono'; c.textAlign = 'center';
-    c.fillText(`穴 ⌀${state.holeDia}mm`, hx, hdY + r + 12);
-  }
-
-  // Stack nubs on outer shell
-  if (state.stackable) drawStackNubs2d(c, ox, frontOy, outerW, outerH_front, s, 'top');
-
-  // Label FRONT
-  c.fillStyle = '#555'; c.font = '10px IBM Plex Mono'; c.textAlign = 'left';
-  c.fillText('FRONT VIEW', ox, frontOy - 8);
-
-  // ─ TOP VIEW (inner drawer, top-down) ─
-  const topOy = startY + outerH_front + gapBetween;
-  const topOuterH = (iD + wt*2)*s;
-
-  c.fillStyle = '#1e2830';
-  roundedRect(c, ox, topOy, outerW, topOuterH, 0);
-  c.fill();
-  c.strokeStyle = '#4a9eff'; c.lineWidth = 1.5;
-  roundedRect(c, ox, topOy, outerW, topOuterH, 0);
-  c.stroke();
-
-  // Inner top
-  c.fillStyle = '#121a20';
-  c.fillRect(ox + wt*s, topOy + wt*s, iW*s, iD*s);
-
-  // Dividers in drawer top view
-  if (hasDividers) {
-    state.xDividers.forEach((pos, idx) => {
-      const isSelected = state.selectedDiv && state.selectedDiv.axis === 'x' && state.selectedDiv.index === idx;
-      const dx = ox + wt*s + pos*s;
-      c.fillStyle = isSelected ? 'rgba(74,158,255,0.5)' : 'rgba(74,158,255,0.25)';
-      c.fillRect(dx - state.divT*s/2, topOy + wt*s, state.divT*s, iD*s);
-      c.strokeStyle = isSelected ? '#4a9eff' : '#2a6fcc';
-      c.lineWidth = isSelected ? 2 : 1;
-      c.strokeRect(dx - state.divT*s/2, topOy + wt*s, state.divT*s, iD*s);
-      c.fillStyle = '#4a9eff'; c.font = '10px IBM Plex Mono'; c.textAlign = 'center';
-      c.fillText(`${pos}mm`, dx, topOy + wt*s - 6);
-    });
-    state.yDividers.forEach((pos, idx) => {
-      const isSelected = state.selectedDiv && state.selectedDiv.axis === 'y' && state.selectedDiv.index === idx;
-      const dy = topOy + wt*s + pos*s;
-      c.fillStyle = isSelected ? 'rgba(74,158,255,0.5)' : 'rgba(74,158,255,0.25)';
-      c.fillRect(ox + wt*s, dy - state.divT*s/2, iW*s, state.divT*s);
-      c.strokeStyle = isSelected ? '#4a9eff' : '#2a6fcc';
-      c.lineWidth = isSelected ? 2 : 1;
-      c.strokeRect(ox + wt*s, dy - state.divT*s/2, iW*s, state.divT*s);
-      c.fillStyle = '#4a9eff'; c.font = '10px IBM Plex Mono'; c.textAlign = 'right';
-      c.fillText(`${pos}mm`, ox + wt*s - 4, dy + 3);
-    });
-  }
-
-  c.fillStyle = '#4a9eff'; c.font = '10px IBM Plex Mono'; c.textAlign = 'left';
-  c.fillText('TOP VIEW (引き出し内部)', ox, topOy - 8);
-
-  // Dim labels
-  drawDimLabel(c, ox, topOy + topOuterH + 16, ox + outerW, topOy + topOuterH + 16, `W:${iW + wt*2}mm`);
-  drawDimLabel(c, ox + outerW + 16, topOy, ox + outerW + 16, topOy + topOuterH, `D:${iD + wt*2}mm`);
-  drawDimLabel(c, ox, frontOy + outerH_front + 10, ox + outerW, frontOy + outerH_front + 10, `W:${iW + wt*2}mm`);
-}
-
-function drawSegmentLabel(c, fromCoord, toCoord, centerOther, pos, axis, isSelected) {
-  // For X: label from 0 to first divider
-  const segs = axis === 'x' ? state.xDividers : state.yDividers;
-  const sorted = [...segs].sort((a,b)=>a-b);
-  const s2 = getScale();
-  const iW = state.innerW, iD = state.innerD;
-  const wt = state.wallT;
-  const W = canvas2dEl.width, H = canvas2dEl.height;
-  const outerW = (iW + wt*2)*s2, outerH = (iD + wt*2)*s2;
-  const ox = (W - outerW)/2, oy = (H - outerH)/2;
-
-  // Draw ALL segment labels once (called once per divider but only draw first)
-  if (!isSelected) return; // only draw labels for selected context, avoid duplicates
-}
-
-function drawCenteredLabel(c, x, y, text, isSelected) {
-  c.fillStyle = isSelected ? '#4a9eff' : '#666';
-  c.font = '10px IBM Plex Mono, monospace';
-  c.textAlign = 'center';
-  c.fillText(text, x, y);
-}
-
-function drawArrowHandle(c, x, y, dir, isSelected) {
-  c.fillStyle = isSelected ? '#4a9eff' : '#446688';
-  c.beginPath();
-  if (dir === 'up') {
-    c.moveTo(x, y-6); c.lineTo(x-5, y); c.lineTo(x+5, y);
-  } else {
-    c.moveTo(x, y+6); c.lineTo(x-5, y); c.lineTo(x+5, y);
-  }
-  c.closePath(); c.fill();
-}
-
-function drawStackNubs2d(c, ox, oy, outerW, outerH, s, side) {
-  const nw = 8*s, nh = 3*s, spacing = 20*s;
-  c.fillStyle = '#444';
-  c.strokeStyle = '#666'; c.lineWidth = 1;
-  const count = Math.floor(outerW / spacing);
-  const startX = ox + (outerW - (count-1)*spacing) / 2;
-  for (let i = 0; i < count; i++) {
-    const nx = startX + i*spacing - nw/2;
-    c.fillRect(nx, oy - nh, nw, nh);
-    c.strokeRect(nx, oy - nh, nw, nh);
-  }
-}
-
-function drawDimLabel(c, x1, y1, x2, y2, text) {
-  c.strokeStyle = '#444'; c.lineWidth = 1;
-  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
-  const mx = (x1+x2)/2, my = (y1+y2)/2;
-  c.fillStyle = '#666'; c.font = '10px IBM Plex Mono'; c.textAlign = 'center';
-  c.fillText(text, mx, my + (y1===y2 ? -4 : 3));
-}
-
-function roundedRect(c, x, y, w, h, r) {
-  if (r <= 0) { c.rect(x, y, w, h); return; }
-  r = Math.min(r, w/2, h/2);
-  c.beginPath();
-  c.moveTo(x+r, y);
-  c.lineTo(x+w-r, y); c.arcTo(x+w, y, x+w, y+r, r);
-  c.lineTo(x+w, y+h-r); c.arcTo(x+w, y+h, x+w-r, y+h, r);
-  c.lineTo(x+r, y+h); c.arcTo(x, y+h, x, y+h-r, r);
-  c.lineTo(x, y+r); c.arcTo(x, y, x+r, y, r);
-  c.closePath();
-}
-
-// ── DRAG DIVIDERS ──
-function getCanvasPos(e) {
-  const rect = canvas2dEl.getBoundingClientRect();
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-}
-
-function onCanvasMouseDown(e) {
-  if (state.mode !== 'edit') return;
-  if (!TYPES_WITH_DIVIDERS.includes(state.type)) return;
-  const pos = getCanvasPos(e);
-  const hit = hitTestDividers(pos.x, pos.y);
-  if (hit) {
-    dragDivider = hit;
-    canvas2dEl.style.cursor = hit.axis === 'x' ? 'ew-resize' : 'ns-resize';
-    selectDivider(hit.axis, hit.index);
-  } else {
-    state.selectedDiv = null;
-    document.getElementById('selectedInfo').classList.remove('visible');
-    renderDividerLists();
-    drawCanvas2d();
-  }
-}
-
-function onCanvasMouseMove(e) {
-  if (!dragDivider) {
-    // Cursor hint
-    if (TYPES_WITH_DIVIDERS.includes(state.type)) {
-      const pos = getCanvasPos(e);
-      const hit = hitTestDividers(pos.x, pos.y);
-      canvas2dEl.style.cursor = hit ? (hit.axis === 'x' ? 'ew-resize' : 'ns-resize') : 'default';
+function m2Move(e){
+  if(S.is3d)return;
+  const{x,y}=cXY(e);
+  if(!dragDiv){
+    if(HD(S.type)){
+      const hit=hitTest(x,y);
+      c2.style.cursor=hit?(hit.axis==='x'?'ew-resize':'ns-resize'):(insideInner(x,y)?'crosshair':'default');
     }
     return;
   }
-  const pos = getCanvasPos(e);
-  const s = getScale();
-  const wt = state.wallT;
-  const iW = state.innerW, iD = state.innerD;
-  const W = canvas2dEl.width, H = canvas2dEl.height;
-  const isDrawer = TYPES_DRAWER.includes(state.type);
+  const{x:iX,y:iY,s}=getIO();
+  if(dragDiv.axis==='x'){S.xDiv[dragDiv.idx]=cl(Math.round((x-iX)/s),1,S.iW-1);}
+  else{S.yDiv[dragDiv.idx]=cl(Math.round((y-iY)/s),1,S.iD-1);}
+  checkOv();draw2();
+}
+function m2Up(){if(dragDiv){dragDiv=null;c2.style.cursor='default';checkOv();draw2();}}
 
-  if (dragDivider.axis === 'x') {
-    const outerW = (iW + wt*2)*s;
-    const ox = (W - outerW)/2;
-    const innerX = pos.x - (ox + wt*s);
-    const mmX = innerX / s;
-    state.xDividers[dragDivider.index] = clamp(Math.round(mmX), 1, iW-1);
-  } else {
-    let oy;
-    if (isDrawer) {
-      const outerHF = (state.innerH + wt*2)*s;
-      const gapBetween = 20;
-      oy = (H - outerHF - gapBetween - (iD + wt*2)*s) / 2 + outerHF + gapBetween + wt*s;
-    } else {
-      const outerH = (iD + wt*2)*s;
-      oy = (H - outerH)/2 + wt*s;
+// ── 3D ──
+function draw3(){
+  const c=ctx3,W=c3.width,H=c3.height;
+  c.clearRect(0,0,W,H);c.fillStyle='#04040c';c.fillRect(0,0,W,H);
+  grid3(c,W,H);
+  ID(S.type)?d3Drawer(c,W,H):d3Case(c,W,H);
+}
+function proj3(x,y,z,W,H){
+  const cy=Math.cos(rot.y),sy=Math.sin(rot.y),cx=Math.cos(rot.x),sx=Math.sin(rot.x);
+  const rx=x*cy+z*sy,rz=-x*sy+z*cy,ry2=y*cx-rz*sx,rz2=y*sx+rz*cx;
+  const fov=560*zoom,pz=rz2+600;
+  return{x:rx*fov/pz+W/2,y:-ry2*fov/pz+H/2,z:rz2};
+}
+function grid3(c,W,H){
+  c.strokeStyle='#0c0c18';c.lineWidth=1;
+  for(let i=-160;i<=160;i+=26){
+    const a=proj3(i,-88,-160,W,H),b=proj3(i,-88,160,W,H);
+    const d=proj3(-160,-88,i,W,H),e=proj3(160,-88,i,W,H);
+    c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();
+    c.beginPath();c.moveTo(d.x,d.y);c.lineTo(e.x,e.y);c.stroke();
+  }
+}
+function b3(c,W,H,x,y,z,bw,bh,bd,cols,edge){
+  const vs=[[x,y,z],[x+bw,y,z],[x+bw,y+bh,z],[x,y+bh,z],[x,y,z+bd],[x+bw,y,z+bd],[x+bw,y+bh,z+bd],[x,y+bh,z+bd]].map(([px,py,pz])=>proj3(px,py,pz,W,H));
+  const fs=[[4,5,6,7,cols[0]],[0,3,2,1,cols[1]],[0,4,7,3,cols[2]],[1,2,6,5,cols[3]],[3,7,6,2,cols[4]],[0,1,5,4,cols[5]]].map(([a,b2,c2,d,col])=>({pts:[vs[a],vs[b2],vs[c2],vs[d]],col,z:(vs[a].z+vs[b2].z+vs[c2].z+vs[d].z)/4})).sort((a,b2)=>b2.z-a.z);
+  fs.forEach(({pts,col})=>{c.beginPath();c.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>c.lineTo(p.x,p.y));c.closePath();c.fillStyle=col;c.fill();c.strokeStyle=edge;c.lineWidth=.8;c.stroke();});
+}
+function d3Case(c,W,H){
+  const iW=S.iW,iD=S.iD,iH=S.iH,wt=S.wT,sc=Math.min(175/Math.max(iW,iD,iH),2.5);
+  const sw=iW*sc,sd=iD*sc,sh=iH*sc,ws=wt*sc;
+  const cx=-(sw+ws*2)/2,cy=-(sh+ws*2)/2,cz=-(sd+ws*2)/2;
+  const GC=['#2c2c3e','#222232','#282838','#282838','#343448','#1c1c2c'];
+  b3(c,W,H,cx,cy,cz,sw+ws*2,ws,sd+ws*2,GC,'#404058');
+  b3(c,W,H,cx,cy+ws,cz,sw+ws*2,sh,ws,GC,'#404058');
+  b3(c,W,H,cx,cy+ws,cz+sd+ws,sw+ws*2,sh,ws,GC,'#404058');
+  b3(c,W,H,cx,cy+ws,cz+ws,ws,sh,sd,GC,'#404058');
+  b3(c,W,H,cx+sw+ws,cy+ws,cz+ws,ws,sh,sd,GC,'#404058');
+  b3(c,W,H,cx,cy+sh+ws,cz,sw+ws*2,ws,sd+ws*2,['#383848','#2c2c3c','#343444','#343444','#424254','#242434'],'#505068');
+  if(HD(S.type)){
+    const DC=['#1a4472','#122e58','#163864','#163864','#1e5080','#0e2244'];
+    S.xDiv.forEach(p=>{b3(c,W,H,cx+ws+p*sc-S.dT*sc/2,cy+ws,cz+ws,S.dT*sc,sh,sd,DC,'#2255a8');});
+    S.yDiv.forEach(p=>{b3(c,W,H,cx+ws,cy+ws,cz+ws+p*sc-S.dT*sc/2,sw,sh,S.dT*sc,DC,'#2255a8');});
+  }
+  if(S.useS){const nw=7*sc,nh=2.5*sc,cnt=Math.max(1,Math.floor((sw+ws*2)/18)-1),snx=cx+((sw+ws*2)-(cnt-1)*18*sc)/2;for(let i=0;i<cnt;i++)b3(c,W,H,snx+i*18*sc-nw/2,cy+sh+ws*2,cz+(sd+ws*2)*.35,nw,nh,nw,['#404050','#303040','#383848','#383848','#484858','#282838'],'#505060');}
+}
+function d3Drawer(c,W,H){
+  const iW=S.iW,iD=S.iD,iH=S.iH,wt=S.wT,sc=Math.min(155/Math.max(iW,iD,iH),2.5);
+  const sw=iW*sc,sd=iD*sc,sh=iH*sc,ws=wt*sc,ow=sw+ws*2,oh=sh+ws*2,od=sd+ws*2;
+  const ocx=-ow/2,ocy=-oh/2,ocz=-od/2;
+  const OC=['#162416','#0e180e','#122012','#122012','#1c2e1c','#0a0e0a'];
+  b3(c,W,H,ocx,ocy,ocz,ow,ws,od,OC,'#244824');
+  b3(c,W,H,ocx,ocy+ws,ocz,ow,sh,ws,OC,'#244824');
+  b3(c,W,H,ocx,ocy+ws,ocz+ws,ws,sh,sd,OC,'#244824');
+  b3(c,W,H,ocx+sw+ws,ocy+ws,ocz+ws,ws,sh,sd,OC,'#244824');
+  if(S.backType==='closed')b3(c,W,H,ocx,ocy+ws,ocz+sd+ws,ow,sh,ws,OC,'#244824');
+  b3(c,W,H,ocx,ocy+sh+ws,ocz,ow,ws,od,['#1e341e','#162814','#1c2e1c','#1c2e1c','#263c26','#101e10'],'#2c542c');
+  const pull=14*sc,dx=ocx+ws,dy=ocy+ws,dz=ocz+ws-pull;
+  const IC=['#342a18','#281e12','#2e2414','#2e2414','#3c3220','#1e180e'];
+  b3(c,W,H,dx,dy,dz,sw,ws,sd,IC,'#5a4a30');
+  b3(c,W,H,dx,dy+ws,dz,sw,sh-ws,ws,IC,'#5a4a30');
+  b3(c,W,H,dx,dy+ws,dz+ws,ws,sh-ws,sd-ws,IC,'#5a4a30');
+  b3(c,W,H,dx+sw-ws,dy+ws,dz+ws,ws,sh-ws,sd-ws,IC,'#5a4a30');
+  if(HD(S.type)){
+    const DC=['#1a4472','#122e58','#163864','#163864','#1e5080','#0e2244'];
+    S.xDiv.forEach(p=>{b3(c,W,H,dx+ws+p*sc-S.dT*sc/2,dy+ws,dz+ws,S.dT*sc,sh-ws,sd-ws,DC,'#2255a8');});
+    S.yDiv.forEach(p=>{b3(c,W,H,dx+ws,dy+ws,dz+ws+p*sc-S.dT*sc/2,sw-ws*2,sh-ws,S.dT*sc,DC,'#2255a8');});
+  }
+}
+
+// ── Export ──
+function openExport(){
+  g('expOv').classList.add('on');
+  const n={'case':'1ファイル（ケース一体型）','case-fixed':'1ファイル（仕切り含む一体型）','case-movable':'ZIP：ケース本体 + 仕切り（別ファイル）','drawer':'ZIP：外枠 + 引き出し','drawer-fixed':'ZIP：外枠 + 引き出し（仕切り一体）','drawer-movable':'ZIP：外枠 + 引き出し + 仕切り（別ファイル）'};
+  g('eNote').textContent='出力形式：'+n[S.type];
+}
+function closeExp(){g('expOv').classList.remove('on');}
+function doExport(){
+  const fmt=S.fmt;
+  if(['case','case-fixed'].includes(S.type)){
+    const t=bCase();dl(toSTL_or_OBJ(t,fmt,'model'),`case.${fmt}`);
+  }else zipExp(fmt);
+  closeExp();
+}
+function bCase(){
+  const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH;
+  let t=bTri(0,0,0,iW+wt*2,iH+wt*2,iD+wt*2);
+  if(S.type==='case-fixed'){
+    S.xDiv.forEach(p=>t=[...t,...bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)]);
+    S.yDiv.forEach(p=>t=[...t,...bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)]);
+  }
+  return t;
+}
+function bTri(x,y,z,w,h,d){
+  const v=[[x,y,z],[x+w,y,z],[x+w,y+h,z],[x,y+h,z],[x,y,z+d],[x+w,y,z+d],[x+w,y+h,z+d],[x,y+h,z+d]];
+  return[{v:[v[0],v[2],v[1]],n:[0,0,-1]},{v:[v[0],v[3],v[2]],n:[0,0,-1]},{v:[v[4],v[5],v[6]],n:[0,0,1]},{v:[v[4],v[6],v[7]],n:[0,0,1]},{v:[v[0],v[4],v[7]],n:[-1,0,0]},{v:[v[0],v[7],v[3]],n:[-1,0,0]},{v:[v[1],v[2],v[6]],n:[1,0,0]},{v:[v[1],v[6],v[5]],n:[1,0,0]},{v:[v[0],v[1],v[5]],n:[0,-1,0]},{v:[v[0],v[5],v[4]],n:[0,-1,0]},{v:[v[3],v[7],v[6]],n:[0,1,0]},{v:[v[3],v[6],v[2]],n:[0,1,0]}];
+}
+function toSTL_or_OBJ(tris,fmt,name){return fmt==='stl'?toSTL(tris,name):toOBJ(tris,name);}
+function toSTL(t,nm){
+  let s=`solid ${nm}\n`;
+  t.forEach(f=>{s+=`  facet normal ${f.n.join(' ')}\n    outer loop\n`;f.v.forEach(v=>s+=`      vertex ${v.join(' ')}\n`);s+=`    endloop\n  endfacet\n`;});
+  return s+`endsolid ${nm}\n`;
+}
+function toOBJ(t,nm){
+  const vs=[],vm={};const av=v=>{const k=v.join(',');if(vm[k]==null){vs.push(v);vm[k]=vs.length;}return vm[k];};
+  const fs=t.map(f=>f.v.map(av));
+  return`# ${nm}\n`+vs.map(v=>`v ${v.join(' ')}`).join('\n')+'\n'+fs.map(f=>`f ${f.join(' ')}`).join('\n')+'\n';
+}
+function dl(content,fname){const b=new Blob([content],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();}
+async function zipExp(fmt){
+  const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH,files={};
+  const enc=s=>toSTL_or_OBJ(s,fmt,'part');
+  if(S.type==='case-movable'){
+    files[`case.${fmt}`]=enc(bTri(0,0,0,iW+wt*2,iH+wt*2,iD+wt*2));
+    S.xDiv.forEach((p,i)=>files[`divider_x${i+1}.${fmt}`]=enc(bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)));
+    S.yDiv.forEach((p,i)=>files[`divider_y${i+1}.${fmt}`]=enc(bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)));
+  }else{
+    let outer=bTri(0,0,0,iW+wt*2,iH+wt*2,iD+wt*2);
+    let inner=[...bTri(0,0,0,iW+wt*2,wt,iD+wt*2),...bTri(0,wt,0,iW+wt*2,iH,wt),...bTri(0,wt,wt,wt,iH,iD),...bTri(iW+wt,wt,wt,wt,iH,iD)];
+    if(S.backType==='closed')inner=[...inner,...bTri(0,wt,iD+wt,iW+wt*2,iH,wt)];
+    if(S.type==='drawer-fixed'){
+      S.xDiv.forEach(p=>inner=[...inner,...bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)]);
+      S.yDiv.forEach(p=>inner=[...inner,...bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)]);
     }
-    const innerY = pos.y - oy;
-    const mmY = innerY / s;
-    state.yDividers[dragDivider.index] = clamp(Math.round(mmY), 1, iD-1);
-  }
-  document.getElementById('selectedPos').value = dragDivider.axis === 'x'
-    ? state.xDividers[dragDivider.index]
-    : state.yDividers[dragDivider.index];
-  checkOverlap();
-  renderDividerLists();
-  drawCanvas2d();
-}
-
-function onCanvasMouseUp() {
-  if (dragDivider) {
-    dragDivider = null;
-    canvas2dEl.style.cursor = 'default';
-    updateModel();
-  }
-}
-
-function hitTestDividers(mx, my) {
-  const s = getScale();
-  const wt = state.wallT;
-  const iW = state.innerW, iD = state.innerD;
-  const W = canvas2dEl.width, H = canvas2dEl.height;
-  const isDrawer = TYPES_DRAWER.includes(state.type);
-  const outerW = (iW + wt*2)*s;
-  const outerH = (iD + wt*2)*s;
-  const ox = (W - outerW)/2;
-  let topViewOy;
-  if (isDrawer) {
-    const outerHF = (state.innerH + wt*2)*s;
-    const gapBetween = 20;
-    topViewOy = (H - outerHF - gapBetween - (iD + wt*2)*s) / 2 + outerHF + gapBetween;
-  } else {
-    topViewOy = (H - outerH)/2;
-  }
-
-  const HIT = 8;
-  for (let i = 0; i < state.xDividers.length; i++) {
-    const dx = ox + wt*s + state.xDividers[i]*s;
-    if (Math.abs(mx - dx) < HIT) return {axis:'x', index:i};
-  }
-  for (let i = 0; i < state.yDividers.length; i++) {
-    const dy = topViewOy + wt*s + state.yDividers[i]*s;
-    if (Math.abs(my - dy) < HIT) return {axis:'y', index:i};
-  }
-  return null;
-}
-
-// ═══════════════════════════════════════════════════
-// 3D RENDERING (canvas 3D with simple projection)
-// ═══════════════════════════════════════════════════
-let renderer3d = null;
-let rot = {x: 0.5, y: 0.7};
-let isDragging3d = false;
-let lastMouse3d = {x:0,y:0};
-let zoom3d = 1.0;
-
-function init3d() {
-  const c = document.getElementById('canvas3d');
-  const wrapper = document.getElementById('canvasWrapper');
-  c.width = wrapper.clientWidth;
-  c.height = wrapper.clientHeight;
-
-  c.onmousedown = (e) => { isDragging3d = true; lastMouse3d = {x:e.clientX, y:e.clientY}; };
-  c.onmousemove = (e) => {
-    if (!isDragging3d) return;
-    const dx = e.clientX - lastMouse3d.x;
-    const dy = e.clientY - lastMouse3d.y;
-    rot.y += dx * 0.01;
-    rot.x += dy * 0.01;
-    lastMouse3d = {x:e.clientX, y:e.clientY};
-    draw3d();
-  };
-  c.onmouseup = c.onmouseleave = () => { isDragging3d = false; };
-  c.onwheel = (e) => { zoom3d = clamp(zoom3d - e.deltaY * 0.001, 0.3, 3); draw3d(); e.preventDefault(); };
-
-  renderer3d = c.getContext('2d');
-  draw3d();
-}
-
-function draw3d() {
-  const c = renderer3d;
-  const W = renderer3d.canvas.width;
-  const H = renderer3d.canvas.height;
-  c.clearRect(0,0,W,H);
-  c.fillStyle = '#0a0a0a';
-  c.fillRect(0,0,W,H);
-
-  // Grid floor
-  draw3dGrid(c, W, H);
-
-  const isDrawer = TYPES_DRAWER.includes(state.type);
-  if (isDrawer) draw3dDrawer(c, W, H);
-  else draw3dCase(c, W, H);
-}
-
-function project(x, y, z, W, H) {
-  const cx = Math.cos(rot.y), sx = Math.sin(rot.y);
-  const cy = Math.cos(rot.x), sy = Math.sin(rot.x);
-  // Rotate around Y
-  const rx = x*cx - z*sx;
-  const rz = x*sx + z*cx;
-  // Rotate around X
-  const ry2 = y*cy - rz*sy;
-  const rz2 = y*sy + rz*cy;
-
-  const fov = 600 * zoom3d;
-  const pz = rz2 + 500;
-  const px = rx * fov / pz + W/2;
-  const py = -ry2 * fov / pz + H/2;
-  return {x: px, y: py, z: rz2};
-}
-
-function draw3dGrid(c, W, H) {
-  const size = 150, step = 25;
-  c.strokeStyle = '#1a1a1a';
-  c.lineWidth = 1;
-  for (let i = -size; i <= size; i += step) {
-    const a = project(i, -80, -size, W, H);
-    const b = project(i, -80, size, W, H);
-    const d = project(-size, -80, i, W, H);
-    const e2 = project(size, -80, i, W, H);
-    c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
-    c.beginPath(); c.moveTo(d.x, d.y); c.lineTo(e2.x, e2.y); c.stroke();
-  }
-}
-
-function draw3dBox(c, W, H, x0, y0, z0, bw, bh, bd, faceColors, edgeColor, cornerRadius) {
-  // 8 vertices
-  const verts = [
-    [x0,    y0,    z0],
-    [x0+bw, y0,    z0],
-    [x0+bw, y0+bh, z0],
-    [x0,    y0+bh, z0],
-    [x0,    y0,    z0+bd],
-    [x0+bw, y0,    z0+bd],
-    [x0+bw, y0+bh, z0+bd],
-    [x0,    y0+bh, z0+bd],
-  ].map(([x,y,z]) => project(x,y,z,W,H));
-
-  const faces = [
-    [4,5,6,7, faceColors[0]], // front
-    [0,1,2,3, faceColors[1]], // back
-    [0,4,7,3, faceColors[2]], // left
-    [1,5,6,2, faceColors[3]], // right
-    [3,2,6,7, faceColors[4]], // top
-    [0,1,5,4, faceColors[5]], // bottom
-  ].sort((a,b) => {
-    const az = (verts[a[0]].z + verts[a[1]].z + verts[a[2]].z + verts[a[3]].z)/4;
-    const bz = (verts[b[0]].z + verts[b[1]].z + verts[b[2]].z + verts[b[3]].z)/4;
-    return bz - az;
-  });
-
-  faces.forEach(([i0,i1,i2,i3,col]) => {
-    c.beginPath();
-    c.moveTo(verts[i0].x, verts[i0].y);
-    c.lineTo(verts[i1].x, verts[i1].y);
-    c.lineTo(verts[i2].x, verts[i2].y);
-    c.lineTo(verts[i3].x, verts[i3].y);
-    c.closePath();
-    c.fillStyle = col;
-    c.fill();
-    c.strokeStyle = edgeColor;
-    c.lineWidth = 1;
-    c.stroke();
-  });
-}
-
-function draw3dCase(c, W, H) {
-  const iW = state.innerW, iD = state.innerD, iH = state.innerH, wt = state.wallT;
-  const scale = Math.min(200/Math.max(iW,iD,iH), 2);
-  const sw = iW*scale, sd = iD*scale, sh = iH*scale, wts = wt*scale;
-
-  const cx = -(sw + wts*2)/2, cy = -(sh + wts*2)/2, cz = -(sd + wts*2)/2;
-
-  // Bottom
-  draw3dBox(c,W,H, cx, cy, cz, sw+wts*2, wts, sd+wts*2,
-    ['#3a3a3a','#2a2a2a','#333','#333','#444','#222'], '#555');
-  // Front wall
-  draw3dBox(c,W,H, cx, cy+wts, cz, sw+wts*2, sh, wts,
-    ['#404040','#2a2a2a','#353535','#353535','#444','#222'], '#555');
-  // Back wall
-  draw3dBox(c,W,H, cx, cy+wts, cz+sd+wts, sw+wts*2, sh, wts,
-    ['#2a2a2a','#333','#353535','#353535','#444','#222'], '#555');
-  // Left wall
-  draw3dBox(c,W,H, cx, cy+wts, cz+wts, wts, sh, sd,
-    ['#353535','#2a2a2a','#3a3a3a','#303030','#444','#222'], '#555');
-  // Right wall
-  draw3dBox(c,W,H, cx+sw+wts, cy+wts, cz+wts, wts, sh, sd,
-    ['#353535','#2a2a2a','#303030','#3a3a3a','#444','#222'], '#555');
-  // Top
-  draw3dBox(c,W,H, cx, cy+sh+wts, cz, sw+wts*2, wts, sd+wts*2,
-    ['#484848','#353535','#404040','#404040','#505050','#303030'], '#666');
-
-  // Dividers
-  const hasDividers = TYPES_WITH_DIVIDERS.includes(state.type);
-  if (hasDividers) {
-    const dt = state.divT * scale;
-    state.xDividers.forEach(pos => {
-      const dx = cx + wts + pos*scale - dt/2;
-      draw3dBox(c,W,H, dx, cy+wts, cz+wts, dt, sh, sd,
-        ['#2a5a88','#1a4a78','#234d7a','#234d7a','#2f639a','#1a3d66'], '#4a9eff');
-    });
-    state.yDividers.forEach(pos => {
-      const dz = cz + wts + pos*scale - dt/2;
-      draw3dBox(c,W,H, cx+wts, cy+wts, dz, sw, sh, dt,
-        ['#2a5a88','#1a4a78','#234d7a','#234d7a','#2f639a','#1a3d66'], '#4a9eff');
-    });
-  }
-
-  // Stackable nubs
-  if (state.stackable) {
-    const nw = 8*scale, nh = 3*scale;
-    const spacing = 20*scale;
-    const count = Math.max(1, Math.floor((sw+wts*2)/spacing) - 1);
-    const startNx = cx + ((sw+wts*2) - (count-1)*spacing)/2;
-    for (let i = 0; i < count; i++) {
-      draw3dBox(c,W,H, startNx + i*spacing - nw/2, cy+sh+wts*2, cz+(sd+wts*2)/4, nw, nh, nw,
-        ['#555','#444','#4a4a4a','#4a4a4a','#666','#333'], '#888');
+    files[`outer.${fmt}`]=enc(outer);
+    files[`drawer.${fmt}`]=enc(inner);
+    if(S.type==='drawer-movable'){
+      S.xDiv.forEach((p,i)=>files[`divider_x${i+1}.${fmt}`]=enc(bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)));
+      S.yDiv.forEach((p,i)=>files[`divider_y${i+1}.${fmt}`]=enc(bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)));
     }
   }
+  const blob=await mkZip(files);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`model_${S.type}.zip`;a.click();
 }
-
-function draw3dDrawer(c, W, H) {
-  const iW = state.innerW, iD = state.innerD, iH = state.innerH, wt = state.wallT;
-  const scale = Math.min(180/Math.max(iW,iD,iH), 2);
-  const sw = iW*scale, sd = iD*scale, sh = iH*scale, wts = wt*scale;
-  const outerW = sw + wts*2, outerH = sh + wts*2, outerD = sd + wts*2;
-
-  const ocx = -outerW/2, ocy = -outerH/2, ocz = -outerD/2;
-
-  // ── Outer shell ──
-  // Bottom
-  draw3dBox(c,W,H, ocx, ocy, ocz, outerW, wts, outerD,
-    ['#2e3a2e','#1e2a1e','#283228','#283228','#3a4a3a','#1a241a'], '#4a7a4a');
-  // Front wall (with handle cutout indicated by color)
-  draw3dBox(c,W,H, ocx, ocy+wts, ocz, outerW, sh, wts,
-    ['#4a6a4a','#2e3e2e','#3a5a3a','#3a5a3a','#4a6a4a','#2a3e2a'], '#5a8a5a');
-  // Left
-  draw3dBox(c,W,H, ocx, ocy+wts, ocz+wts, wts, sh, sd,
-    ['#3a5a3a','#2e3e2e','#4a6a4a','#2e4e2e','#4a6a4a','#2a3e2a'], '#5a8a5a');
-  // Right
-  draw3dBox(c,W,H, ocx+sw+wts, ocy+wts, ocz+wts, wts, sh, sd,
-    ['#3a5a3a','#2e3e2e','#2e4e2e','#4a6a4a','#4a6a4a','#2a3e2a'], '#5a8a5a');
-  // Back (if closed)
-  if (state.backType === 'closed') {
-    draw3dBox(c,W,H, ocx, ocy+wts, ocz+sd+wts, outerW, sh, wts,
-      ['#2e3a2e','#3a5a3a','#3a5a3a','#3a5a3a','#4a6a4a','#2a3e2a'], '#5a8a5a');
+async function mkZip(files){
+  const enc=new TextEncoder(),entries=[];let off=0;
+  for(const[name,content]of Object.entries(files)){
+    const data=enc.encode(content),nb=enc.encode(name),crc=crc32c(data),lh=lHdr(nb,data.length,crc);
+    entries.push({lh,data,nb,off,crc});off+=lh.length+data.length;
   }
-  // Top
-  draw3dBox(c,W,H, ocx, ocy+sh+wts, ocz, outerW, wts, outerD,
-    ['#506a50','#3a5a3a','#486048','#486048','#5a7a5a','#303e30'], '#6a9a6a');
-
-  // ── Inner drawer (pulled out slightly) ──
-  const pullOut = 15*scale;
-  const dx = ocx + wts, dy = ocy + wts, dz = ocz + wts - pullOut;
-  // bottom
-  draw3dBox(c,W,H, dx, dy, dz, sw, wts, sd,
-    ['#4a4030','#2a2820','#3a3028','#3a3028','#5a5040','#201e18'], '#807060');
-  // front face of drawer
-  draw3dBox(c,W,H, dx, dy+wts, dz, sw, sh-wts, wts,
-    ['#6a5a40','#4a4030','#5a4a38','#5a4a38','#6a5a40','#3a3028'], '#908070');
-  // sides
-  draw3dBox(c,W,H, dx, dy+wts, dz+wts, wts, sh-wts, sd-wts,
-    ['#5a4a38','#3a3028','#6a5a40','#4a4030','#6a5a40','#2a2820'], '#907060');
-  draw3dBox(c,W,H, dx+sw-wts, dy+wts, dz+wts, wts, sh-wts, sd-wts,
-    ['#5a4a38','#3a3028','#4a4030','#6a5a40','#6a5a40','#2a2820'], '#907060');
-
-  // Dividers in drawer
-  const hasDividers = TYPES_WITH_DIVIDERS.includes(state.type);
-  if (hasDividers) {
-    const dt = state.divT * scale;
-    state.xDividers.forEach(pos => {
-      const ddx = dx + wts + pos*scale - dt/2;
-      draw3dBox(c,W,H, ddx, dy+wts, dz+wts, dt, sh-wts, sd-wts,
-        ['#2a5a88','#1a4a78','#234d7a','#234d7a','#2f639a','#1a3d66'], '#4a9eff');
-    });
-    state.yDividers.forEach(pos => {
-      const ddz = dz + wts + pos*scale - dt/2;
-      draw3dBox(c,W,H, dx+wts, dy+wts, ddz, sw-wts*2, sh-wts, dt,
-        ['#2a5a88','#1a4a78','#234d7a','#234d7a','#2f639a','#1a3d66'], '#4a9eff');
-    });
-  }
+  const cd=mrg(entries.map(e=>cHdr(e.nb,e.data.length,e.crc,e.off)));
+  return new Blob([mrg([...entries.map(e=>mrg([e.lh,e.data])),cd,eocd(entries.length,cd.length,off)])],{type:'application/zip'});
 }
-
-// ═══════════════════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════════════════
-function openExport() {
-  const modal = document.getElementById('exportModal');
-  modal.classList.add('visible');
-  updateExportNote();
-}
-function closeExport() {
-  document.getElementById('exportModal').classList.remove('visible');
-}
-function updateExportNote() {
-  const needsZip = ['case-movable','drawer','drawer-fixed','drawer-movable'].includes(state.type);
-  let note = '';
-  if (state.type === 'case') note = '1ファイル（一体型）';
-  else if (state.type === 'case-fixed') note = '1ファイル（一体型）';
-  else if (state.type === 'case-movable') note = 'ZIPファイル：ケース本体 + 仕切り（別々）';
-  else if (state.type === 'drawer') note = 'ZIPファイル：外枠 + 引き出し部分';
-  else if (state.type === 'drawer-fixed') note = 'ZIPファイル：外枠 + 引き出し部分（仕切り一体）';
-  else if (state.type === 'drawer-movable') note = 'ZIPファイル：外枠 + 引き出し部分 + 仕切り';
-  document.getElementById('exportNote').textContent = '出力形式：' + note;
-}
-
-function doExport() {
-  const fmt = state.fmt;
-  const needsZip = ['case-movable','drawer','drawer-fixed','drawer-movable'].includes(state.type);
-
-  if (needsZip) {
-    exportZip(fmt);
-  } else {
-    const data = generateSTL_case(fmt);
-    download(data, `case.${fmt}`, fmt === 'stl' ? 'model/stl' : 'text/plain');
-  }
-  closeExport();
-}
-
-function generateSTL_case(fmt) {
-  // Simple ASCII STL generation for a box
-  const W = state.innerW + state.wallT*2;
-  const D = state.innerD + state.wallT*2;
-  const H = state.innerH + state.wallT*2;
-
-  const tris = generateBoxTriangles(0,0,0,W,H,D);
-  // subtract inner
-  // For simplicity, we generate the shell as triangles
-
-  if (fmt === 'stl') {
-    return generateASCII_STL(tris, 'case');
-  } else {
-    return generateOBJ(tris, 'case');
-  }
-}
-
-function generateBoxTriangles(x,y,z,w,h,d) {
-  // Returns array of triangles for a solid box
-  const v = [
-    [x,   y,   z],   [x+w, y,   z],   [x+w, y+h, z],   [x,   y+h, z],
-    [x,   y,   z+d], [x+w, y,   z+d], [x+w, y+h, z+d], [x,   y+h, z+d],
-  ];
-  const faces = [
-    [0,1,2,0,2,3, [0,0,-1]],
-    [4,6,5,4,7,6, [0,0,1]],
-    [0,3,7,0,7,4, [-1,0,0]],
-    [1,5,6,1,6,2, [1,0,0]],
-    [0,4,5,0,5,1, [0,-1,0]],
-    [3,2,6,3,6,7, [0,1,0]],
-  ];
-  const tris = [];
-  faces.forEach(([a,b,c,d2,e,f,n]) => {
-    tris.push({v:[v[a],v[b],v[c]], n});
-    tris.push({v:[v[d2],v[e],v[f]], n});
-  });
-  return tris;
-}
-
-function generateASCII_STL(tris, name) {
-  let s = `solid ${name}\n`;
-  tris.forEach(t => {
-    s += `  facet normal ${t.n[0]} ${t.n[1]} ${t.n[2]}\n`;
-    s += `    outer loop\n`;
-    t.v.forEach(v => { s += `      vertex ${v[0]} ${v[1]} ${v[2]}\n`; });
-    s += `    endloop\n  endfacet\n`;
-  });
-  s += `endsolid ${name}\n`;
-  return s;
-}
-
-function generateOBJ(tris, name) {
-  let verts = [], faces = [];
-  const vMap = {};
-  const addV = (v) => {
-    const key = v.join(',');
-    if (vMap[key] === undefined) { verts.push(v); vMap[key] = verts.length; }
-    return vMap[key];
-  };
-  tris.forEach(t => {
-    const ids = t.v.map(addV);
-    faces.push(ids);
-  });
-  let s = `# ${name}\n`;
-  verts.forEach(v => { s += `v ${v[0]} ${v[1]} ${v[2]}\n`; });
-  faces.forEach(f => { s += `f ${f[0]} ${f[1]} ${f[2]}\n`; });
-  return s;
-}
-
-async function exportZip(fmt) {
-  // Generate multiple files and zip them
-  const files = {};
-
-  const wt = state.wallT, iW = state.innerW, iD = state.innerD, iH = state.innerH;
-
-  if (state.type === 'case-movable') {
-    const caseTris = generateShellTriangles(0,0,0, iW+wt*2, iH+wt*2, iD+wt*2, wt);
-    files[`case.${fmt}`] = fmt === 'stl' ? generateASCII_STL(caseTris, 'case') : generateOBJ(caseTris, 'case');
-    state.xDividers.forEach((pos, i) => {
-      const t = generateBoxTriangles(wt+pos-state.divT/2, wt, wt, state.divT, iH, iD);
-      files[`divider_x${i+1}.${fmt}`] = fmt === 'stl' ? generateASCII_STL(t, `div_x${i+1}`) : generateOBJ(t, `div_x${i+1}`);
-    });
-    state.yDividers.forEach((pos, i) => {
-      const t = generateBoxTriangles(wt, wt, wt+pos-state.divT/2, iW, iH, state.divT);
-      files[`divider_y${i+1}.${fmt}`] = fmt === 'stl' ? generateASCII_STL(t, `div_y${i+1}`) : generateOBJ(t, `div_y${i+1}`);
-    });
-  } else if (state.type === 'drawer' || state.type === 'drawer-fixed') {
-    const outerTris = generateDrawerOuter(wt, iW, iD, iH);
-    files[`outer.${fmt}`] = fmt === 'stl' ? generateASCII_STL(outerTris, 'outer') : generateOBJ(outerTris, 'outer');
-    const innerTris = generateDrawerInner(wt, iW, iD, iH, state.type === 'drawer-fixed');
-    files[`drawer.${fmt}`] = fmt === 'stl' ? generateASCII_STL(innerTris, 'drawer') : generateOBJ(innerTris, 'drawer');
-  } else if (state.type === 'drawer-movable') {
-    const outerTris = generateDrawerOuter(wt, iW, iD, iH);
-    files[`outer.${fmt}`] = fmt === 'stl' ? generateASCII_STL(outerTris, 'outer') : generateOBJ(outerTris, 'outer');
-    const innerTris = generateDrawerInner(wt, iW, iD, iH, false);
-    files[`drawer.${fmt}`] = fmt === 'stl' ? generateASCII_STL(innerTris, 'drawer') : generateOBJ(innerTris, 'drawer');
-    state.xDividers.forEach((pos, i) => {
-      const t = generateBoxTriangles(wt+pos-state.divT/2, wt, wt, state.divT, iH, iD);
-      files[`divider_x${i+1}.${fmt}`] = fmt === 'stl' ? generateASCII_STL(t, `div_x${i+1}`) : generateOBJ(t, `div_x${i+1}`);
-    });
-    state.yDividers.forEach((pos, i) => {
-      const t = generateBoxTriangles(wt, wt, wt+pos-state.divT/2, iW, iH, state.divT);
-      files[`divider_y${i+1}.${fmt}`] = fmt === 'stl' ? generateASCII_STL(t, `div_y${i+1}`) : generateOBJ(t, `div_y${i+1}`);
-    });
-  }
-
-  const blob = await createZip(files);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = `model_${state.type}.zip`; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function generateShellTriangles(x,y,z, ow, oh, od, wt) {
-  // Box with hollow inside — generate 6 outer faces + inner faces
-  const outer = generateBoxTriangles(x,y,z,ow,oh,od);
-  // inner reversed normals
-  const inner = generateBoxTriangles(x+wt, y+wt, z+wt, ow-wt*2, oh-wt*2, od-wt*2);
-  // flip inner normals
-  inner.forEach(t => { t.n = t.n.map(v => -v); t.v = [t.v[2], t.v[1], t.v[0]]; });
-  return [...outer, ...inner];
-}
-
-function generateDrawerOuter(wt, iW, iD, iH) {
-  return generateShellTriangles(0,0,0, iW+wt*2, iH+wt*2, iD+wt*2, wt);
-}
-
-function generateDrawerInner(wt, iW, iD, iH, withFixedDividers) {
-  // Bottom + walls (no top, no front in the drawer itself)
-  const tris = [];
-  // Bottom
-  tris.push(...generateBoxTriangles(0, 0, 0, iW, wt, iD));
-  // Left
-  tris.push(...generateBoxTriangles(0, wt, 0, wt, iH-wt, iD));
-  // Right
-  tris.push(...generateBoxTriangles(iW-wt, wt, 0, wt, iH-wt, iD));
-  // Front face with handle
-  tris.push(...generateBoxTriangles(0, wt, 0, iW, iH-wt, wt));
-  // Back (if closed)
-  if (state.backType === 'closed') {
-    tris.push(...generateBoxTriangles(0, wt, iD-wt, iW, iH-wt, wt));
-  }
-  if (withFixedDividers) {
-    state.xDividers.forEach(pos => {
-      tris.push(...generateBoxTriangles(wt+pos-state.divT/2, wt, wt, state.divT, iH-wt, iD-wt));
-    });
-    state.yDividers.forEach(pos => {
-      tris.push(...generateBoxTriangles(wt, wt, wt+pos-state.divT/2, iW-wt*2, iH-wt, state.divT));
-    });
-  }
-  return tris;
-}
-
-// Simple ZIP creator (no compression, just store)
-async function createZip(files) {
-  const enc = new TextEncoder();
-  const entries = [];
-  let offset = 0;
-  const localHeaders = [];
-  const centralDir = [];
-
-  for (const [name, content] of Object.entries(files)) {
-    const data = enc.encode(content);
-    const nameBytes = enc.encode(name);
-    const crc = crc32(data);
-    const localHeader = buildLocalHeader(nameBytes, data.length, crc);
-    localHeaders.push({localHeader, data, nameBytes, offset, crc});
-    offset += localHeader.length + data.length;
-  }
-
-  for (const {localHeader, data, nameBytes, offset: off, crc} of localHeaders) {
-    centralDir.push(buildCentralDir(nameBytes, data.length, crc, off));
-  }
-
-  const centralDirData = mergeBuffers(centralDir);
-  const eocd = buildEOCD(localHeaders.length, centralDirData.length, offset);
-
-  const parts = [...localHeaders.map(h => mergeBuffers([h.localHeader, h.data])), centralDirData, eocd];
-  return new Blob(parts, {type: 'application/zip'});
-}
-
-function buildLocalHeader(name, size, crc) {
-  const buf = new ArrayBuffer(30 + name.length);
-  const v = new DataView(buf);
-  v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0, true);
-  v.setUint16(8, 0, true); v.setUint16(10, 0, true); v.setUint16(12, 0, true);
-  v.setUint32(14, crc, true); v.setUint32(18, size, true); v.setUint32(22, size, true);
-  v.setUint16(26, name.length, true); v.setUint16(28, 0, true);
-  new Uint8Array(buf).set(name, 30);
-  return new Uint8Array(buf);
-}
-
-function buildCentralDir(name, size, crc, off) {
-  const buf = new ArrayBuffer(46 + name.length);
-  const v = new DataView(buf);
-  v.setUint32(0, 0x02014b50, true); v.setUint16(4, 20, true); v.setUint16(6, 20, true);
-  v.setUint16(8, 0, true); v.setUint16(10, 0, true); v.setUint16(12, 0, true); v.setUint16(14, 0, true);
-  v.setUint32(16, crc, true); v.setUint32(20, size, true); v.setUint32(24, size, true);
-  v.setUint16(28, name.length, true); v.setUint16(30, 0, true); v.setUint16(32, 0, true);
-  v.setUint16(34, 0, true); v.setUint16(36, 0, true); v.setUint32(38, 0, true);
-  v.setUint32(42, off, true);
-  new Uint8Array(buf).set(name, 46);
-  return new Uint8Array(buf);
-}
-
-function buildEOCD(count, cdSize, cdOffset) {
-  const buf = new ArrayBuffer(22);
-  const v = new DataView(buf);
-  v.setUint32(0, 0x06054b50, true); v.setUint16(4, 0, true); v.setUint16(6, 0, true);
-  v.setUint16(8, count, true); v.setUint16(10, count, true);
-  v.setUint32(12, cdSize, true); v.setUint32(16, cdOffset, true); v.setUint16(20, 0, true);
-  return new Uint8Array(buf);
-}
-
-function mergeBuffers(bufs) {
-  const total = bufs.reduce((s, b) => s + b.length, 0);
-  const out = new Uint8Array(total);
-  let off = 0;
-  bufs.forEach(b => { out.set(b, off); off += b.length; });
-  return out;
-}
-
-function crc32(data) {
-  let crc = 0xFFFFFFFF;
-  for (let i = 0; i < data.length; i++) {
-    crc ^= data[i];
-    for (let j = 0; j < 8; j++) crc = (crc >>> 1) ^ (0xEDB88320 & -(crc & 1));
-  }
-  return (crc ^ 0xFFFFFFFF) >>> 0;
-}
-
-function download(content, filename, mime) {
-  const blob = new Blob([content], {type: mime});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ═══════════════════════════════════════════════════
-// MISC
-// ═══════════════════════════════════════════════════
-function resetAll() {
-  if (!confirm('新規作成します。現在のデータは失われます。')) return;
-  state.xDividers = []; state.yDividers = [];
-  state.selectedDiv = null;
-  document.getElementById('selectedInfo').classList.remove('visible');
-  document.getElementById('innerW').value = 100;
-  document.getElementById('innerD').value = 60;
-  document.getElementById('innerH').value = 40;
-  document.getElementById('wallT').value = 2;
-  document.getElementById('divT').value = 1.5;
-  document.getElementById('roundCorners').checked = false;
-  document.getElementById('roundField').style.display = 'none';
-  document.getElementById('stackable').checked = false;
-  setType('case');
-  updateModel();
-}
-
-// Segment labels between dividers (X)
-function drawAllSegmentLabels(c, W, H, s) {
-  const wt = state.wallT;
-  const iW = state.innerW, iD = state.innerD;
-  const outerW = (iW + wt*2)*s;
-  const outerH = (iD + wt*2)*s;
-  const ox = (W - outerW)/2;
-  const oy = (H - outerH)/2;
-
-  const xs = [...state.xDividers].sort((a,b)=>a-b);
-  let prev = 0;
-  [...xs, state.innerW].forEach((pos, i) => {
-    const segW = pos - prev - (i < xs.length ? state.divT/2 : 0) - (i > 0 ? state.divT/2 : 0);
-    if (segW > 3) {
-      const cx2 = ox + wt*s + (prev + (i > 0 ? state.divT/2 : 0) + segW/2)*s;
-      c.fillStyle = '#555'; c.font = '9px IBM Plex Mono'; c.textAlign = 'center';
-      c.fillText(`${Math.round(segW)}`, cx2, oy + wt*s + iD*s/2 + 3);
-    }
-    prev = pos + state.divT/2;
-  });
-
-  const ys = [...state.yDividers].sort((a,b)=>a-b);
-  prev = 0;
-  [...ys, state.innerD].forEach((pos, i) => {
-    const segD = pos - prev - (i < ys.length ? state.divT/2 : 0) - (i > 0 ? state.divT/2 : 0);
-    if (segD > 3) {
-      const cy2 = oy + wt*s + (prev + (i > 0 ? state.divT/2 : 0) + segD/2)*s;
-      c.fillStyle = '#555'; c.font = '9px IBM Plex Mono'; c.textAlign = 'left';
-      c.fillText(`${Math.round(segD)}`, ox + wt*s + iW*s + 4, cy2 + 3);
-    }
-    prev = pos + state.divT/2;
-  });
-}
-
-// Patch drawCase2d to call segment labels
-const _origDrawCase = drawCase2d;
-function drawCase2d(c, W, H, s, hasDividers) {
-  _origDrawCase(c, W, H, s, hasDividers);
-  if (hasDividers) drawAllSegmentLabels(c, W, H, s);
-}
+function lHdr(n,sz,crc){const b=new ArrayBuffer(30+n.length),v=new DataView(b);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);[6,8,10,12].forEach(i=>v.setUint16(i,0,true));v.setUint32(14,crc,true);v.setUint32(18,sz,true);v.setUint32(22,sz,true);v.setUint16(26,n.length,true);v.setUint16(28,0,true);new Uint8Array(b).set(n,30);return new Uint8Array(b);}
+function cHdr(n,sz,crc,o){const b=new ArrayBuffer(46+n.length),v=new DataView(b);v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);[8,10,12,14].forEach(i=>v.setUint16(i,0,true));v.setUint32(16,crc,true);v.setUint32(20,sz,true);v.setUint32(24,sz,true);[28,30,32,34,36].forEach(i=>v.setUint16(i,0,true));v.setUint32(38,0,true);v.setUint32(42,o,true);new Uint8Array(b).set(n,46);return new Uint8Array(b);}
+function eocd(cnt,cdsz,cdoff){const b=new ArrayBuffer(22),v=new DataView(b);v.setUint32(0,0x06054b50,true);v.setUint16(4,0,true);v.setUint16(6,0,true);v.setUint16(8,cnt,true);v.setUint16(10,cnt,true);v.setUint32(12,cdsz,true);v.setUint32(16,cdoff,true);v.setUint16(20,0,true);return new Uint8Array(b);}
+function mrg(bufs){const t=bufs.reduce((s,b)=>s+b.length,0),o=new Uint8Array(t);let p=0;bufs.forEach(b=>{o.set(b,p);p+=b.length;});return o;}
+function crc32c(d){let c=0xFFFFFFFF;for(let i=0;i<d.length;i++){c^=d[i];for(let j=0;j<8;j++)c=(c>>>1)^(0xEDB88320&-(c&1));}return(c^0xFFFFFFFF)>>>0;}
 </script>
 
 </body>
