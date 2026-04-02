@@ -10,103 +10,103 @@
 :root{
   --bg:#0e0e10;--panel:#16161a;--panel2:#1e1e24;--border:#2a2a32;--border2:#3a3a46;
   --accent:#f0c040;--accent2:#c89a28;--text:#e8e8ec;--text2:#888896;--text3:#484858;
-  --dc:#4a9eff;--danger:#ff5548;--success:#48e8a0;
+  --dc:#4a9eff;--danger:#ff5548;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;}
 
-/* ── HEADER ── */
-header{background:var(–panel);border-bottom:1px solid var(–border);height:50px;display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;}
-.logo{font-family:‘IBM Plex Mono’,monospace;font-size:14px;font-weight:600;color:var(–accent);letter-spacing:.08em;white-space:nowrap;}
+header{background:var(–panel);border-bottom:1px solid var(–border);height:50px;display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;}
+.logo{font-family:‘IBM Plex Mono’,monospace;font-size:13px;font-weight:600;color:var(–accent);letter-spacing:.08em;white-space:nowrap;}
 .logo span{color:var(–text3);}
 .hsep{width:1px;height:26px;background:var(–border);flex-shrink:0;}
-.type-bar{display:flex;gap:3px;background:var(–bg);padding:3px;border-radius:7px;border:1px solid var(–border);flex-wrap:nowrap;overflow-x:auto;}
+.type-bar{display:flex;gap:2px;background:var(–bg);padding:3px;border-radius:7px;border:1px solid var(–border);overflow-x:auto;flex-shrink:1;min-width:0;}
 .type-bar::-webkit-scrollbar{height:0;}
-.tb{padding:5px 10px;border-radius:5px;border:none;background:transparent;color:var(–text2);cursor:pointer;font-size:11.5px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;white-space:nowrap;}
+.tb{padding:4px 9px;border-radius:4px;border:none;background:transparent;color:var(–text2);cursor:pointer;font-size:11px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;white-space:nowrap;}
 .tb:hover{color:var(–text);}
 .tb.active{background:var(–accent);color:#000;font-weight:600;}
-.hright{margin-left:auto;display:flex;align-items:center;gap:7px;flex-shrink:0;}
-.btn{padding:5px 12px;border-radius:6px;border:1px solid var(–border2);background:var(–panel2);color:var(–text);cursor:pointer;font-size:12px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;white-space:nowrap;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.btn{padding:5px 11px;border-radius:5px;border:1px solid var(–border2);background:var(–panel2);color:var(–text);cursor:pointer;font-size:11px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;white-space:nowrap;}
 .btn:hover{border-color:var(–accent);color:var(–accent);}
 .btn.active{background:var(–accent);color:#000;border-color:var(–accent);font-weight:600;}
 
-/* ── LAYOUT ── */
 .main{display:flex;flex:1;overflow:hidden;}
 
-/* ── LEFT PANEL ── */
-.lpanel{width:210px;flex-shrink:0;background:var(–panel);border-right:1px solid var(–border);display:flex;flex-direction:column;overflow-y:auto;}
-.lpanel::-webkit-scrollbar{width:3px;}
-.lpanel::-webkit-scrollbar-thumb{background:var(–border2);}
+/* LEFT */
+.lpanel{width:208px;flex-shrink:0;background:var(–panel);border-right:1px solid var(–border);display:flex;flex-direction:column;overflow-y:auto;}
+.lpanel::-webkit-scrollbar,.rpanel::-webkit-scrollbar{width:3px;}
+.lpanel::-webkit-scrollbar-thumb,.rpanel::-webkit-scrollbar-thumb{background:var(–border2);}
 
-/* ── RIGHT PANEL ── */
-.rpanel{width:196px;flex-shrink:0;background:var(–panel);border-left:1px solid var(–border);display:flex;flex-direction:column;overflow-y:auto;}
-.rpanel::-webkit-scrollbar{width:3px;}
-.rpanel::-webkit-scrollbar-thumb{background:var(–border2);}
+/* RIGHT */
+.rpanel{width:200px;flex-shrink:0;background:var(–panel);border-left:1px solid var(–border);display:flex;flex-direction:column;overflow-y:auto;}
 
-.sec{padding:12px;border-bottom:1px solid var(–border);}
-.sec-title{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–text3);margin-bottom:9px;font-family:‘IBM Plex Mono’,monospace;}
-.field{margin-bottom:8px;}
-.field label{display:block;font-size:11px;color:var(–text2);margin-bottom:3px;}
+.sec{padding:11px;border-bottom:1px solid var(–border);}
+.sec-t{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–text3);margin-bottom:8px;font-family:‘IBM Plex Mono’,monospace;}
+.field{margin-bottom:7px;}
+.field label{display:block;font-size:11px;color:var(–text2);margin-bottom:2px;}
 .nr{display:flex;align-items:center;gap:3px;}
-.sb{width:24px;height:26px;background:var(–panel2);border:1px solid var(–border);border-radius:5px;color:var(–text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s;line-height:1;}
+.sb{width:23px;height:25px;background:var(–panel2);border:1px solid var(–border);border-radius:4px;color:var(–text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s;line-height:1;}
 .sb:hover{border-color:var(–accent);color:var(–accent);}
-.nr input[type=number]{flex:1;text-align:center;padding:4px 2px;background:var(–bg);border:1px solid var(–border);border-radius:5px;color:var(–text);font-size:12px;font-family:‘IBM Plex Mono’,monospace;outline:none;min-width:0;}
+.nr input[type=number]{flex:1;text-align:center;padding:4px 2px;background:var(–bg);border:1px solid var(–border);border-radius:4px;color:var(–text);font-size:11px;font-family:‘IBM Plex Mono’,monospace;outline:none;min-width:0;}
 .nr input[type=number]:focus{border-color:var(–accent);}
 .unit{font-size:9px;color:var(–text3);font-family:‘IBM Plex Mono’,monospace;white-space:nowrap;}
-.tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.tl{font-size:12px;color:var(–text2);}
-.tog{position:relative;width:34px;height:19px;}
+.tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.tl{font-size:11px;color:var(–text2);}
+.tog{position:relative;width:32px;height:18px;}
 .tog input{opacity:0;width:0;height:0;}
 .ts{position:absolute;inset:0;background:var(–border2);border-radius:20px;cursor:pointer;transition:.2s;}
-.ts:before{content:’’;position:absolute;width:13px;height:13px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+.ts:before{content:’’;position:absolute;width:12px;height:12px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
 .tog input:checked+.ts{background:var(–accent);}
-.tog input:checked+.ts:before{transform:translateX(15px);}
+.tog input:checked+.ts:before{transform:translateX(14px);}
 .rg{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px;}
 .ro{padding:3px 8px;border:1px solid var(–border);border-radius:4px;cursor:pointer;font-size:11px;color:var(–text2);transition:all .15s;background:var(–bg);}
 .ro:hover{border-color:var(–accent);color:var(–text);}
 .ro.active{border-color:var(–accent);color:var(–accent);background:rgba(240,192,64,.08);}
 .hint{font-size:10px;color:var(–text3);line-height:1.5;margin-top:2px;}
 
-/* ── CANVAS ── */
+/* CANVAS */
 .canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
-.cbar{background:var(–panel);border-bottom:1px solid var(–border);padding:6px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
-.bl{font-size:11px;color:var(–text3);font-family:‘IBM Plex Mono’,monospace;white-space:nowrap;}
-.bi{font-size:11px;color:var(–text2);font-family:‘IBM Plex Mono’,monospace;white-space:nowrap;}
+.cbar{background:var(–panel);border-bottom:1px solid var(–border);padding:5px 12px;display:flex;align-items:center;gap:7px;flex-shrink:0;flex-wrap:wrap;}
+.bl{font-size:10px;color:var(–text3);font-family:‘IBM Plex Mono’,monospace;white-space:nowrap;}
+.bi{font-size:10px;color:var(–text2);font-family:‘IBM Plex Mono’,monospace;white-space:nowrap;}
 .cwrap{flex:1;overflow:hidden;position:relative;background:#05050d;}
 canvas{display:block;}
-.warn{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,85,72,.15);border:1px solid var(–danger);border-radius:6px;padding:5px 14px;font-size:11px;color:var(–danger);white-space:nowrap;pointer-events:none;display:none;z-index:50;}
+.warn{position:absolute;top:9px;left:50%;transform:translateX(-50%);background:rgba(255,85,72,.15);border:1px solid var(–danger);border-radius:5px;padding:4px 12px;font-size:11px;color:var(–danger);white-space:nowrap;pointer-events:none;display:none;z-index:50;}
 .warn.on{display:block;}
-.ctip{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);border:1px solid var(–border2);border-radius:5px;padding:4px 12px;font-size:10px;color:var(–text2);font-family:‘IBM Plex Mono’,monospace;pointer-events:none;white-space:nowrap;z-index:40;}
+.ctip{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);border:1px solid var(–border2);border-radius:4px;padding:3px 10px;font-size:10px;color:var(–text2);font-family:‘IBM Plex Mono’,monospace;pointer-events:none;white-space:nowrap;}
 
-/* ── RIGHT PANEL DIVIDER ITEMS ── */
-.div-list{display:flex;flex-direction:column;gap:4px;}
-.div-item{display:flex;align-items:center;gap:5px;padding:5px 7px;background:var(–bg);border:1px solid var(–border);border-radius:5px;cursor:pointer;transition:all .15s;}
+/* RIGHT PANEL */
+.rsec-t{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–text3);font-family:‘IBM Plex Mono’,monospace;padding:9px 11px 5px;border-bottom:1px solid var(–border);}
+.div-list{display:flex;flex-direction:column;gap:3px;}
+.div-item{display:flex;align-items:center;gap:4px;padding:4px 6px;background:var(–bg);border:1px solid var(–border);border-radius:4px;cursor:pointer;transition:all .15s;}
 .div-item:hover{border-color:var(–dc);}
 .div-item.sel{border-color:var(–dc);background:rgba(74,158,255,.1);}
-.di-lbl{font-size:11px;font-family:‘IBM Plex Mono’,monospace;color:var(–text2);flex:1;}
+.di-lbl{font-size:10px;font-family:‘IBM Plex Mono’,monospace;color:var(–text2);flex:1;}
 .di-pos{font-size:10px;font-family:‘IBM Plex Mono’,monospace;color:var(–dc);}
-.di-del{background:none;border:none;color:var(–text3);cursor:pointer;padding:1px 4px;border-radius:3px;font-size:12px;line-height:1;}
-.di-del:hover{color:var(–danger);background:rgba(255,85,72,.1);}
-.add-div-btn{width:100%;padding:5px;background:transparent;border:1px dashed var(–border);border-radius:4px;color:var(–text3);cursor:pointer;font-size:11px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;margin-top:4px;}
-.add-div-btn:hover{border-color:var(–dc);color:var(–dc);}
-.sel-info{background:rgba(74,158,255,.07);border:1px solid var(–dc);border-radius:5px;padding:8px;margin-bottom:8px;display:none;}
-.sel-info.on{display:block;}
-.sel-info-title{font-size:9px;color:var(–dc);margin-bottom:6px;font-family:‘IBM Plex Mono’,monospace;letter-spacing:.08em;}
-.rsec-title{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(–text3);font-family:‘IBM Plex Mono’,monospace;padding:10px 12px 5px;border-bottom:1px solid var(–border);}
+.di-del{background:none;border:none;color:var(–text3);cursor:pointer;padding:1px 3px;border-radius:3px;font-size:11px;line-height:1;}
+.di-del:hover{color:var(–danger);}
+.addbtn{width:100%;padding:4px;background:transparent;border:1px dashed var(–border);border-radius:4px;color:var(–text3);cursor:pointer;font-size:10px;font-family:‘Noto Sans JP’,sans-serif;transition:all .15s;margin-top:3px;}
+.addbtn:hover{border-color:var(–dc);color:var(–dc);}
+.sel-box{background:rgba(74,158,255,.07);border:1px solid var(–dc);border-radius:4px;padding:7px;margin-bottom:7px;display:none;}
+.sel-box.on{display:block;}
+.sel-box-t{font-size:9px;color:var(–dc);margin-bottom:5px;font-family:‘IBM Plex Mono’,monospace;}
 
-/* ── EXPORT MODAL ── */
+/* Stage tabs */
+.stage-tabs{display:flex;gap:2px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid var(–border);}
+.stage-tab{padding:3px 8px;border-radius:4px;border:1px solid var(–border);background:var(–bg);color:var(–text2);cursor:pointer;font-size:10px;font-family:‘IBM Plex Mono’,monospace;transition:all .15s;}
+.stage-tab:hover{border-color:var(–dc);color:var(–dc);}
+.stage-tab.active{border-color:var(–dc);background:rgba(74,158,255,.15);color:var(–dc);}
+
+/* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:200;}
 .overlay.on{display:flex;}
-.modal{background:var(–panel);border:1px solid var(–border2);border-radius:12px;padding:26px;width:350px;max-width:90vw;}
-.modal h2{font-size:15px;font-family:‘IBM Plex Mono’,monospace;color:var(–accent);margin-bottom:16px;}
-.mbtns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
-.mnote{font-size:11px;color:var(–text2);margin-top:8px;line-height:1.6;}
+.modal{background:var(–panel);border:1px solid var(–border2);border-radius:11px;padding:24px;width:360px;max-width:90vw;}
+.modal h2{font-size:14px;font-family:‘IBM Plex Mono’,monospace;color:var(–accent);margin-bottom:14px;}
+.mbtns{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap;}
+.mnote{font-size:11px;color:var(–text2);margin-top:7px;line-height:1.6;}
 </style>
 
 </head>
 <body>
-
-<!-- HEADER -->
 
 <header>
   <div class="logo">◈ CASE<span>/</span>MODELER</div>
@@ -127,32 +127,35 @@ canvas{display:block;}
 
 <div class="main">
 
-<!-- ── LEFT PANEL ── -->
+<!-- LEFT PANEL -->
 
 <div class="lpanel">
   <div class="sec">
-    <div class="sec-title">内寸</div>
+    <div class="sec-t">内寸</div>
     <div class="field"><label>幅 W</label><div class="nr"><button class="sb" onclick="step('iW',-1)">−</button><input type="number" id="iW" value="100" min="1" max="300" onchange="onChange()"><button class="sb" onclick="step('iW',1)">+</button><span class="unit">mm</span></div></div>
     <div class="field"><label>奥行 D</label><div class="nr"><button class="sb" onclick="step('iD',-1)">−</button><input type="number" id="iD" value="60" min="1" max="300" onchange="onChange()"><button class="sb" onclick="step('iD',1)">+</button><span class="unit">mm</span></div></div>
     <div class="field"><label>高さ H</label><div class="nr"><button class="sb" onclick="step('iH',-1)">−</button><input type="number" id="iH" value="40" min="1" max="300" onchange="onChange()"><button class="sb" onclick="step('iH',1)">+</button><span class="unit">mm</span></div></div>
   </div>
   <div class="sec">
-    <div class="sec-title">壁・仕切り</div>
+    <div class="sec-t">壁・仕切り</div>
     <div class="field"><label>壁厚</label><div class="nr"><button class="sb" onclick="step('wT',-0.5)">−</button><input type="number" id="wT" value="2" min="1" max="20" step="0.5" onchange="onChange()"><button class="sb" onclick="step('wT',0.5)">+</button><span class="unit">mm</span></div></div>
     <div class="field" id="divTF"><label>仕切り厚</label><div class="nr"><button class="sb" onclick="step('dT',-0.5)">−</button><input type="number" id="dT" value="1.5" min="1" max="20" step="0.5" onchange="onChange()"><button class="sb" onclick="step('dT',0.5)">+</button><span class="unit">mm</span></div></div>
   </div>
   <div class="sec">
-    <div class="sec-title">角丸め（外側）</div>
+    <div class="sec-t">角丸め（外側）</div>
     <div class="tr"><span class="tl">有効</span><label class="tog"><input type="checkbox" id="useR" onchange="onRound()"><span class="ts"></span></label></div>
     <div class="field" id="rF" style="display:none"><label>半径</label><div class="nr"><button class="sb" onclick="step('rR',-0.5)">−</button><input type="number" id="rR" value="2" min="0.5" max="20" step="0.5" onchange="onChange()"><button class="sb" onclick="step('rR',0.5)">+</button><span class="unit">mm</span></div></div>
   </div>
   <div class="sec">
-    <div class="sec-title">スタック</div>
+    <div class="sec-t">スタック</div>
     <div class="tr"><span class="tl">凸凹スタック</span><label class="tog"><input type="checkbox" id="useS" onchange="onChange()"><span class="ts"></span></label></div>
     <p class="hint">ONで底面に凸、天面に凹を追加</p>
   </div>
+  <!-- 引き出しオプション -->
   <div class="sec" id="drawSec" style="display:none">
-    <div class="sec-title">引き出しオプション</div>
+    <div class="sec-t">引き出しオプション</div>
+    <div class="field"><label>段数</label><div class="nr"><button class="sb" onclick="stepStages(-1)">−</button><input type="number" id="stageCount" value="1" min="1" max="10" onchange="onStageCountChange()"><button class="sb" onclick="stepStages(1)">+</button><span class="unit">段</span></div></div>
+    <div class="field" id="stageHField"><label id="stageHLabel">段1 高さ</label><div class="nr"><button class="sb" onclick="stepStageH(-1)">−</button><input type="number" id="stageH" value="40" min="1" max="300" onchange="onStageHChange()"><button class="sb" onclick="stepStageH(1)">+</button><span class="unit">mm</span></div><p class="hint" id="stageHHint" style="margin-top:3px;"></p></div>
     <div class="field"><label>背面</label><div class="rg"><div class="ro active" id="rb-open" onclick="setBack('open')">開放</div><div class="ro" id="rb-closed" onclick="setBack('closed')">埋める</div></div></div>
     <div class="field"><label>持ち手</label><div class="rg"><div class="ro active" id="rh-groove" onclick="setHandle('groove')">溝</div><div class="ro" id="rh-hole" onclick="setHandle('hole')">穴</div></div></div>
     <div id="gF">
@@ -163,9 +166,9 @@ canvas{display:block;}
       <div class="field"><label>穴：直径</label><div class="nr"><button class="sb" onclick="step('hD',-1)">−</button><input type="number" id="hD" value="20" min="5" max="100" onchange="onChange()"><button class="sb" onclick="step('hD',1)">+</button><span class="unit">mm</span></div></div>
     </div>
   </div>
-</div><!-- /lpanel -->
+</div>
 
-<!-- ── CANVAS AREA ── -->
+<!-- CANVAS AREA -->
 
 <div class="canvas-area">
   <div class="cbar">
@@ -184,46 +187,38 @@ canvas{display:block;}
   </div>
 </div>
 
-<!-- ── RIGHT PANEL ── -->
+<!-- RIGHT PANEL -->
 
 <div class="rpanel" id="rpanel">
-  <div class="rsec-title">仕切り管理</div>
-  <div style="padding:10px;">
-
-```
-<!-- 選択中の仕切り詳細 -->
-<div class="sel-info" id="selInfo">
-  <div class="sel-info-title">▶ 選択中の仕切り</div>
-  <div class="field"><label>位置</label>
-    <div class="nr">
-      <button class="sb" onclick="stepSel(-1)">−</button>
-      <input type="number" id="selPos" value="0" min="1" max="299" onchange="moveSel(this.value)">
-      <button class="sb" onclick="stepSel(1)">+</button>
-      <span class="unit">mm</span>
+  <div class="rsec-t">仕切り管理</div>
+  <!-- 段タブ（引き出しのみ表示） -->
+  <div id="stageTabs" style="display:none"></div>
+  <div style="padding:9px;">
+    <div class="sel-box" id="selBox">
+      <div class="sel-box-t">▶ 選択中</div>
+      <div class="field"><label>位置</label>
+        <div class="nr">
+          <button class="sb" onclick="stepSel(-1)">−</button>
+          <input type="number" id="selPos" value="0" min="1" max="299" onchange="moveSel(this.value)">
+          <button class="sb" onclick="stepSel(1)">+</button>
+          <span class="unit">mm</span>
+        </div>
+      </div>
+      <button class="btn" style="width:100%;font-size:10px;border-color:var(--danger);color:var(--danger);" onclick="delSel()">削除</button>
+    </div>
+    <div id="xSec">
+      <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;letter-spacing:.08em;">─ X方向（幅）</div>
+      <div class="div-list" id="xList"></div>
+      <button class="addbtn" onclick="addDivBtn('x')">＋ 幅方向に追加</button>
+    </div>
+    <div style="height:8px;"></div>
+    <div id="ySec">
+      <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;letter-spacing:.08em;">─ Y方向（奥行）</div>
+      <div class="div-list" id="yList"></div>
+      <button class="addbtn" onclick="addDivBtn('y')">＋ 奥行方向に追加</button>
     </div>
   </div>
-  <button class="btn" style="width:100%;font-size:11px;border-color:var(--danger);color:var(--danger);margin-top:2px;" onclick="delSel()">削除</button>
 </div>
-
-<!-- X方向仕切り -->
-<div id="xSec">
-  <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;letter-spacing:.1em;">─ X方向（幅）</div>
-  <div class="div-list" id="xList"></div>
-  <button class="add-div-btn" onclick="addDivBtn('x')">＋ 幅方向に追加</button>
-</div>
-
-<div style="height:10px;"></div>
-
-<!-- Y方向仕切り -->
-<div id="ySec">
-  <div style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;letter-spacing:.1em;">─ Y方向（奥行）</div>
-  <div class="div-list" id="yList"></div>
-  <button class="add-div-btn" onclick="addDivBtn('y')">＋ 奥行方向に追加</button>
-</div>
-```
-
-  </div>
-</div><!-- /rpanel -->
 
 </div><!-- /main -->
 
@@ -239,34 +234,38 @@ canvas{display:block;}
 </div>
 
 <script>
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 // STATE
-// ═══════════════════════════════════════
-const S={
-  type:'case', iW:100,iD:60,iH:40, wT:2,dT:1.5,
-  useR:false,rR:2, useS:false,
-  backType:'open', handleType:'groove', gW:40,gH:8,hD:20,
-  xDiv:[],yDiv:[], selDiv:null, is3d:false, fmt:'stl'
+// ═══════════════════════════════════
+const S = {
+  type:'case', iW:100, iD:60, iH:40,
+  wT:2, dT:1.5,
+  useR:false, rR:2, useS:false,
+  backType:'open', handleType:'groove', gW:40, gH:8, hD:20,
+  // Drawer stages: array of {h, xDiv:[], yDiv:[]}
+  stages:[{h:40, xDiv:[], yDiv:[]}],
+  curStage:0,
+  selDiv:null,
+  is3d:false, fmt:'stl'
 };
-const HD=t=>['case-fixed','case-movable','drawer-fixed','drawer-movable'].includes(t);
-const ID=t=>['drawer','drawer-fixed','drawer-movable'].includes(t);
 
-// ═══════════════════════════════════════
+const HD = t => ['case-fixed','case-movable','drawer-fixed','drawer-movable'].includes(t);
+const ID = t => ['drawer','drawer-fixed','drawer-movable'].includes(t);
+
+// ═══════════════════════════════════
 // INIT
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 let c2,ctx2,c3,ctx3,dragDiv=null;
-let rot={x:.42,y:.68},zoom=1,drag3=false,lm3={x:0,y:0};
+let rot={x:.42,y:.68}, zoom=1, drag3=false, lm3={x:0,y:0};
 
 window.addEventListener('load',()=>{
-  c2=document.getElementById('c2'); ctx2=c2.getContext('2d');
-  c3=document.getElementById('c3'); ctx3=c3.getContext('2d');
+  c2=g('c2'); ctx2=c2.getContext('2d');
+  c3=g('c3'); ctx3=c3.getContext('2d');
   resize(); window.addEventListener('resize',resize);
-  // 2D mouse
   c2.addEventListener('mousedown',m2Dn);
   c2.addEventListener('mousemove',m2Mv);
   c2.addEventListener('mouseup',m2Up);
   c2.addEventListener('mouseleave',m2Up);
-  // 3D mouse
   c3.addEventListener('mousedown',e=>{drag3=true;lm3={x:e.clientX,y:e.clientY};c3.style.cursor='grabbing';});
   c3.addEventListener('mousemove',e=>{if(!drag3)return;rot.y+=(e.clientX-lm3.x)*.012;rot.x+=(e.clientY-lm3.y)*.012;lm3={x:e.clientX,y:e.clientY};draw3();});
   c3.addEventListener('mouseup',()=>{drag3=false;c3.style.cursor='grab';});
@@ -276,18 +275,18 @@ window.addEventListener('load',()=>{
 });
 
 function resize(){
-  const w=document.getElementById('cw');
+  const w=g('cw');
   c2.width=c3.width=w.clientWidth;
   c2.height=c3.height=w.clientHeight;
   draw();
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 // HELPERS
-// ═══════════════════════════════════════
-const g=id=>document.getElementById(id);
-const gv=id=>parseFloat(g(id).value)||0;
-const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+// ═══════════════════════════════════
+const g = id => document.getElementById(id);
+const gv = id => parseFloat(g(id).value)||0;
+const cl = (v,a,b) => Math.max(a,Math.min(b,v));
 
 function step(id,d){
   const el=g(id);
@@ -295,22 +294,91 @@ function step(id,d){
   onChange();
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
+// STAGE (DRAWER)
+// ═══════════════════════════════════
+function curXDiv(){ return HD(S.type) ? (ID(S.type)?S.stages[S.curStage].xDiv:S.xDiv) : S.xDiv; }
+function curYDiv(){ return HD(S.type) ? (ID(S.type)?S.stages[S.curStage].yDiv:S.yDiv) : S.yDiv; }
+// For non-drawer HD types use top-level arrays
+// We keep S.xDiv/S.yDiv for case types, and S.stages[i].xDiv/yDiv for drawer types
+
+function stepStages(d){
+  const el=g('stageCount');
+  el.value=cl(parseFloat(el.value)+d,1,10);
+  onStageCountChange();
+}
+function onStageCountChange(){
+  const n=cl(parseInt(g('stageCount').value)||1,1,10);
+  // Grow or shrink stages array
+  while(S.stages.length<n) S.stages.push({h:S.iH, xDiv:[], yDiv:[]});
+  while(S.stages.length>n) S.stages.pop();
+  if(S.curStage>=n) S.curStage=n-1;
+  // Recalculate total iH as sum of stage heights (sync iH input)
+  syncStageHeight();
+  renderStageTabs();
+  syncSelInfo(); renderLists();
+  onChange();
+}
+function syncStageHeight(){
+  // Show current stage height in input
+  const st=S.stages[S.curStage];
+  g('stageH').value=st.h;
+  g('stageHLabel').textContent=`段${S.curStage+1} 高さ`;
+  const total=S.stages.reduce((s,st2)=>s+st2.h,0);
+  g('stageHHint').textContent=`合計 ${total}mm`;
+  // Sync iH to total
+  S.iH=total;
+  g('iH').value=total;
+}
+function stepStageH(d){
+  const el=g('stageH');
+  el.value=cl(parseFloat(el.value)+d,1,300);
+  onStageHChange();
+}
+function onStageHChange(){
+  const h=cl(parseFloat(g('stageH').value)||1,1,300);
+  S.stages[S.curStage].h=h;
+  syncStageHeight();
+  onChange();
+}
+function setStage(idx){
+  S.curStage=idx;
+  S.selDiv=null;
+  g('selBox').classList.remove('on');
+  syncStageHeight();
+  renderStageTabs();
+  renderLists();
+  draw();
+}
+function renderStageTabs(){
+  const el=g('stageTabs');
+  if(!ID(S.type)||S.stages.length<=1){el.style.display='none';return;}
+  el.style.display='flex';
+  el.innerHTML='';
+  S.stages.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.className='stage-tab'+(i===S.curStage?' active':'');
+    btn.textContent=`段${i+1}`;
+    btn.onclick=()=>setStage(i);
+    el.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════
 // CONTROLS
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 function onChange(){
-  S.iW=cl(gv('iW'),1,300); S.iD=cl(gv('iD'),1,300); S.iH=cl(gv('iH'),1,300);
+  S.iW=cl(gv('iW'),1,300); S.iD=cl(gv('iD'),1,300);
   S.wT=cl(gv('wT'),1,20);  S.dT=cl(gv('dT'),1,20);
   S.rR=cl(gv('rR'),.5,20); S.gW=cl(gv('gW'),5,200); S.gH=cl(gv('gH'),3,50); S.hD=cl(gv('hD'),5,100);
   S.useR=g('useR').checked; S.useS=g('useS').checked;
+  if(!ID(S.type)) S.iH=cl(gv('iH'),1,300);
   clampDivs(); checkOv(); renderLists();
   g('dInfo').textContent=`内寸 W:${S.iW} D:${S.iD} H:${S.iH}mm`;
   g('oInfo').textContent=`外寸 W:${S.iW+S.wT*2} D:${S.iD+S.wT*2} H:${S.iH+S.wT*2}mm`;
   draw();
 }
-
 function onRound(){g('rF').style.display=g('useR').checked?'block':'none';onChange();}
-
 function setType(t){
   S.type=t;
   ['case','case-fixed','case-movable','drawer','drawer-fixed','drawer-movable']
@@ -319,10 +387,16 @@ function setType(t){
   g('divTF').style.display=HD(t)?'block':'none';
   g('rpanel').style.display=HD(t)?'flex':'none';
   g('ctip').style.display=(HD(t)&&!S.is3d)?'block':'none';
-  if(!HD(t)){S.xDiv=[];S.yDiv=[];S.selDiv=null;g('selInfo').classList.remove('on');}
+  if(!HD(t)){S.xDiv=[];S.yDiv=[];S.selDiv=null;g('selBox').classList.remove('on');}
+  if(ID(t)){
+    renderStageTabs();
+    syncStageHeight();
+    // Sync iH to stage total
+    S.iH=S.stages.reduce((s,st)=>s+st.h,0);
+  }
+  renderLists();
   onChange();
 }
-
 function setBack(v){S.backType=v;['open','closed'].forEach(k=>g('rb-'+k).classList.toggle('active',k===v));onChange();}
 function setHandle(v){
   S.handleType=v;
@@ -331,7 +405,6 @@ function setHandle(v){
   g('hF').style.display=v==='hole'?'block':'none';
   onChange();
 }
-
 function toggle3d(){
   S.is3d=!S.is3d;
   c2.style.display=S.is3d?'none':'block';
@@ -343,33 +416,45 @@ function toggle3d(){
   g('ctip').style.display=(HD(S.type)&&!S.is3d)?'block':'none';
   if(S.is3d){rot={x:.42,y:.68};zoom=1;draw3();}else draw2();
 }
-
 function setFmt(v){S.fmt=v;['stl','obj'].forEach(k=>g('ef-'+k).classList.toggle('active',k===v));}
 function draw(){S.is3d?draw3():draw2();}
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 // DIVIDER MANAGEMENT
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
+// For cases: use S.xDiv/S.yDiv
+// For drawers: use S.stages[curStage].xDiv/yDiv
+function getXDiv(){ return ID(S.type)?S.stages[S.curStage].xDiv:S.xDiv; }
+function getYDiv(){ return ID(S.type)?S.stages[S.curStage].yDiv:S.yDiv; }
+
 function addDivBtn(axis){
-  const arr=axis==='x'?S.xDiv:S.yDiv, mx=axis==='x'?S.iW:S.iD;
+  const arr=axis==='x'?getXDiv():getYDiv(), mx=axis==='x'?S.iW:S.iD;
   const sorted=[...arr].sort((a,b)=>a-b);
   let pos=Math.round(mx/2);
   if(sorted.length){
-    // place in the largest gap
-    const pts=[0,...sorted,mx];
-    let best=0,bestSz=0;
+    const pts=[0,...sorted,mx]; let best=0,bestSz=0;
     for(let i=0;i<pts.length-1;i++){const sz=pts[i+1]-pts[i];if(sz>bestSz){bestSz=sz;best=Math.round((pts[i]+pts[i+1])/2);}}
     pos=best;
   }
-  pos=cl(pos,1,mx-1);
-  arr.push(pos);
+  arr.push(cl(pos,1,mx-1));
   S.selDiv={axis,idx:arr.length-1};
-  clampDivs();checkOv();renderLists();syncSelInfo();draw2();
+  clampDivs(); checkOv(); renderLists(); syncSelInfo(); draw2();
+}
+
+function addDivAt(axis,pos){
+  const arr=axis==='x'?getXDiv():getYDiv(), mx=axis==='x'?S.iW:S.iD;
+  arr.push(cl(Math.round(pos),1,mx-1));
+  S.selDiv={axis,idx:arr.length-1};
+  clampDivs(); checkOv(); renderLists(); syncSelInfo(); draw2();
 }
 
 function clampDivs(){
-  S.xDiv=S.xDiv.map(p=>cl(Math.round(p),1,S.iW-1));
-  S.yDiv=S.yDiv.map(p=>cl(Math.round(p),1,S.iD-1));
+  const fix=(arr,mx)=>{ for(let i=0;i<arr.length;i++) arr[i]=cl(Math.round(arr[i]),1,mx-1); };
+  if(ID(S.type)){
+    S.stages.forEach(st=>{fix(st.xDiv,S.iW);fix(st.yDiv,S.iD);});
+  }else{
+    fix(S.xDiv,S.iW); fix(S.yDiv,S.iD);
+  }
 }
 
 function checkOv(){
@@ -377,21 +462,23 @@ function checkOv(){
   const chk=(arr,mx)=>{
     const s=[...arr].sort((a,b)=>a-b);
     s.forEach(p=>{if(p<1||p>mx-1)w=true;});
-    for(let i=0;i<s.length-1;i++)if(s[i+1]-s[i]<S.dT+1)w=true;
+    for(let i=0;i<s.length-1;i++) if(s[i+1]-s[i]<S.dT+1) w=true;
   };
-  chk(S.xDiv,S.iW);chk(S.yDiv,S.iD);
+  if(ID(S.type)){
+    S.stages.forEach(st=>{chk(st.xDiv,S.iW);chk(st.yDiv,S.iD);});
+  }else{
+    chk(S.xDiv,S.iW); chk(S.yDiv,S.iD);
+  }
   g('wb').classList.toggle('on',w);
 }
 
 function renderLists(){
-  renderList('x',S.xDiv,S.iW);
-  renderList('y',S.yDiv,S.iD);
+  renderList('x',getXDiv(),S.iW);
+  renderList('y',getYDiv(),S.iD);
 }
-
 function renderList(axis,arr,mx){
   const el=g(axis+'List'); el.innerHTML='';
-  const sorted=[...arr].map((p,i)=>({p,i})).sort((a,b)=>a.p-b.p);
-  sorted.forEach(({p,i})=>{
+  [...arr].map((p,i)=>({p,i})).sort((a,b)=>a.p-b.p).forEach(({p,i})=>{
     const isSel=S.selDiv&&S.selDiv.axis===axis&&S.selDiv.idx===i;
     const d=document.createElement('div');
     d.className='div-item'+(isSel?' sel':'');
@@ -400,77 +487,63 @@ function renderList(axis,arr,mx){
     el.appendChild(d);
   });
 }
-
 function selectDiv(axis,idx){
-  S.selDiv={axis,idx};
-  syncSelInfo(); renderLists(); draw2();
+  S.selDiv={axis,idx}; syncSelInfo(); renderLists(); draw2();
 }
-
 function syncSelInfo(){
-  if(!S.selDiv){g('selInfo').classList.remove('on');return;}
-  const arr=S.selDiv.axis==='x'?S.xDiv:S.yDiv;
+  if(!S.selDiv){g('selBox').classList.remove('on');return;}
+  const arr=S.selDiv.axis==='x'?getXDiv():getYDiv();
   g('selPos').value=arr[S.selDiv.idx];
-  g('selInfo').classList.add('on');
+  g('selBox').classList.add('on');
 }
-
 function stepSel(d){
   if(!S.selDiv)return;
-  const arr=S.selDiv.axis==='x'?S.xDiv:S.yDiv;
+  const arr=S.selDiv.axis==='x'?getXDiv():getYDiv();
   const mx=S.selDiv.axis==='x'?S.iW:S.iD;
   arr[S.selDiv.idx]=cl(arr[S.selDiv.idx]+d,1,mx-1);
   syncSelInfo(); checkOv(); renderLists(); draw2();
 }
-
 function moveSel(v){
   if(!S.selDiv)return;
-  const arr=S.selDiv.axis==='x'?S.xDiv:S.yDiv;
+  const arr=S.selDiv.axis==='x'?getXDiv():getYDiv();
   const mx=S.selDiv.axis==='x'?S.iW:S.iD;
   arr[S.selDiv.idx]=cl(parseFloat(v)||1,1,mx-1);
   checkOv(); renderLists(); draw2();
 }
-
 function delSel(){
   if(!S.selDiv)return;
   delDiv(S.selDiv.axis,S.selDiv.idx);
-  S.selDiv=null; g('selInfo').classList.remove('on');
+  S.selDiv=null; g('selBox').classList.remove('on');
 }
-
 function delDiv(axis,idx){
-  if(axis==='x')S.xDiv.splice(idx,1); else S.yDiv.splice(idx,1);
+  const arr=axis==='x'?getXDiv():getYDiv();
+  arr.splice(idx,1);
   if(S.selDiv&&S.selDiv.axis===axis&&S.selDiv.idx===idx){
-    S.selDiv=null; g('selInfo').classList.remove('on');
+    S.selDiv=null; g('selBox').classList.remove('on');
   }
   checkOv(); renderLists(); draw2();
 }
 
-// canvas click to add divider
-function addDivAt(axis,pos){
-  const arr=axis==='x'?S.xDiv:S.yDiv;
-  const mx=axis==='x'?S.iW:S.iD;
-  arr.push(cl(Math.round(pos),1,mx-1));
-  S.selDiv={axis,idx:arr.length-1};
-  clampDivs(); checkOv(); renderLists(); syncSelInfo(); draw2();
-}
-
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 // 2D CANVAS
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 function getSc(){
-  const W=c2.width-120,H=c2.height-100;
+  const W=c2.width-120, H=c2.height-100;
+  const totalH = ID(S.type) ? S.stages.reduce((s,st)=>s+st.h,0) : S.iH;
   const mW=S.iW+S.wT*2;
-  const mH=ID(S.type)?(S.iH+S.wT*2)*1.4+(S.iD+S.wT*2)+30:S.iD+S.wT*2;
-  return Math.min(W/mW,H/mH,5.5);
+  const mH=ID(S.type)?(totalH+S.wT*2)*1.35+(S.iD+S.wT*2)+28:S.iD+S.wT*2;
+  return Math.min(W/mW, H/mH, 5.5);
 }
 
-// Returns inner area origin (top-left of inner cavity in canvas px)
 function getIO(){
-  const s=getSc(),wt=S.wT,W=c2.width,H=c2.height;
+  const s=getSc(), wt=S.wT, W=c2.width, H=c2.height;
   if(!ID(S.type)){
-    const oW=(S.iW+wt*2)*s,oH=(S.iD+wt*2)*s;
+    const oW=(S.iW+wt*2)*s, oH=(S.iD+wt*2)*s;
     return{x:(W-oW)/2+wt*s, y:(H-oH)/2+wt*s, s};
-  }else{
-    const frontH=(S.iH+wt*2)*s,topH=(S.iD+wt*2)*s,gap=28;
-    const total=frontH+gap+topH,startY=(H-total)/2;
+  } else {
+    const totalH=S.stages.reduce((sum,st)=>sum+st.h,0);
+    const frontH=(totalH+wt*2)*s, topH=(S.iD+wt*2)*s, gap=24;
+    const total=frontH+gap+topH, startY=(H-total)/2;
     return{x:(W-(S.iW+wt*2)*s)/2+wt*s, y:startY+frontH+gap+wt*s, s};
   }
 }
@@ -482,250 +555,264 @@ function rrect(c,x,y,w,h,r){
 }
 
 function draw2(){
-  const c=ctx2,W=c2.width,H=c2.height;
-  c.clearRect(0,0,W,H);
-  c.fillStyle='#05050d';c.fillRect(0,0,W,H);
+  const c=ctx2, W=c2.width, H=c2.height;
+  c.clearRect(0,0,W,H); c.fillStyle='#05050d'; c.fillRect(0,0,W,H);
   drawGrid(c,W,H);
-  ID(S.type)?drawDrawer(c,W,H):drawCase(c,W,H);
+  ID(S.type) ? drawDrawer2d(c,W,H) : drawCase2d(c,W,H);
 }
-
 function drawGrid(c,W,H){
-  c.strokeStyle='#0d0d18';c.lineWidth=1;
+  c.strokeStyle='#0d0d18'; c.lineWidth=1;
   for(let x=0;x<W;x+=24){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
   for(let y=0;y<H;y+=24){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
 }
 
-function drawCase(c,W,H){
-  const s=getSc(),iW=S.iW,iD=S.iD,wt=S.wT;
-  const oW=(iW+wt*2)*s,oH=(iD+wt*2)*s;
-  const ox=(W-oW)/2,oy=(H-oH)/2;
-  const rr=S.useR?S.rR*s:0;
-  // outer
-  c.fillStyle='#22223a';rrect(c,ox,oy,oW,oH,rr);c.fill();
-  c.strokeStyle='#444460';c.lineWidth=1.5;rrect(c,ox,oy,oW,oH,rr);c.stroke();
-  // inner
-  c.fillStyle='#080812';c.fillRect(ox+wt*s,oy+wt*s,iW*s,iD*s);
-  c.strokeStyle='#1c1c2c';c.lineWidth=1;c.strokeRect(ox+wt*s,oy+wt*s,iW*s,iD*s);
-  if(S.useS)drawNubs(c,ox,oy,oW,s);
+function drawCase2d(c,W,H){
+  const s=getSc(), iW=S.iW, iD=S.iD, wt=S.wT;
+  const oW=(iW+wt*2)*s, oH=(iD+wt*2)*s;
+  const ox=(W-oW)/2, oy=(H-oH)/2, rr=S.useR?S.rR*s:0;
+  c.fillStyle='#22223a'; rrect(c,ox,oy,oW,oH,rr); c.fill();
+  c.strokeStyle='#444460'; c.lineWidth=1.5; rrect(c,ox,oy,oW,oH,rr); c.stroke();
+  c.fillStyle='#080812'; c.fillRect(ox+wt*s,oy+wt*s,iW*s,iD*s);
+  c.strokeStyle='#1c1c2c'; c.lineWidth=1; c.strokeRect(ox+wt*s,oy+wt*s,iW*s,iD*s);
+  if(S.useS) drawNubs(c,ox,oy,oW,s);
   if(HD(S.type)){
-    drawDivs2(c,ox,oy,s,wt,iW,iD);
-    drawSegs(c,ox,oy,s,wt,iW,iD);
-    if(!S.xDiv.length&&!S.yDiv.length)drawHint(c,ox+wt*s,oy+wt*s,iW*s,iD*s);
+    drawDivs2d(c,ox,oy,s,wt,iW,iD,S.xDiv,S.yDiv);
+    drawSegs(c,ox,oy,s,wt,iW,iD,S.xDiv,S.yDiv);
+    if(!S.xDiv.length&&!S.yDiv.length) drawHint(c,ox+wt*s,oy+wt*s,iW*s,iD*s);
   }
   dimL(c,ox,oy+oH+18,ox+oW,oy+oH+18,`W:${iW+wt*2}mm`);
   dimL(c,ox+oW+18,oy,ox+oW+18,oy+oH,`D:${iD+wt*2}mm`);
-  c.fillStyle='#333350';c.font='9px IBM Plex Mono';c.textAlign='left';c.textBaseline='bottom';
+  c.fillStyle='#333350'; c.font='9px IBM Plex Mono'; c.textAlign='left'; c.textBaseline='bottom';
   c.fillText('TOP VIEW',ox,oy-5);
 }
 
-function drawDrawer(c,W,H){
-  const s=getSc(),iW=S.iW,iD=S.iD,iH=S.iH,wt=S.wT;
-  const oW=(iW+wt*2)*s,frontH=(iH+wt*2)*s,topH=(iD+wt*2)*s,gap=28;
-  const total=frontH+gap+topH,startY=(H-total)/2,ox=(W-oW)/2;
+function drawDrawer2d(c,W,H){
+  const s=getSc(), iW=S.iW, iD=S.iD, wt=S.wT;
+  const totalH=S.stages.reduce((sum,st)=>sum+st.h,0);
+  const oW=(iW+wt*2)*s, frontH=(totalH+wt*2)*s, topH=(iD+wt*2)*s, gap=24;
+  const total=frontH+gap+topH, startY=(H-total)/2, ox=(W-oW)/2;
   const rr=S.useR?S.rR*s:0;
-  // ─ FRONT VIEW ─
+
+  // ─ FRONT VIEW (外枠 + 各段) ─
   const fy=startY;
-  c.fillStyle='#182818';rrect(c,ox,fy,oW,frontH,rr);c.fill();
-  c.strokeStyle='#2e5030';c.lineWidth=1.5;rrect(c,ox,fy,oW,frontH,rr);c.stroke();
-  c.fillStyle='#05050d';c.fillRect(ox+wt*s,fy+wt*s,iW*s,iH*s);
-  c.strokeStyle='#121e12';c.lineWidth=1;c.strokeRect(ox+wt*s,fy+wt*s,iW*s,iH*s);
-  const hcy=fy+wt*s+iH*s*.82;
-  if(S.handleType==='groove'){
-    const gw=Math.min(S.gW,iW-4)*s,gh=S.gH*s,gx=ox+wt*s+(iW*s-gw)/2;
-    c.fillStyle='#020206';c.fillRect(gx,hcy-gh/2,gw,gh);
-    c.strokeStyle='#386838';c.lineWidth=1.5;c.strokeRect(gx,hcy-gh/2,gw,gh);
-    c.fillStyle='#386838';c.font='9px IBM Plex Mono';c.textAlign='center';c.textBaseline='top';
-    c.fillText(`溝 ${S.gW}×${S.gH}mm`,ox+wt*s+iW*s/2,hcy+gh/2+4);
-  }else{
-    const r=Math.min(S.hD/2,iW/4,iH/4)*s;
-    c.beginPath();c.arc(ox+wt*s+iW*s/2,hcy,r,0,Math.PI*2);c.fillStyle='#020206';c.fill();
-    c.strokeStyle='#386838';c.lineWidth=1.5;c.stroke();
-    c.fillStyle='#386838';c.font='9px IBM Plex Mono';c.textAlign='center';c.textBaseline='top';
-    c.fillText(`穴 ⌀${S.hD}mm`,ox+wt*s+iW*s/2,hcy+r+4);
-  }
-  if(S.useS)drawNubs(c,ox,fy,oW,s);
-  c.fillStyle='#2a4a2a';c.font='9px IBM Plex Mono';c.textAlign='left';c.textBaseline='bottom';c.fillText('FRONT VIEW — 外枠正面',ox,fy-5);
-  dimL(c,ox,fy+frontH+14,ox+oW,fy+frontH+14,`W:${iW+wt*2}mm`);
-  dimL(c,ox+oW+14,fy,ox+oW+14,fy+frontH,`H:${iH+wt*2}mm`);
-  // ─ TOP VIEW ─
+  c.fillStyle='#182818'; rrect(c,ox,fy,oW,frontH,rr); c.fill();
+  c.strokeStyle='#2e5030'; c.lineWidth=1.5; rrect(c,ox,fy,oW,frontH,rr); c.stroke();
+
+  // Draw each stage slot
+  let stageY=fy+wt*s;
+  S.stages.forEach((st,si)=>{
+    const sh=st.h*s;
+    const isSel=(si===S.curStage)&&ID(S.type);
+    c.fillStyle=isSel?'#0a1a0a':'#06060e';
+    c.fillRect(ox+wt*s, stageY, iW*s, sh);
+    c.strokeStyle=isSel?'#2a5a2a':'#121e12'; c.lineWidth=isSel?1.5:1;
+    c.strokeRect(ox+wt*s, stageY, iW*s, sh);
+    // Stage label
+    c.fillStyle=isSel?'#4a9a4a':'#2a4a2a'; c.font='9px IBM Plex Mono'; c.textAlign='left'; c.textBaseline='middle';
+    c.fillText(`段${si+1}  H:${st.h}mm`,ox+wt*s+4, stageY+sh/2);
+    // Handle in last stage slot
+    if(si===S.stages.length-1){
+      const hcy=stageY+sh*.82;
+      if(S.handleType==='groove'){
+        const gw=Math.min(S.gW,iW-4)*s, gh=S.gH*s, gx=ox+wt*s+(iW*s-gw)/2;
+        c.fillStyle='#020206'; c.fillRect(gx,hcy-gh/2,gw,gh);
+        c.strokeStyle='#386838'; c.lineWidth=1.5; c.strokeRect(gx,hcy-gh/2,gw,gh);
+      }else{
+        const r=Math.min(S.hD/2,iW/4,st.h/4)*s;
+        c.beginPath(); c.arc(ox+wt*s+iW*s/2,hcy,r,0,Math.PI*2);
+        c.fillStyle='#020206'; c.fill(); c.strokeStyle='#386838'; c.lineWidth=1.5; c.stroke();
+      }
+    }
+    // Stage divider line
+    if(si<S.stages.length-1){
+      c.strokeStyle='#305030'; c.lineWidth=1; c.setLineDash([3,3]);
+      c.beginPath(); c.moveTo(ox,stageY+sh); c.lineTo(ox+oW,stageY+sh); c.stroke();
+      c.setLineDash([]);
+    }
+    stageY+=sh;
+  });
+
+  if(S.useS) drawNubs(c,ox,fy,oW,s);
+  c.fillStyle='#2a4a2a'; c.font='9px IBM Plex Mono'; c.textAlign='left'; c.textBaseline='bottom';
+  c.fillText('FRONT VIEW — 外枠正面',ox,fy-5);
+  dimL(c,ox,fy+frontH+12,ox+oW,fy+frontH+12,`W:${iW+wt*2}mm`);
+  dimL(c,ox+oW+12,fy,ox+oW+12,fy+frontH,`H:${totalH+wt*2}mm`);
+
+  // ─ TOP VIEW (選択中の段の仕切り) ─
   const ty=startY+frontH+gap;
-  c.fillStyle='#12162a';c.fillRect(ox,ty,oW,topH);c.strokeStyle='#242860';c.lineWidth=1.5;c.strokeRect(ox,ty,oW,topH);
-  c.fillStyle='#05050d';c.fillRect(ox+wt*s,ty+wt*s,iW*s,iD*s);c.strokeStyle='#0f1120';c.lineWidth=1;c.strokeRect(ox+wt*s,ty+wt*s,iW*s,iD*s);
+  c.fillStyle='#12162a'; c.fillRect(ox,ty,oW,topH);
+  c.strokeStyle='#242860'; c.lineWidth=1.5; c.strokeRect(ox,ty,oW,topH);
+  c.fillStyle='#05050d'; c.fillRect(ox+wt*s,ty+wt*s,iW*s,iD*s);
+  c.strokeStyle='#0f1120'; c.lineWidth=1; c.strokeRect(ox+wt*s,ty+wt*s,iW*s,iD*s);
+
+  const cst=S.stages[S.curStage];
   if(HD(S.type)){
-    drawDivs2(c,ox,ty,s,wt,iW,iD);
-    drawSegs(c,ox,ty,s,wt,iW,iD);
-    if(!S.xDiv.length&&!S.yDiv.length)drawHint(c,ox+wt*s,ty+wt*s,iW*s,iD*s);
+    drawDivs2d(c,ox,ty,s,wt,iW,iD,cst.xDiv,cst.yDiv);
+    drawSegs(c,ox,ty,s,wt,iW,iD,cst.xDiv,cst.yDiv);
+    if(!cst.xDiv.length&&!cst.yDiv.length) drawHint(c,ox+wt*s,ty+wt*s,iW*s,iD*s);
   }
-  c.fillStyle='#24286a';c.font='9px IBM Plex Mono';c.textAlign='left';c.textBaseline='bottom';c.fillText('TOP VIEW — 引き出し内部（上から）',ox,ty-5);
-  dimL(c,ox,ty+topH+14,ox+oW,ty+topH+14,`W:${iW+wt*2}mm`);
-  dimL(c,ox+oW+14,ty,ox+oW+14,ty+topH,`D:${iD+wt*2}mm`);
+  c.fillStyle='#24286a'; c.font='9px IBM Plex Mono'; c.textAlign='left'; c.textBaseline='bottom';
+  c.fillText(`TOP VIEW — 段${S.curStage+1} 内部`,ox,ty-5);
+  dimL(c,ox,ty+topH+12,ox+oW,ty+topH+12,`W:${iW+wt*2}mm`);
+  dimL(c,ox+oW+12,ty,ox+oW+12,ty+topH,`D:${iD+wt*2}mm`);
 }
 
-function drawDivs2(c,ox,oy,s,wt,iW,iD){
-  const iX=ox+wt*s,iY=oy+wt*s;
-  S.xDiv.forEach((p,i)=>{
+function drawDivs2d(c,ox,oy,s,wt,iW,iD,xDiv,yDiv){
+  const iX=ox+wt*s, iY=oy+wt*s;
+  xDiv.forEach((p,i)=>{
     const sel=S.selDiv&&S.selDiv.axis==='x'&&S.selDiv.idx===i;
     const dx=iX+p*s;
-    c.fillStyle=sel?'rgba(74,158,255,.65)':'rgba(74,158,255,.28)';c.fillRect(dx-S.dT*s/2,iY,S.dT*s,iD*s);
-    c.strokeStyle=sel?'#80c8ff':'#3a80cc';c.lineWidth=sel?2:1;c.strokeRect(dx-S.dT*s/2,iY,S.dT*s,iD*s);
-    c.fillStyle='#5ab0ff';c.font='9px IBM Plex Mono';c.textAlign='center';c.textBaseline='bottom';c.fillText(`${p}mm`,dx,iY-3);
+    c.fillStyle=sel?'rgba(74,158,255,.65)':'rgba(74,158,255,.28)';
+    c.fillRect(dx-S.dT*s/2,iY,S.dT*s,iD*s);
+    c.strokeStyle=sel?'#80c8ff':'#3a80cc'; c.lineWidth=sel?2:1;
+    c.strokeRect(dx-S.dT*s/2,iY,S.dT*s,iD*s);
+    c.fillStyle='#5ab0ff'; c.font='9px IBM Plex Mono'; c.textAlign='center'; c.textBaseline='bottom';
+    c.fillText(`${p}mm`,dx,iY-3);
     if(sel){arw(c,dx-10,iY+iD*s/2,'L');arw(c,dx+10,iY+iD*s/2,'R');}
   });
-  S.yDiv.forEach((p,i)=>{
+  yDiv.forEach((p,i)=>{
     const sel=S.selDiv&&S.selDiv.axis==='y'&&S.selDiv.idx===i;
     const dy=iY+p*s;
-    c.fillStyle=sel?'rgba(74,158,255,.65)':'rgba(74,158,255,.28)';c.fillRect(iX,dy-S.dT*s/2,iW*s,S.dT*s);
-    c.strokeStyle=sel?'#80c8ff':'#3a80cc';c.lineWidth=sel?2:1;c.strokeRect(iX,dy-S.dT*s/2,iW*s,S.dT*s);
-    c.fillStyle='#5ab0ff';c.font='9px IBM Plex Mono';c.textAlign='right';c.textBaseline='middle';c.fillText(`${p}mm`,iX-4,dy);
+    c.fillStyle=sel?'rgba(74,158,255,.65)':'rgba(74,158,255,.28)';
+    c.fillRect(iX,dy-S.dT*s/2,iW*s,S.dT*s);
+    c.strokeStyle=sel?'#80c8ff':'#3a80cc'; c.lineWidth=sel?2:1;
+    c.strokeRect(iX,dy-S.dT*s/2,iW*s,S.dT*s);
+    c.fillStyle='#5ab0ff'; c.font='9px IBM Plex Mono'; c.textAlign='right'; c.textBaseline='middle';
+    c.fillText(`${p}mm`,iX-4,dy);
     if(sel){arw(c,iX+iW*s/2,dy-10,'U');arw(c,iX+iW*s/2,dy+10,'D');}
   });
 }
 
-function drawSegs(c,ox,oy,s,wt,iW,iD){
-  const iX=ox+wt*s,iY=oy+wt*s;
-  c.font='10px IBM Plex Mono';c.fillStyle='#445566';c.textBaseline='middle';
-  const xs=[0,...[...S.xDiv].sort((a,b)=>a-b),iW];
+function drawSegs(c,ox,oy,s,wt,iW,iD,xDiv,yDiv){
+  const iX=ox+wt*s, iY=oy+wt*s;
+  c.font='10px IBM Plex Mono'; c.fillStyle='#445566'; c.textBaseline='middle';
+  const xs=[0,...[...xDiv].sort((a,b)=>a-b),iW];
   for(let i=0;i<xs.length-1;i++){
-    const l=xs[i]+(i>0?S.dT/2:0),r=xs[i+1]-(i<xs.length-2?S.dT/2:0),seg=r-l;
+    const l=xs[i]+(i>0?S.dT/2:0), r=xs[i+1]-(i<xs.length-2?S.dT/2:0), seg=r-l;
     if(seg>5){c.textAlign='center';c.fillText(`${Math.round(seg)}`,iX+(l+seg/2)*s,iY+iD*s/2);}
   }
   c.textAlign='left';
-  const ys=[0,...[...S.yDiv].sort((a,b)=>a-b),iD];
+  const ys=[0,...[...yDiv].sort((a,b)=>a-b),iD];
   for(let i=0;i<ys.length-1;i++){
-    const t2=ys[i]+(i>0?S.dT/2:0),b=ys[i+1]-(i<ys.length-2?S.dT/2:0),seg=b-t2;
+    const t2=ys[i]+(i>0?S.dT/2:0), b=ys[i+1]-(i<ys.length-2?S.dT/2:0), seg=b-t2;
     if(seg>5){c.fillText(`${Math.round(seg)}`,iX+iW*s+4,iY+(t2+seg/2)*s);}
   }
 }
 
 function drawHint(c,ix,iy,iw,ih){
-  c.fillStyle='rgba(74,158,255,.07)';c.fillRect(ix,iy,iw,ih);
-  c.strokeStyle='rgba(74,158,255,.2)';c.lineWidth=1;c.setLineDash([4,4]);c.strokeRect(ix+2,iy+2,iw-4,ih-4);c.setLineDash([]);
+  c.fillStyle='rgba(74,158,255,.07)'; c.fillRect(ix,iy,iw,ih);
+  c.strokeStyle='rgba(74,158,255,.2)'; c.lineWidth=1; c.setLineDash([4,4]);
+  c.strokeRect(ix+2,iy+2,iw-4,ih-4); c.setLineDash([]);
 }
-
 function drawNubs(c,ox,oy,oW,s){
   const nw=7*s,nh=2.5*s,sp=18*s,cnt=Math.max(1,Math.floor(oW/sp)-1),sx=ox+(oW-(cnt-1)*sp)/2;
-  c.fillStyle='#343448';c.strokeStyle='#484860';c.lineWidth=1;
+  c.fillStyle='#343448'; c.strokeStyle='#484860'; c.lineWidth=1;
   for(let i=0;i<cnt;i++){c.fillRect(sx+i*sp-nw/2,oy-nh,nw,nh);c.strokeRect(sx+i*sp-nw/2,oy-nh,nw,nh);}
 }
-
 function arw(c,x,y,d){
-  c.fillStyle='#80c8ff';c.beginPath();
+  c.fillStyle='#80c8ff'; c.beginPath();
   if(d==='L'){c.moveTo(x-7,y);c.lineTo(x,y-4);c.lineTo(x,y+4);}
   else if(d==='R'){c.moveTo(x+7,y);c.lineTo(x,y-4);c.lineTo(x,y+4);}
   else if(d==='U'){c.moveTo(x,y-7);c.lineTo(x-4,y);c.lineTo(x+4,y);}
   else{c.moveTo(x,y+7);c.lineTo(x-4,y);c.lineTo(x+4,y);}
-  c.closePath();c.fill();
+  c.closePath(); c.fill();
 }
-
 function dimL(c,x1,y1,x2,y2,txt){
-  c.strokeStyle='#252538';c.lineWidth=1;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
-  c.fillStyle='#44445a';c.font='10px IBM Plex Mono';c.textAlign='center';c.textBaseline='middle';
+  c.strokeStyle='#252538'; c.lineWidth=1; c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
+  c.fillStyle='#44445a'; c.font='10px IBM Plex Mono'; c.textAlign='center'; c.textBaseline='middle';
   c.fillText(txt,(x1+x2)/2+(y1===y2?0:12),(y1+y2)/2+(y1===y2?-7:0));
 }
 
-// ═══════════════════════════════════════
-// MOUSE INTERACTION
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
+// MOUSE
+// ═══════════════════════════════════
 function cXY(e){const r=c2.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
-
 function hitTest(mx,my){
-  const{x:iX,y:iY,s}=getIO(),HIT=9;
-  for(let i=0;i<S.xDiv.length;i++)if(Math.abs(mx-(iX+S.xDiv[i]*s))<HIT&&my>=iY&&my<=iY+S.iD*s)return{axis:'x',idx:i};
-  for(let i=0;i<S.yDiv.length;i++)if(Math.abs(my-(iY+S.yDiv[i]*s))<HIT&&mx>=iX&&mx<=iX+S.iW*s)return{axis:'y',idx:i};
+  const{x:iX,y:iY,s}=getIO(), HIT=9;
+  const xd=getXDiv(), yd=getYDiv();
+  for(let i=0;i<xd.length;i++) if(Math.abs(mx-(iX+xd[i]*s))<HIT&&my>=iY&&my<=iY+S.iD*s) return{axis:'x',idx:i};
+  for(let i=0;i<yd.length;i++) if(Math.abs(my-(iY+yd[i]*s))<HIT&&mx>=iX&&mx<=iX+S.iW*s) return{axis:'y',idx:i};
   return null;
 }
-
 function insideInner(mx,my){
   const{x:iX,y:iY,s}=getIO();
   return mx>=iX&&mx<=iX+S.iW*s&&my>=iY&&my<=iY+S.iD*s;
 }
-
 function m2Dn(e){
   if(S.is3d||!HD(S.type))return;
   const{x,y}=cXY(e);
   const hit=hitTest(x,y);
   if(hit){
-    dragDiv=hit; S.selDiv=hit;
-    c2.style.cursor=hit.axis==='x'?'ew-resize':'ns-resize';
+    dragDiv=hit; S.selDiv=hit; c2.style.cursor=hit.axis==='x'?'ew-resize':'ns-resize';
     syncSelInfo(); renderLists(); draw2();
   }else if(insideInner(x,y)){
     const{x:iX,y:iY,s}=getIO();
     const axis=e.shiftKey?'y':'x';
-    const pos=axis==='x'?(x-iX)/s:(y-iY)/s;
-    addDivAt(axis,pos);
-    dragDiv=S.selDiv;
-    c2.style.cursor=axis==='x'?'ew-resize':'ns-resize';
+    addDivAt(axis, axis==='x'?(x-iX)/s:(y-iY)/s);
+    dragDiv=S.selDiv; c2.style.cursor=axis==='x'?'ew-resize':'ns-resize';
   }else{
-    S.selDiv=null; g('selInfo').classList.remove('on');
-    renderLists(); draw2();
+    S.selDiv=null; g('selBox').classList.remove('on'); renderLists(); draw2();
   }
 }
-
 function m2Mv(e){
   if(S.is3d)return;
   const{x,y}=cXY(e);
   if(!dragDiv){
     if(HD(S.type)){
       const hit=hitTest(x,y);
-      c2.style.cursor=hit?(hit.axis==='x'?'ew-resize':'ns-resize'):
-        (insideInner(x,y)?'crosshair':'default');
+      c2.style.cursor=hit?(hit.axis==='x'?'ew-resize':'ns-resize'):(insideInner(x,y)?'crosshair':'default');
     }
     return;
   }
   const{x:iX,y:iY,s}=getIO();
-  if(dragDiv.axis==='x'){S.xDiv[dragDiv.idx]=cl(Math.round((x-iX)/s),1,S.iW-1);}
-  else{S.yDiv[dragDiv.idx]=cl(Math.round((y-iY)/s),1,S.iD-1);}
+  const arr=dragDiv.axis==='x'?getXDiv():getYDiv();
+  const mx=dragDiv.axis==='x'?S.iW:S.iD;
+  arr[dragDiv.idx]=cl(Math.round(dragDiv.axis==='x'?(x-iX)/s:(y-iY)/s),1,mx-1);
   syncSelInfo(); checkOv(); draw2();
 }
-
 function m2Up(){
   if(dragDiv){dragDiv=null;c2.style.cursor='default';checkOv();renderLists();draw2();}
 }
 
-// ═══════════════════════════════════════
-// 3D RENDERING
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
+// 3D
+// ═══════════════════════════════════
 function draw3(){
-  const c=ctx3,W=c3.width,H=c3.height;
-  c.clearRect(0,0,W,H);c.fillStyle='#04040c';c.fillRect(0,0,W,H);
+  const c=ctx3, W=c3.width, H=c3.height;
+  c.clearRect(0,0,W,H); c.fillStyle='#04040c'; c.fillRect(0,0,W,H);
   grid3(c,W,H);
-  ID(S.type)?d3Drawer(c,W,H):d3Case(c,W,H);
+  ID(S.type) ? d3Drawer(c,W,H) : d3Case(c,W,H);
 }
-
 function prj(x,y,z,W,H){
   const cy=Math.cos(rot.y),sy=Math.sin(rot.y),cx=Math.cos(rot.x),sx=Math.sin(rot.x);
-  const rx=x*cy+z*sy,rz=-x*sy+z*cy,ry2=y*cx-rz*sx,rz2=y*sx+rz*cx;
-  const fov=560*zoom,pz=rz2+600;
-  return{x:rx*fov/pz+W/2,y:-ry2*fov/pz+H/2,z:rz2};
+  const rx=x*cy+z*sy, rz=-x*sy+z*cy, ry2=y*cx-rz*sx, rz2=y*sx+rz*cx;
+  const fov=560*zoom, pz=rz2+600;
+  return{x:rx*fov/pz+W/2, y:-ry2*fov/pz+H/2, z:rz2};
 }
-
 function grid3(c,W,H){
-  c.strokeStyle='#0c0c18';c.lineWidth=1;
+  c.strokeStyle='#0c0c18'; c.lineWidth=1;
   for(let i=-160;i<=160;i+=26){
-    const a=prj(i,-88,-160,W,H),b=prj(i,-88,160,W,H);
-    const d=prj(-160,-88,i,W,H),e=prj(160,-88,i,W,H);
+    const a=prj(i,-88,-160,W,H),b=prj(i,-88,160,W,H),d=prj(-160,-88,i,W,H),e=prj(160,-88,i,W,H);
     c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();
     c.beginPath();c.moveTo(d.x,d.y);c.lineTo(e.x,e.y);c.stroke();
   }
 }
-
 function b3(c,W,H,x,y,z,bw,bh,bd,cols,edge){
   const vs=[[x,y,z],[x+bw,y,z],[x+bw,y+bh,z],[x,y+bh,z],[x,y,z+bd],[x+bw,y,z+bd],[x+bw,y+bh,z+bd],[x,y+bh,z+bd]].map(([px,py,pz])=>prj(px,py,pz,W,H));
   const fs=[[4,5,6,7,cols[0]],[0,3,2,1,cols[1]],[0,4,7,3,cols[2]],[1,2,6,5,cols[3]],[3,7,6,2,cols[4]],[0,1,5,4,cols[5]]].map(([a,b2,c2,d,col])=>({pts:[vs[a],vs[b2],vs[c2],vs[d]],col,z:(vs[a].z+vs[b2].z+vs[c2].z+vs[d].z)/4})).sort((a,b2)=>b2.z-a.z);
   fs.forEach(({pts,col})=>{c.beginPath();c.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>c.lineTo(p.x,p.y));c.closePath();c.fillStyle=col;c.fill();c.strokeStyle=edge;c.lineWidth=.8;c.stroke();});
 }
-
 function d3Case(c,W,H){
   const iW=S.iW,iD=S.iD,iH=S.iH,wt=S.wT,sc=Math.min(175/Math.max(iW,iD,iH),2.5);
   const sw=iW*sc,sd=iD*sc,sh=iH*sc,ws=wt*sc;
   const cx=-(sw+ws*2)/2,cy=-(sh+ws*2)/2,cz=-(sd+ws*2)/2;
   const GC=['#2a2a3c','#1e1e2e','#242434','#242434','#303044','#181828'];
-  b3(c,W,H,cx,cy,cz,sw+ws*2,ws,sd+ws*2,GC,'#3c3c58');
-  b3(c,W,H,cx,cy+ws,cz,sw+ws*2,sh,ws,GC,'#3c3c58');
-  b3(c,W,H,cx,cy+ws,cz+sd+ws,sw+ws*2,sh,ws,GC,'#3c3c58');
-  b3(c,W,H,cx,cy+ws,cz+ws,ws,sh,sd,GC,'#3c3c58');
-  b3(c,W,H,cx+sw+ws,cy+ws,cz+ws,ws,sh,sd,GC,'#3c3c58');
-  b3(c,W,H,cx,cy+sh+ws,cz,sw+ws*2,ws,sd+ws*2,['#343448','#282838','#303040','#303040','#3e3e54','#202030'],'#4c4c68');
+  b3(c,W,H,cx,cy,cz,sw+ws*2,ws,sd+ws*2,GC,'#3c3c58');           // bottom
+  b3(c,W,H,cx,cy+ws,cz,sw+ws*2,sh,ws,GC,'#3c3c58');              // front wall
+  b3(c,W,H,cx,cy+ws,cz+sd+ws,sw+ws*2,sh,ws,GC,'#3c3c58');        // back wall
+  b3(c,W,H,cx,cy+ws,cz+ws,ws,sh,sd,GC,'#3c3c58');                 // left wall
+  b3(c,W,H,cx+sw+ws,cy+ws,cz+ws,ws,sh,sd,GC,'#3c3c58');           // right wall
+  b3(c,W,H,cx,cy+sh+ws,cz,sw+ws*2,ws,sd+ws*2,['#343448','#282838','#303040','#303040','#3e3e54','#202030'],'#4c4c68'); // top
   if(HD(S.type)){
     const DC=['#183a6c','#102850','#142e5e','#142e5e','#1c4878','#0c1e40'];
     S.xDiv.forEach(p=>b3(c,W,H,cx+ws+p*sc-S.dT*sc/2,cy+ws,cz+ws,S.dT*sc,sh,sd,DC,'#1e50a0'));
@@ -733,46 +820,105 @@ function d3Case(c,W,H){
   }
   if(S.useS){
     const nw=7*sc,nh=2.5*sc,cnt=Math.max(1,Math.floor((sw+ws*2)/18)-1),snx=cx+((sw+ws*2)-(cnt-1)*18*sc)/2;
-    for(let i=0;i<cnt;i++)b3(c,W,H,snx+i*18*sc-nw/2,cy+sh+ws*2,cz+(sd+ws*2)*.35,nw,nh,nw,['#3c3c50','#2c2c40','#343448','#343448','#444458','#242434'],'#4c4c60');
+    for(let i=0;i<cnt;i++) b3(c,W,H,snx+i*18*sc-nw/2,cy+sh+ws*2,cz+(sd+ws*2)*.35,nw,nh,nw,['#3c3c50','#2c2c40','#343448','#343448','#444458','#242434'],'#4c4c60');
   }
 }
-
 function d3Drawer(c,W,H){
-  const iW=S.iW,iD=S.iD,iH=S.iH,wt=S.wT,sc=Math.min(155/Math.max(iW,iD,iH),2.5);
-  const sw=iW*sc,sd=iD*sc,sh=iH*sc,ws=wt*sc,ow=sw+ws*2,oh=sh+ws*2,od=sd+ws*2;
+  const iW=S.iW,iD=S.iD,wt=S.wT;
+  const totalH=S.stages.reduce((s,st)=>s+st.h,0);
+  const sc=Math.min(155/Math.max(iW,iD,totalH),2.5);
+  const sw=iW*sc,sd=iD*sc,ws=wt*sc,ow=sw+ws*2,od=sd+ws*2,oh=(totalH+wt*2)*sc;
   const ocx=-ow/2,ocy=-oh/2,ocz=-od/2;
+  // Outer shell
   const OC=['#142214','#0e180e','#121e12','#121e12','#1a2c1a','#080e08'];
-  b3(c,W,H,ocx,ocy,ocz,ow,ws,od,OC,'#203e20');
-  b3(c,W,H,ocx,ocy+ws,ocz,ow,sh,ws,OC,'#203e20');
-  b3(c,W,H,ocx,ocy+ws,ocz+ws,ws,sh,sd,OC,'#203e20');
-  b3(c,W,H,ocx+sw+ws,ocy+ws,ocz+ws,ws,sh,sd,OC,'#203e20');
-  if(S.backType==='closed')b3(c,W,H,ocx,ocy+ws,ocz+sd+ws,ow,sh,ws,OC,'#203e20');
-  b3(c,W,H,ocx,ocy+sh+ws,ocz,ow,ws,od,['#1c301c','#142414','#182c18','#182c18','#223822','#0e180e'],'#283e28');
-  const pull=14*sc,dx=ocx+ws,dy=ocy+ws,dz=ocz+ws-pull;
-  const IC=['#302818','#241e10','#2a2214','#2a2214','#382e20','#18140c'];
-  b3(c,W,H,dx,dy,dz,sw,ws,sd,IC,'#504030');
-  b3(c,W,H,dx,dy+ws,dz,sw,sh-ws,ws,IC,'#504030');
-  b3(c,W,H,dx,dy+ws,dz+ws,ws,sh-ws,sd-ws,IC,'#504030');
-  b3(c,W,H,dx+sw-ws,dy+ws,dz+ws,ws,sh-ws,sd-ws,IC,'#504030');
-  if(HD(S.type)){
-    const DC=['#183a6c','#102850','#142e5e','#142e5e','#1c4878','#0c1e40'];
-    S.xDiv.forEach(p=>b3(c,W,H,dx+ws+p*sc-S.dT*sc/2,dy+ws,dz+ws,S.dT*sc,sh-ws,sd-ws,DC,'#1e50a0'));
-    S.yDiv.forEach(p=>b3(c,W,H,dx+ws,dy+ws,dz+ws+p*sc-S.dT*sc/2,sw-ws*2,sh-ws,S.dT*sc,DC,'#1e50a0'));
-  }
+  b3(c,W,H,ocx,ocy,ocz,ow,ws,od,OC,'#203e20');                         // outer bottom
+  b3(c,W,H,ocx,ocy+ws,ocz,ow,totalH*sc,ws,OC,'#203e20');               // outer front
+  b3(c,W,H,ocx,ocy+ws,ocz+ws,ws,totalH*sc,sd,OC,'#203e20');            // outer left
+  b3(c,W,H,ocx+sw+ws,ocy+ws,ocz+ws,ws,totalH*sc,sd,OC,'#203e20');      // outer right
+  if(S.backType==='closed') b3(c,W,H,ocx,ocy+ws,ocz+sd+ws,ow,totalH*sc,ws,OC,'#203e20');
+  b3(c,W,H,ocx,ocy+oh-ws,ocz,ow,ws,od,['#1c301c','#142414','#182c18','#182c18','#223822','#0e180e'],'#283e28'); // outer top
+
+  // Drawers pulled out progressively
+  const pull=12*sc;
+  let dy=ocy+ws;
+  const stageColors=[
+    ['#302818','#241e10','#2a2214','#2a2214','#382e20','#18140c'],
+    ['#182030','#101828','#141c2a','#141c2a','#1c2838','#0c1018'],
+    ['#281830','#201028','#24142a','#24142a','#301c38','#180c20'],
+    ['#183020','#102818','#142a1c','#142a1c','#1c3824','#0c1810'],
+  ];
+  S.stages.forEach((st,si)=>{
+    const sh=st.h*sc;
+    const dz=ocz+ws-pull*(si+1);
+    const IC=stageColors[si%stageColors.length];
+    const edge=['#504030','#4060a0','#6040a0','#408040'][si%4];
+    b3(c,W,H,ocx+ws,dy,dz,sw,ws,sd,IC,edge);                          // drawer bottom
+    b3(c,W,H,ocx+ws,dy+ws,dz,sw,sh-ws,ws,IC,edge);                    // drawer front
+    b3(c,W,H,ocx+ws,dy+ws,dz+ws,ws,sh-ws,sd-ws,IC,edge);              // drawer left
+    b3(c,W,H,ocx+sw,dy+ws,dz+ws,ws,sh-ws,sd-ws,IC,edge);              // drawer right
+    // Dividers for this stage
+    if(HD(S.type)){
+      const DC=['#183a6c','#102850','#142e5e','#142e5e','#1c4878','#0c1e40'];
+      st.xDiv.forEach(p=>b3(c,W,H,ocx+ws*2+p*sc-S.dT*sc/2,dy+ws,dz+ws,S.dT*sc,sh-ws,sd-ws,DC,'#1e50a0'));
+      st.yDiv.forEach(p=>b3(c,W,H,ocx+ws*2,dy+ws,dz+ws+p*sc-S.dT*sc/2,sw-ws*2,sh-ws,S.dT*sc,DC,'#1e50a0'));
+    }
+    dy+=sh;
+  });
 }
 
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
+// GEOMETRY HELPERS FOR EXPORT
+// ═══════════════════════════════════
+
+// Add triangles for 6 faces of a box (solid)
+function bTri(x,y,z,w,h,d){
+  const v=[[x,y,z],[x+w,y,z],[x+w,y+h,z],[x,y+h,z],[x,y,z+d],[x+w,y,z+d],[x+w,y+h,z+d],[x,y+h,z+d]];
+  return[
+    {v:[v[0],v[2],v[1]],n:[0,0,-1]},{v:[v[0],v[3],v[2]],n:[0,0,-1]},
+    {v:[v[4],v[5],v[6]],n:[0,0,1]}, {v:[v[4],v[6],v[7]],n:[0,0,1]},
+    {v:[v[0],v[4],v[7]],n:[-1,0,0]},{v:[v[0],v[7],v[3]],n:[-1,0,0]},
+    {v:[v[1],v[2],v[6]],n:[1,0,0]}, {v:[v[1],v[6],v[5]],n:[1,0,0]},
+    {v:[v[0],v[1],v[5]],n:[0,-1,0]},{v:[v[0],v[5],v[4]],n:[0,-1,0]},
+    {v:[v[3],v[7],v[6]],n:[0,1,0]}, {v:[v[3],v[6],v[2]],n:[0,1,0]}
+  ];
+}
+
+// Hollow shell: outer box minus inner (open top)
+// We generate all wall/floor faces explicitly instead of CSG
+function shellTris(ox,oy,oz,ow,oh,od,wt,openTop=true,openBack=false){
+  let t=[];
+  // Bottom plate (full)
+  t=[...t,...bTri(ox,oy,oz, ow,wt,od)];
+  // Front wall
+  t=[...t,...bTri(ox,oy+wt,oz, ow,oh-wt,wt)];
+  // Back wall
+  if(!openBack) t=[...t,...bTri(ox,oy+wt,oz+od-wt, ow,oh-wt,wt)];
+  // Left wall
+  t=[...t,...bTri(ox,oy+wt,oz+wt, wt,oh-wt,od-wt*2+(openBack?wt:0))];
+  // Right wall
+  t=[...t,...bTri(ox+ow-wt,oy+wt,oz+wt, wt,oh-wt,od-wt*2+(openBack?wt:0))];
+  // Top plate (if not open top)
+  if(!openTop) t=[...t,...bTri(ox,oy+oh-wt,oz, ow,wt,od)];
+  return t;
+}
+
+// Outer casing tris (closed box shell)
+function outerCaseTris(iW,iH,iD,wt){
+  return shellTris(0,0,0, iW+wt*2,iH+wt*2,iD+wt*2, wt, false, false);
+}
+
+// ═══════════════════════════════════
 // EXPORT
-// ═══════════════════════════════════════
+// ═══════════════════════════════════
 function openExp(){
   g('expOv').classList.add('on');
   const n={
     'case':'1ファイル（ケース一体型）',
     'case-fixed':'1ファイル（仕切り含む一体型）',
     'case-movable':'ZIP：ケース本体 ＋ 仕切り（別ファイル）',
-    'drawer':'ZIP：外枠 ＋ 引き出し',
-    'drawer-fixed':'ZIP：外枠 ＋ 引き出し（仕切り一体）',
-    'drawer-movable':'ZIP：外枠 ＋ 引き出し ＋ 仕切り（別ファイル）'
+    'drawer':'ZIP：外枠 ＋ 引き出し（段ごと）',
+    'drawer-fixed':'ZIP：外枠 ＋ 引き出し（段ごと、仕切り一体）',
+    'drawer-movable':'ZIP：外枠 ＋ 引き出し（段ごと） ＋ 仕切り（別ファイル）'
   };
   g('eNote').textContent='出力形式：'+n[S.type];
 }
@@ -789,71 +935,87 @@ function doExport(){
 }
 
 function genCaseTris(){
-  const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH;
-  let t=bTri(0,0,0,iW+wt*2,iH+wt*2,iD+wt*2);
+  const wt=S.wT, iW=S.iW, iD=S.iD, iH=S.iH;
+  // Proper hollow shell
+  let t = outerCaseTris(iW,iH,iD,wt);
   if(S.type==='case-fixed'){
-    S.xDiv.forEach(p=>{t=[...t,...bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)];});
-    S.yDiv.forEach(p=>{t=[...t,...bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)];});
+    S.xDiv.forEach(p=>{t=[...t,...bTri(wt+p-S.dT/2, wt, wt, S.dT, iH, iD)];});
+    S.yDiv.forEach(p=>{t=[...t,...bTri(wt, wt, wt+p-S.dT/2, iW, iH, S.dT)];});
   }
   return t;
 }
 
-function bTri(x,y,z,w,h,d){
-  const v=[[x,y,z],[x+w,y,z],[x+w,y+h,z],[x,y+h,z],[x,y,z+d],[x+w,y,z+d],[x+w,y+h,z+d],[x,y+h,z+d]];
-  return[
-    {v:[v[0],v[2],v[1]],n:[0,0,-1]},{v:[v[0],v[3],v[2]],n:[0,0,-1]},
-    {v:[v[4],v[5],v[6]],n:[0,0,1]},{v:[v[4],v[6],v[7]],n:[0,0,1]},
-    {v:[v[0],v[4],v[7]],n:[-1,0,0]},{v:[v[0],v[7],v[3]],n:[-1,0,0]},
-    {v:[v[1],v[2],v[6]],n:[1,0,0]},{v:[v[1],v[6],v[5]],n:[1,0,0]},
-    {v:[v[0],v[1],v[5]],n:[0,-1,0]},{v:[v[0],v[5],v[4]],n:[0,-1,0]},
-    {v:[v[3],v[7],v[6]],n:[0,1,0]},{v:[v[3],v[6],v[2]],n:[0,1,0]}
-  ];
+function genDrawerOuter(){
+  const wt=S.wT, iW=S.iW, iD=S.iD;
+  const totalH=S.stages.reduce((s,st)=>s+st.h,0);
+  return shellTris(0,0,0, iW+wt*2, totalH+wt*2, iD+wt*2, wt, false, S.backType==='open');
+}
+
+function genDrawerInner(stageIdx, withDividers){
+  const wt=S.wT, iW=S.iW, iD=S.iD;
+  const st=S.stages[stageIdx];
+  const sh=st.h;
+  // Drawer box: bottom + front + left + right (no top, no back if open)
+  let t = shellTris(0,0,0, iW+wt*2, sh+wt, iD+wt*2, wt, true, S.backType==='open');
+  // Remove top plate (already open) – shellTris with openTop=true handles it
+  if(withDividers){
+    st.xDiv.forEach(p=>{t=[...t,...bTri(wt+p-S.dT/2, wt, wt, S.dT, sh, iD)];});
+    st.yDiv.forEach(p=>{t=[...t,...bTri(wt, wt, wt+p-S.dT/2, iW, sh, S.dT)];});
+  }
+  return t;
+}
+
+async function zipExp(fmt){
+  const files={};
+  const enc=tris=>toSoF(tris,fmt,'part');
+
+  if(S.type==='case-movable'){
+    files[`case.${fmt}`]=enc(outerCaseTris(S.iW,S.iH,S.iD,S.wT));
+    S.xDiv.forEach((p,i)=>files[`divider_x${i+1}.${fmt}`]=enc(bTri(S.wT+p-S.dT/2,S.wT,S.wT,S.dT,S.iH,S.iD)));
+    S.yDiv.forEach((p,i)=>files[`divider_y${i+1}.${fmt}`]=enc(bTri(S.wT,S.wT,S.wT+p-S.dT/2,S.iW,S.iH,S.dT)));
+  } else {
+    // All drawer types: outer shell
+    files[`outer.${fmt}`]=enc(genDrawerOuter());
+    // Each stage as separate drawer
+    S.stages.forEach((st,si)=>{
+      const withDiv = S.type==='drawer-fixed';
+      files[`drawer_stage${si+1}.${fmt}`]=enc(genDrawerInner(si, withDiv));
+      if(S.type==='drawer-movable'){
+        st.xDiv.forEach((p,i)=>files[`stage${si+1}_divider_x${i+1}.${fmt}`]=enc(bTri(S.wT+p-S.dT/2,S.wT,S.wT,S.dT,st.h,S.iD)));
+        st.yDiv.forEach((p,i)=>files[`stage${si+1}_divider_y${i+1}.${fmt}`]=enc(bTri(S.wT,S.wT,S.wT+p-S.dT/2,S.iW,st.h,S.dT)));
+      }
+    });
+  }
+
+  const blob=await mkZip(files);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`model_${S.type}.zip`;
+  a.click();
 }
 
 function toSoF(tris,fmt,name){return fmt==='stl'?toSTL(tris,name):toOBJ(tris,name);}
 function toSTL(t,nm){
   let s=`solid ${nm}\n`;
-  t.forEach(f=>{s+=`  facet normal ${f.n.join(' ')}\n    outer loop\n`;f.v.forEach(v=>s+=`      vertex ${v.join(' ')}\n`);s+=`    endloop\n  endfacet\n`;});
+  t.forEach(f=>{
+    s+=`  facet normal ${f.n[0].toFixed(6)} ${f.n[1].toFixed(6)} ${f.n[2].toFixed(6)}\n    outer loop\n`;
+    f.v.forEach(v=>s+=`      vertex ${v[0].toFixed(4)} ${v[1].toFixed(4)} ${v[2].toFixed(4)}\n`);
+    s+=`    endloop\n  endfacet\n`;
+  });
   return s+`endsolid ${nm}\n`;
 }
 function toOBJ(t,nm){
   const vs=[],vm={};
-  const av=v=>{const k=v.join(',');if(vm[k]==null){vs.push(v);vm[k]=vs.length;}return vm[k];};
+  const av=v=>{const k=v.map(n=>n.toFixed(4)).join(',');if(vm[k]==null){vs.push(v);vm[k]=vs.length;}return vm[k];};
   const fs=t.map(f=>f.v.map(av));
-  return`# ${nm}\n`+vs.map(v=>`v ${v.join(' ')}`).join('\n')+'\n'+fs.map(f=>`f ${f.join(' ')}`).join('\n')+'\n';
+  return`# ${nm}\n`+vs.map(v=>`v ${v.map(n=>n.toFixed(4)).join(' ')}`).join('\n')+'\n'+fs.map(f=>`f ${f.join(' ')}`).join('\n')+'\n';
 }
 function dl(content,fname){
   const b=new Blob([content],{type:'text/plain'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname;a.click();
 }
 
-async function zipExp(fmt){
-  const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH,files={};
-  const enc=tris=>toSoF(tris,fmt,'part');
-  if(S.type==='case-movable'){
-    files[`case.${fmt}`]=enc(bTri(0,0,0,iW+wt*2,iH+wt*2,iD+wt*2));
-    S.xDiv.forEach((p,i)=>files[`divider_x${i+1}.${fmt}`]=enc(bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)));
-    S.yDiv.forEach((p,i)=>files[`divider_y${i+1}.${fmt}`]=enc(bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)));
-  }else{
-    let outer=bTri(0,0,0,iW+wt*2,iH+wt*2,iD+wt*2);
-    let inner=[...bTri(0,0,0,iW+wt*2,wt,iD+wt*2),...bTri(0,wt,0,iW+wt*2,iH,wt),...bTri(0,wt,wt,wt,iH,iD),...bTri(iW+wt,wt,wt,wt,iH,iD)];
-    if(S.backType==='closed')inner=[...inner,...bTri(0,wt,iD+wt,iW+wt*2,iH,wt)];
-    if(S.type==='drawer-fixed'){
-      S.xDiv.forEach(p=>inner=[...inner,...bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)]);
-      S.yDiv.forEach(p=>inner=[...inner,...bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)]);
-    }
-    files[`outer.${fmt}`]=enc(outer);
-    files[`drawer.${fmt}`]=enc(inner);
-    if(S.type==='drawer-movable'){
-      S.xDiv.forEach((p,i)=>files[`divider_x${i+1}.${fmt}`]=enc(bTri(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)));
-      S.yDiv.forEach((p,i)=>files[`divider_y${i+1}.${fmt}`]=enc(bTri(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)));
-    }
-  }
-  const blob=await mkZip(files);
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`model_${S.type}.zip`;a.click();
-}
-
-// ── ZIP builder ──
+// ZIP
 async function mkZip(files){
   const enc=new TextEncoder(),entries=[];let off=0;
   for(const[name,content]of Object.entries(files)){
