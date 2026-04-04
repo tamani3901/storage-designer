@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ケースモデラー</title>
+<!-- JSZipライブラリ: ZIPエクスポートを確実に動作させるために追加 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
   --bg:#0e0e10;--panel:#16161a;--p2:#1e1e24;--bd:#2a2a32;--bd2:#3a3a46;
@@ -167,7 +168,7 @@ canvas{display:block;}
     <canvas id="c2"></canvas>
     <canvas id="c3" style="display:none;cursor:grab;"></canvas>
     <div id="wb">⚠ 仕切りが重なっています</div>
-    <div id="ctip">矢印をドラッグして仕切りを移動</div>
+    <div id="ctip">← → ↑ ↓ 矢印をドラッグして仕切りを移動</div>
   </div>
 </div>
 
@@ -367,7 +368,7 @@ function delDiv(ax,idx){
 }
 
 // ── 2D CANVAS ──
-const AWR=7;
+const AWR=12; // ヒット領域を拡大してドラッグしやすく修正
 function getSc(){
   const W=c2.width-130,H=c2.height-110;
   const tH=ID(S.type)?S.stages.reduce((s,st)=>s+st.h,0):S.iH;
@@ -403,12 +404,7 @@ function dCase2d(c,W,H){
   dimL(c,ox+oW+18,oy,ox+oW+18,oy+oH,`D:${iD+wt*2}mm`);
   c.fillStyle='#333350';c.font='9px monospace';c.textAlign='left';c.textBaseline='bottom';c.fillText('TOP VIEW',ox,oy-4);
 }
-function dStackRim2d(c,ox,oy,oW,oH,sc){
-  const rw=S.rimW*sc;
-  // Top rim groove (inner ring visible from top)
-  c.strokeStyle='rgba(240,192,64,.6)';c.lineWidth=rw;
-  c.strokeRect(ox+rw/2,oy+rw/2,oW-rw,oH-rw);
-}
+function dStackRim2d(c,ox,oy,oW,oH,sc){const rw=S.rimW*sc;c.strokeStyle='rgba(240,192,64,.6)';c.lineWidth=rw;c.strokeRect(ox+rw/2,oy+rw/2,oW-rw,oH-rw);}
 function dDrawer2d(c,W,H){
   const sc=getSc(),iW=S.iW,iD=S.iD,wt=S.wT;
   const tH=S.stages.reduce((s,st)=>s+st.h,0);
@@ -493,26 +489,9 @@ function d3Case(c,W,H){
   const sw=iW*sc,sd=iD*sc,sh=iH*sc,ws=wt*sc,ow=sw+ws*2,oh=sh+ws*2,od=sd+ws*2;
   const cx=-ow/2,cy=-oh/2,cz=-od/2;
   const G=['#2a2a3c','#1e1e2e','#242434','#242434','#303044','#181828'],e='#3c3c58';
-  b3(c,W,H,cx,cy,cz,ow,ws,od,G,e);           // bottom plate
-  b3(c,W,H,cx,cy+ws,cz,ow,sh,ws,G,e);         // front wall
-  b3(c,W,H,cx,cy+ws,cz+od-ws,ow,sh,ws,G,e);   // back wall
-  b3(c,W,H,cx,cy+ws,cz+ws,ws,sh,sd,G,e);       // left wall
-  b3(c,W,H,cx+ow-ws,cy+ws,cz+ws,ws,sh,sd,G,e); // right wall
-  b3(c,W,H,cx,cy+oh-ws,cz,ow,ws,od,['#343448','#282838','#303040','#303040','#3e3e54','#202030'],'#4c4c68'); // top plate
+  b3(c,W,H,cx,cy,cz,ow,ws,od,G,e);b3(c,W,H,cx,cy+ws,cz,ow,sh,ws,G,e);b3(c,W,H,cx,cy+ws,cz+od-ws,ow,sh,ws,G,e);b3(c,W,H,cx,cy+ws,cz+ws,ws,sh,sd,G,e);b3(c,W,H,cx+ow-ws,cy+ws,cz+ws,ws,sh,sd,G,e);b3(c,W,H,cx,cy+oh-ws,cz,ow,ws,od,['#343448','#282838','#303040','#303040','#3e3e54','#202030'],'#4c4c68');
   if(HD(S.type)){const D=['#183a6c','#102850','#142e5e','#142e5e','#1c4878','#0c1e40'],de='#2255a0';S.xDiv.forEach(p=>b3(c,W,H,cx+ws+p*sc-S.dT*sc/2,cy+ws,cz+ws,S.dT*sc,sh,sd,D,de));S.yDiv.forEach(p=>b3(c,W,H,cx+ws,cy+ws,cz+ws+p*sc-S.dT*sc/2,sw,sh,S.dT*sc,D,de));}
-  if(S.useS){// Top groove rim
-    const rw=S.rimW*sc,rh=S.rimH*sc;
-    const RC=['#1a3a1a','#142e14','#182c18','#182c18','#203a20','#0e200e'];
-    b3(c,W,H,cx,cy+oh-ws-rh,cz,ow,rh,rw,RC,'#2a6a2a'); // front rim
-    b3(c,W,H,cx,cy+oh-ws-rh,cz+od-rw,ow,rh,rw,RC,'#2a6a2a'); // back rim
-    b3(c,W,H,cx,cy+oh-ws-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a'); // left rim
-    b3(c,W,H,cx+ow-rw,cy+oh-ws-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a'); // right rim
-    // Bottom ledge (protrudes down, fits into groove above)
-    b3(c,W,H,cx,cy-rh,cz,ow,rh,rw,RC,'#2a6a2a');
-    b3(c,W,H,cx,cy-rh,cz+od-rw,ow,rh,rw,RC,'#2a6a2a');
-    b3(c,W,H,cx,cy-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a');
-    b3(c,W,H,cx+ow-rw,cy-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a');
-  }
+  if(S.useS){const rw=S.rimW*sc,rh=S.rimH*sc,RC=['#1a3a1a','#142e14','#182c18','#182c18','#203a20','#0e200e'];b3(c,W,H,cx,cy+oh-ws-rh,cz,ow,rh,rw,RC,'#2a6a2a');b3(c,W,H,cx,cy+oh-ws-rh,cz+od-rw,ow,rh,rw,RC,'#2a6a2a');b3(c,W,H,cx,cy+oh-ws-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a');b3(c,W,H,cx+ow-rw,cy+oh-ws-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a');b3(c,W,H,cx,cy-rh,cz,ow,rh,rw,RC,'#2a6a2a');b3(c,W,H,cx,cy-rh,cz+od-rw,ow,rh,rw,RC,'#2a6a2a');b3(c,W,H,cx,cy-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a');b3(c,W,H,cx+ow-rw,cy-rh,cz+rw,rw,rh,sd-rw*2,RC,'#2a6a2a');}
 }
 function d3Drawer(c,W,H){
   const iW=S.iW,iD=S.iD,wt=S.wT,tH=S.stages.reduce((s,st)=>s+st.h,0);
@@ -527,131 +506,42 @@ function d3Drawer(c,W,H){
 }
 
 // ═══════════════════════════════════════════════════════
-// MESH GENERATION — watertight hollow shell for 3D printing
-// 
-// Strategy: build each wall as a THIN PLATE with both outer+inner faces.
-// A plate at position X with thickness T:
-//   outer face at X, inner face at X+T (normals pointing away from each other)
-//   + 4 edge faces to close the perimeter.
-// This creates a watertight manifold that slicers correctly see as hollow.
-// ═══════════════════════════════════════════════════════
-
-// Generate triangles for a quad face
+// MESH GENERATION (watertight)
 function quad(a,b,cc,d,n){return[{v:[a,b,cc],n},{v:[a,cc,d],n}];}
-
-// Plate: a flat rectangular plate with thickness, fully closed (6 faces)
-// Axis: 'x'=plate perpendicular to X, 'y'=perp Y, 'z'=perp Z
 function plate(x1,y1,z1,x2,y2,z2,ax){
-  // (x1,y1,z1)-(x2,y2,z2) define the two opposite corners of the plate's extent
-  // ax = which axis is "thin" (the thickness direction)
-  const t=[];
-  if(ax==='y'){
-    // plate in XZ plane, thin in Y direction
-    const A=[x1,y1,z1],B=[x2,y1,z1],C=[x2,y1,z2],D=[x1,y1,z2];
-    const E=[x1,y2,z1],F=[x2,y2,z1],G=[x2,y2,z2],H=[x1,y2,z2];
-    t.push(...quad(A,B,C,D,[0,-1,0]));  // bottom face (Y-)
-    t.push(...quad(E,H,G,F,[0,1,0]));   // top face (Y+)
-    t.push(...quad(A,E,F,B,[0,0,-1]));  // front (Z-)
-    t.push(...quad(D,C,G,H,[0,0,1]));   // back (Z+)
-    t.push(...quad(A,D,H,E,[-1,0,0])); // left (X-)
-    t.push(...quad(B,F,G,C,[1,0,0]));  // right (X+)
-  }else if(ax==='x'){
-    const A=[x1,y1,z1],B=[x1,y2,z1],C=[x1,y2,z2],D=[x1,y1,z2];
-    const E=[x2,y1,z1],F=[x2,y2,z1],G=[x2,y2,z2],H=[x2,y1,z2];
-    t.push(...quad(A,D,C,B,[-1,0,0]));
-    t.push(...quad(E,F,G,H,[1,0,0]));
-    t.push(...quad(A,E,F,B,[0,0,-1]));
-    t.push(...quad(D,H,G,C,[0,0,1]));
-    t.push(...quad(A,B,F,E,[0,-1,0]));
-    t.push(...quad(D,C,G,H,[0,1,0]));
-  }else{ // ax==='z'
-    const A=[x1,y1,z1],B=[x2,y1,z1],C=[x2,y2,z1],D=[x1,y2,z1];
-    const E=[x1,y1,z2],F=[x2,y1,z2],G=[x2,y2,z2],H=[x1,y2,z2];
-    t.push(...quad(A,B,C,D,[0,0,-1]));
-    t.push(...quad(E,H,G,F,[0,0,1]));
-    t.push(...quad(A,E,F,B,[0,-1,0]));
-    t.push(...quad(D,C,G,H,[0,1,0]));
-    t.push(...quad(A,D,H,E,[-1,0,0]));
-    t.push(...quad(B,F,G,C,[1,0,0]));
-  }
+  const t=[];if(ax==='y'){const A=[x1,y1,z1],B=[x2,y1,z1],C=[x2,y1,z2],D=[x1,y1,z2],E=[x1,y2,z1],F=[x2,y2,z1],G=[x2,y2,z2],H=[x1,y2,z2];t.push(...quad(A,B,C,D,[0,-1,0]));t.push(...quad(E,H,G,F,[0,1,0]));t.push(...quad(A,E,F,B,[0,0,-1]));t.push(...quad(D,C,G,H,[0,0,1]));t.push(...quad(A,D,H,E,[-1,0,0]));t.push(...quad(B,F,G,C,[1,0,0]));}
+  else if(ax==='x'){const A=[x1,y1,z1],B=[x1,y2,z1],C=[x1,y2,z2],D=[x1,y1,z2],E=[x2,y1,z1],F=[x2,y2,z1],G=[x2,y2,z2],H=[x2,y1,z2];t.push(...quad(A,D,C,B,[-1,0,0]));t.push(...quad(E,F,G,H,[1,0,0]));t.push(...quad(A,E,F,B,[0,0,-1]));t.push(...quad(D,H,G,C,[0,0,1]));t.push(...quad(A,B,F,E,[0,-1,0]));t.push(...quad(D,C,G,H,[0,1,0]));}
+  else{const A=[x1,y1,z1],B=[x2,y1,z1],C=[x2,y2,z1],D=[x1,y2,z1],E=[x1,y1,z2],F=[x2,y1,z2],G=[x2,y2,z2],H=[x1,y2,z2];t.push(...quad(A,B,C,D,[0,0,-1]));t.push(...quad(E,H,G,F,[0,0,1]));t.push(...quad(A,E,F,B,[0,-1,0]));t.push(...quad(D,C,G,H,[0,1,0]));t.push(...quad(A,D,H,E,[-1,0,0]));t.push(...quad(B,F,G,C,[1,0,0]));}
   return t;
 }
-
-// Build a watertight hollow box shell from individual wall plates
-// ox,oy,oz = outer origin. ow,oh,od = outer dims. wt = wall thickness.
-// openTop: no top plate. openBack: no back wall (Z+ face).
 function hollowShell(ox,oy,oz,ow,oh,od,wt,openTop,openBack){
-  const t=[];
-  const x0=ox,x1=ox+ow,y0=oy,y1=oy+oh,z0=oz,z1=oz+od;
-  const xi=ox+wt,xo=ox+ow-wt,yi=oy+wt,yo=oy+oh-wt,zi=oz+wt,zo=oz+od-wt;
-
-  // Bottom plate (full width/depth, Y-axis thin)
+  const t=[];const x0=ox,x1=ox+ow,y0=oy,y1=oy+oh,z0=oz,z1=oz+od,xi=ox+wt,xo=ox+ow-wt,yi=oy+wt,yo=oy+oh-wt,zi=oz+wt,zo=oz+od-wt;
   t.push(...plate(x0,y0,z0,x1,yi,z1,'y'));
-
-  // Top plate
   if(!openTop) t.push(...plate(x0,yo,z0,x1,y1,z1,'y'));
-
-  // Front wall (Z-), from yi to yo (excluding corners already covered by bottom/top)
   t.push(...plate(x0,yi,z0,x1,yo,zi,'z'));
-
-  // Back wall (Z+)
   if(!openBack) t.push(...plate(x0,yi,zo,x1,yo,z1,'z'));
-
-  // Left wall (X-), inner depth = zi to zo (excluding front/back wall thickness)
   const zLeft0=openBack?zi:zi, zLeft1=openBack?zo:zo;
   t.push(...plate(x0,yi,zi,xi,yo,zo,'x'));
-
-  // Right wall (X+)
   t.push(...plate(xo,yi,zi,x1,yo,zo,'x'));
-
   return t;
 }
-
-// Divider plate (solid, both faces exposed)
-function dividerPlate(x,y,z,w,h,d){
-  return plate(x,y,z,x+w,y+h,z+d,'x'[w<h&&w<d?'x':d<w&&d<h?'z':'y']);
-}
-
-// Smart divider: pick thin axis automatically
 function divPlate(x,y,z,w,h,d){
-  // Find smallest dimension = thin axis
   const ax=w<=h&&w<=d?'x':d<=w&&d<=h?'z':'y';
   return plate(x,y,z,x+w,y+h,z+d,ax);
 }
-
-// Stack rim: grooves on top inner edge + ledge on bottom outer edge
-// Returns triangles for the rim/ledge system
 function stackRimTris(ow,oh,od,wt){
-  const t=[];
-  const rw=S.rimW,rh=S.rimH;
-  // Top groove walls (inner perimeter near top)
-  // groove is at top, inside the outer wall
-  // Front groove wall: strip along Z- inside, at X=[rw..ow-rw], Y=[oh-wt-rh..oh-wt], Z=[wt..wt+rw]
-  const gY0=oh-wt-rh,gY1=oh-wt;
-  t.push(...plate(rw,gY0,wt,ow-rw,gY1,wt+rw,'z'));         // front inner groove wall
-  t.push(...plate(rw,gY0,od-wt-rw,ow-rw,gY1,od-wt,'z'));   // back inner groove wall
-  t.push(...plate(wt,gY0,wt+rw,wt+rw,gY1,od-wt-rw,'x'));   // left inner groove wall
-  t.push(...plate(ow-wt-rw,gY0,wt+rw,ow-wt,gY1,od-wt-rw,'x')); // right inner groove wall
-
-  // Bottom ledge (protrudes downward, fits into above groove)
-  // ledge is at Y=[-rh..0], at perimeter [0..ow]x[0..od] minus inner [rw..ow-rw]x[rw..od-rw]
+  const t=[];const rw=S.rimW,rh=S.rimH,gY0=oh-wt-rh,gY1=oh-wt;
+  t.push(...plate(rw,gY0,wt,ow-rw,gY1,wt+rw,'z'));t.push(...plate(rw,gY0,od-wt-rw,ow-rw,gY1,od-wt,'z'));
+  t.push(...plate(wt,gY0,wt+rw,wt+rw,gY1,od-wt-rw,'x'));t.push(...plate(ow-wt-rw,gY0,wt+rw,ow-wt,gY1,od-wt-rw,'x'));
   const lY0=-rh,lY1=0;
-  t.push(...plate(0,lY0,0,ow,lY1,rw,'z'));          // front ledge
-  t.push(...plate(0,lY0,od-rw,ow,lY1,od,'z'));      // back ledge
-  t.push(...plate(0,lY0,rw,rw,lY1,od-rw,'x'));      // left ledge
-  t.push(...plate(ow-rw,lY0,rw,ow,lY1,od-rw,'x')); // right ledge
-
+  t.push(...plate(0,lY0,0,ow,lY1,rw,'z'));t.push(...plate(0,lY0,od-rw,ow,lY1,od,'z'));
+  t.push(...plate(0,lY0,rw,rw,lY1,od-rw,'x'));t.push(...plate(ow-rw,lY0,rw,ow,lY1,od-rw,'x'));
   return t;
 }
-
-// ── Case mesh builders ──
 function meshCase(){
   const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH,ow=iW+wt*2,oh=iH+wt*2,od=iD+wt*2;
   let t=hollowShell(0,0,0,ow,oh,od,wt,false,false);
-  if(S.type==='case-fixed'){
-    S.xDiv.forEach(p=>t.push(...divPlate(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)));
-    S.yDiv.forEach(p=>t.push(...divPlate(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)));
-  }
+  if(S.type==='case-fixed'){S.xDiv.forEach(p=>t.push(...divPlate(wt+p-S.dT/2,wt,wt,S.dT,iH,iD)));S.yDiv.forEach(p=>t.push(...divPlate(wt,wt,wt+p-S.dT/2,iW,iH,S.dT)));}
   if(S.useS)t.push(...stackRimTris(ow,oh,od,wt));
   return t;
 }
@@ -665,74 +555,33 @@ function meshOuter(){
 function meshDrawer(si,withDiv){
   const wt=S.wT,iW=S.iW,iD=S.iD,st=S.stages[si],sh=st.h;
   const ow=iW+wt*2,od=iD+wt*2;
-  // Drawer: bottom+front+sides, NO top (open), optional back
   let t=hollowShell(0,0,0,ow,sh+wt,od,wt,true,S.backType==='open');
-  if(withDiv){
-    st.xDiv.forEach(p=>t.push(...divPlate(wt+p-S.dT/2,wt,wt,S.dT,sh,iD)));
-    st.yDiv.forEach(p=>t.push(...divPlate(wt,wt,wt+p-S.dT/2,iW,sh,S.dT)));
-  }
+  if(withDiv){st.xDiv.forEach(p=>t.push(...divPlate(wt+p-S.dT/2,wt,wt,S.dT,sh,iD)));st.yDiv.forEach(p=>t.push(...divPlate(wt,wt,wt+p-S.dT/2,iW,sh,S.dT)));}
   return t;
 }
 
-// ── Export ──
-function openExp(){
-  g('expOv').classList.add('on');
-  const n={'case':'1ファイル（中空ケース）','case-fixed':'1ファイル（ケース＋仕切り一体）','case-movable':'ZIP：ケース＋仕切り別','drawer':'ZIP：外枠＋各段引き出し','drawer-fixed':'ZIP：外枠＋各段（仕切り一体）','drawer-movable':'ZIP：外枠＋各段＋仕切り別'};
-  g('eNote').textContent='出力：'+n[S.type];
-}
+// ── EXPORT (JSZip 採用で確実に動作) ──
+function openExp(){g('expOv').classList.add('on');const n={'case':'1ファイル（中空ケース）','case-fixed':'1ファイル（ケース＋仕切り一体）','case-movable':'ZIP：ケース＋仕切り別','drawer':'ZIP：外枠＋各段引き出し','drawer-fixed':'ZIP：外枠＋各段（仕切り一体）','drawer-movable':'ZIP：外枠＋各段＋仕切り別'};g('eNote').textContent='出力：'+n[S.type];}
 function closeExp(){g('expOv').classList.remove('on');}
 async function doExport(){
-  const fmt=S.fmt;
-  if(S.type==='case'||S.type==='case-fixed'){
-    dlTxt(enc(meshCase(),fmt,'model'),`case.${fmt}`);
-  }else if(S.type==='case-movable'){
-    const f={};
+  const fmt=S.fmt,zip=new JSZip();
+  if(S.type==='case'||S.type==='case-fixed'){zip.file(`case.${fmt}`, enc(meshCase(),fmt,'case'));}
+  else if(S.type==='case-movable'){
     const wt=S.wT,ow=S.iW+wt*2,oh=S.iH+wt*2,od=S.iD+wt*2;
-    f[`case.${fmt}`]=enc(hollowShell(0,0,0,ow,oh,od,wt,false,false),fmt,'case');
-    S.xDiv.forEach((p,i)=>f[`div_x${i+1}.${fmt}`]=enc(divPlate(wt+p-S.dT/2,wt,wt,S.dT,S.iH,S.iD),fmt,'div'));
-    S.yDiv.forEach((p,i)=>f[`div_y${i+1}.${fmt}`]=enc(divPlate(wt,wt,wt+p-S.dT/2,S.iW,S.iH,S.dT),fmt,'div'));
-    await dlZip(f,'case_movable.zip');
+    zip.file(`case.${fmt}`, enc(hollowShell(0,0,0,ow,oh,od,wt,false,false),fmt,'case'));
+    S.xDiv.forEach((p,i)=>zip.file(`div_x${i+1}.${fmt}`, enc(divPlate(wt+p-S.dT/2,wt,wt,S.dT,S.iH,S.iD),fmt,'div')));
+    S.yDiv.forEach((p,i)=>zip.file(`div_y${i+1}.${fmt}`, enc(divPlate(wt,wt,wt+p-S.dT/2,S.iW,S.iH,S.dT),fmt,'div')));
   }else{
-    const f={};
-    f[`outer.${fmt}`]=enc(meshOuter(),fmt,'outer');
-    S.stages.forEach((st,si)=>{
-      const wd=S.type==='drawer-fixed';
-      f[`drawer_stage${si+1}.${fmt}`]=enc(meshDrawer(si,wd),fmt,`d${si+1}`);
-      if(S.type==='drawer-movable'){
-        st.xDiv.forEach((p,i)=>f[`s${si+1}_divX${i+1}.${fmt}`]=enc(divPlate(S.wT+p-S.dT/2,S.wT,S.wT,S.dT,st.h,S.iD),fmt,'div'));
-        st.yDiv.forEach((p,i)=>f[`s${si+1}_divY${i+1}.${fmt}`]=enc(divPlate(S.wT,S.wT,S.wT+p-S.dT/2,S.iW,st.h,S.dT),fmt,'div'));
-      }
-    });
-    await dlZip(f,`drawer_${S.type}.zip`);
+    zip.file(`outer.${fmt}`, enc(meshOuter(),fmt,'outer'));
+    S.stages.forEach((st,si)=>{const wd=S.type==='drawer-fixed';zip.file(`drawer_stage${si+1}.${fmt}`, enc(meshDrawer(si,wd),fmt,`d${si+1}`));if(S.type==='drawer-movable'){st.xDiv.forEach((p,i)=>zip.file(`s${si+1}_divX${i+1}.${fmt}`, enc(divPlate(S.wT+p-S.dT/2,S.wT,S.wT,S.dT,st.h,S.iD),fmt,'div')));st.yDiv.forEach((p,i)=>zip.file(`s${si+1}_divY${i+1}.${fmt}`, enc(divPlate(S.wT,S.wT,S.wT+p-S.dT/2,S.iW,st.h,S.dT),fmt,'div')));}});
   }
+  const content=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(content);a.download=S.type==='case'||S.type==='case-fixed'?`case.${fmt}.zip`:`${S.type}.zip`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   closeExp();
 }
 function enc(tris,fmt,name){return fmt==='stl'?toSTL(tris,name):toOBJ(tris,name);}
-function toSTL(tris,name){
-  let s=`solid ${name}\n`;
-  tris.forEach(f=>{s+=`  facet normal ${f.n.map(v=>v.toFixed(6)).join(' ')}\n    outer loop\n`;f.v.forEach(v=>s+=`      vertex ${v.map(n=>n.toFixed(4)).join(' ')}\n`);s+=`    endloop\n  endfacet\n`;});
-  return s+`endsolid ${name}\n`;
-}
-function toOBJ(tris,name){
-  const vs=[],vm={};
-  const av=v=>{const k=v.map(n=>n.toFixed(4)).join(',');if(vm[k]==null){vs.push(v);vm[k]=vs.length;}return vm[k];};
-  const fs=tris.map(f=>f.v.map(av));
-  return`# ${name}\n`+vs.map(v=>`v ${v.map(n=>n.toFixed(4)).join(' ')}`).join('\n')+'\n'+fs.map(f=>`f ${f.join(' ')}`).join('\n')+'\n';
-}
-function dlTxt(c,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/plain'}));a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-async function dlZip(files,name){const b=await buildZip(files);const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-async function buildZip(files){
-  const te=new TextEncoder(),entries=[];let off=0;
-  for(const[name,content]of Object.entries(files)){const data=te.encode(content),nb=te.encode(name),crc=crc32(data),lh=lHdr(nb,data.length,crc);entries.push({lh,data,nb,off,crc});off+=lh.length+data.length;}
-  const cd=cat(entries.map(e=>cHdr(e.nb,e.data.length,e.crc,e.off)));
-  return new Blob([cat([...entries.map(e=>cat([e.lh,e.data])),cd,eocd(entries.length,cd.length,off)])],{type:'application/zip'});
-}
-function lHdr(n,sz,c){const b=new ArrayBuffer(30+n.length),v=new DataView(b);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);[6,8,10,12].forEach(i=>v.setUint16(i,0,true));v.setUint32(14,c,true);v.setUint32(18,sz,true);v.setUint32(22,sz,true);v.setUint16(26,n.length,true);v.setUint16(28,0,true);new Uint8Array(b).set(n,30);return new Uint8Array(b);}
-function cHdr(n,sz,c,o){const b=new ArrayBuffer(46+n.length),v=new DataView(b);v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);[8,10,12,14].forEach(i=>v.setUint16(i,0,true));v.setUint32(16,c,true);v.setUint32(20,sz,true);v.setUint32(24,sz,true);[28,30,32,34,36].forEach(i=>v.setUint16(i,0,true));v.setUint32(38,0,true);v.setUint32(42,o,true);new Uint8Array(b).set(n,46);return new Uint8Array(b);}
-function eocd(cnt,cdsz,cdoff){const b=new ArrayBuffer(22),v=new DataView(b);v.setUint32(0,0x06054b50,true);v.setUint16(4,0,true);v.setUint16(6,0,true);v.setUint16(8,cnt,true);v.setUint16(10,cnt,true);v.setUint32(12,cdsz,true);v.setUint32(16,cdoff,true);v.setUint16(20,0,true);return new Uint8Array(b);}
-function cat(bufs){const t=bufs.reduce((s,b)=>s+b.length,0),o=new Uint8Array(t);let p=0;bufs.forEach(b=>{o.set(b,p);p+=b.length;});return o;}
-function crc32(d){let c=0xFFFFFFFF;for(let i=0;i<d.length;i++){c^=d[i];for(let j=0;j<8;j++)c=(c>>>1)^(0xEDB88320&-(c&1));}return(c^0xFFFFFFFF)>>>0;}
+function toSTL(tris,name){let s=`solid ${name}\n`;tris.forEach(f=>{s+=`  facet normal ${f.n.map(v=>v.toFixed(6)).join(' ')}\n    outer loop\n`;f.v.forEach(v=>s+=`      vertex ${v.map(n=>n.toFixed(4)).join(' ')}\n`);s+=`    endloop\n  endfacet\n`;});return s+`endsolid ${name}\n`;}
+function toOBJ(tris,name){const vs=[],vm={};const av=v=>{const k=v.map(n=>n.toFixed(4)).join(',');if(vm[k]==null){vs.push(v);vm[k]=vs.length;}return vm[k];};const fs=tris.map(f=>f.v.map(av));return`# ${name}\n`+vs.map(v=>`v ${v.map(n=>n.toFixed(4)).join(' ')}`).join('\n')+'\n'+fs.map(f=>`f ${f.join(' ')}`).join('\n')+'\n';}
 </script>
-
 </body>
 </html>
