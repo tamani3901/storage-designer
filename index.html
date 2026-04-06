@@ -902,25 +902,47 @@ function buildDiv(t,x,y,z,w,h,d){
   thinPlate(t, x,y,z, x+w,y+h,z+d);
 }
 
-// Stack rim: groove at top inner perimeter + ledge at bottom outer perimeter
+// Stack rim:
+// TOP of case  → groove (凹) cut into the inner top edge
+//   = 4 thin walls forming a rectangular channel just inside the top rim
+// BOTTOM of case → convex ledge (凸) that protrudes downward
+//   = 4 thin walls forming a rectangular ring below the base
+// When stacked: the bottom ledge of the upper case drops into the top groove of the lower case.
 function buildStackRim(t,ow,oh,od,wt){
   const rw=S.rimW, rh=S.rimH;
-  // Top groove walls (4 sides, inside the outer wall, near top)
+
+  // ── TOP GROOVE (凹) ──
+  // The groove is a channel inside the top wall perimeter.
+  // It is formed by 4 inner walls standing up from Y=(oh-wt-rh) to Y=(oh-wt).
+  // The groove opening faces upward (open top = where the ledge enters).
+  // Groove inner boundary: x=[rw, ow-rw], z=[rw, od-rw]  (inside the outer wall by rw)
+  // Groove outer boundary: the existing outer wall (already built by buildShell)
   const gY0=oh-wt-rh, gY1=oh-wt;
-  // front groove wall (Z- side)
-  thinPlate(t, rw,gY0,wt, ow-rw,gY1,wt+rw);
-  // back groove wall (Z+ side)
-  thinPlate(t, rw,gY0,od-wt-rw, ow-rw,gY1,od-wt);
-  // left groove wall (X- side)
-  thinPlate(t, wt,gY0,wt+rw, wt+rw,gY1,od-wt-rw);
-  // right groove wall (X+ side)
-  thinPlate(t, ow-wt-rw,gY0,wt+rw, ow-wt,gY1,od-wt-rw);
-  // Bottom ledge (protrudes down at outer perimeter)
+  // Front inner groove wall (Z- side, faces inward)
+  thinPlate(t,  rw,      gY0, wt,     ow-rw,   gY1, wt+rw  );
+  // Back inner groove wall (Z+ side, faces inward)
+  thinPlate(t,  rw,      gY0, od-wt-rw, ow-rw, gY1, od-wt  );
+  // Left inner groove wall (X- side, faces inward)
+  thinPlate(t,  wt,      gY0, wt+rw,  wt+rw,   gY1, od-wt-rw);
+  // Right inner groove wall (X+ side, faces inward)
+  thinPlate(t,  ow-wt-rw,gY0, wt+rw,  ow-wt,   gY1, od-wt-rw);
+
+  // ── BOTTOM LEDGE (凸) ──
+  // A rectangular ring that protrudes downward from the base (Y=-rh to Y=0).
+  // Its outer edge aligns with the case outer wall.
+  // Its inner edge is inset by rw, matching the groove width.
+  // When placed on top of a lower case, this ledge drops into the groove.
   const lY0=-rh, lY1=0;
-  thinPlate(t, 0,lY0,0, ow,lY1,rw);
-  thinPlate(t, 0,lY0,od-rw, ow,lY1,od);
-  thinPlate(t, 0,lY0,rw, rw,lY1,od-rw);
-  thinPlate(t, ow-rw,lY0,rw, ow,lY1,od-rw);
+  // Front ledge wall (Z- side)
+  thinPlate(t,  rw,  lY0, 0,      ow-rw,   lY1, rw     );
+  // Back ledge wall (Z+ side)
+  thinPlate(t,  rw,  lY0, od-rw,  ow-rw,   lY1, od     );
+  // Left ledge wall (X- side)
+  thinPlate(t,  0,   lY0, rw,     rw,      lY1, od-rw  );
+  // Right ledge wall (X+ side)
+  thinPlate(t,  ow-rw,lY0,rw,     ow,      lY1, od-rw  );
+  // Ledge floor (bottom face of the ledge ring, closes it)
+  thinPlate(t,  0,   lY0, 0,      ow,      lY0+0.01, od ); // hair-thin floor for manifold
 }
 
 function meshCase(){
@@ -979,27 +1001,33 @@ function closeExp(){g('expOv').classList.remove('on');}
 
 async function doExport(){
   const fmt=S.fmt;
+  const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH;
+
+  // Build a divider mesh and encode
+  function divEnc(x,y,z,w,h,d){const dt=[];buildDiv(dt,x,y,z,w,h,d);return encMesh(dt,fmt,'div');}
+
   if(S.type==='case'||S.type==='case-fixed'){
     dlText(encMesh(meshCase(),fmt,'model'),`case.${fmt}`);
+
   }else if(S.type==='case-movable'){
-    const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH;
     const f={};
     const ct=[];
     buildShell(ct,0,0,0,iW+wt*2,iH+wt*2,iD+wt*2,wt,true,false);
     if(S.useS) buildStackRim(ct,iW+wt*2,iH+wt*2,iD+wt*2,wt);
     f[`case.${fmt}`]=encMesh(ct,fmt,'case');
-    S.xDiv.forEach((p,i)=>{const dt=[];buildDiv(dt,wt+p-S.dT/2,wt,wt,S.dT,iH,iD);f[`div_x${i+1}.${fmt}`]=encMesh(dt,fmt,'div');});
-    S.yDiv.forEach((p,i)=>{const dt=[];buildDiv(dt,wt,wt,wt+p-S.dT/2,iW,iH,S.dT);f[`div_y${i+1}.${fmt}`]=encMesh(dt,fmt,'div');});
+    S.xDiv.forEach((p,i)=>{ f[`divider_x${i+1}.${fmt}`]=divEnc(wt+p-S.dT/2,wt,wt,S.dT,iH,iD); });
+    S.yDiv.forEach((p,i)=>{ f[`divider_y${i+1}.${fmt}`]=divEnc(wt,wt,wt+p-S.dT/2,iW,iH,S.dT); });
     await dlZip(f,'case_movable.zip');
+
   }else{
     const f={};
     f[`outer.${fmt}`]=encMesh(meshOuter(),fmt,'outer');
     S.stages.forEach((st,si)=>{
-      const wd=S.type==='drawer-fixed';
-      f[`drawer_stage${si+1}.${fmt}`]=encMesh(meshDrawer(si,wd),fmt,`d${si+1}`);
+      const withFixed=S.type==='drawer-fixed';
+      f[`drawer_stage${si+1}.${fmt}`]=encMesh(meshDrawer(si,withFixed),fmt,`drawer${si+1}`);
       if(S.type==='drawer-movable'){
-        st.xDiv.forEach((p,i)=>{const dt=[];buildDiv(dt,S.wT+p-S.dT/2,S.wT,S.wT,S.dT,st.h,S.iD);f[`s${si+1}_divX${i+1}.${fmt}`]=encMesh(dt,fmt,'div');});
-        st.yDiv.forEach((p,i)=>{const dt=[];buildDiv(dt,S.wT,S.wT,S.wT+p-S.dT/2,S.iW,st.h,S.dT);f[`s${si+1}_divY${i+1}.${fmt}`]=encMesh(dt,fmt,'div');});
+        st.xDiv.forEach((p,i)=>{ f[`stage${si+1}_divX${i+1}.${fmt}`]=divEnc(wt+p-S.dT/2,wt,wt,S.dT,st.h,iD); });
+        st.yDiv.forEach((p,i)=>{ f[`stage${si+1}_divY${i+1}.${fmt}`]=divEnc(wt,wt,wt+p-S.dT/2,iW,st.h,S.dT); });
       }
     });
     await dlZip(f,`drawer_${S.type}.zip`);
@@ -1050,9 +1078,9 @@ async function buildZip(files){
   return new Blob([cat([...entries.map(e=>cat([e.lh,e.data])),cd,eocd(entries.length,cd.length,off)])],{type:'application/zip'});
 }
 function lHdr(n,sz,c){const b=new ArrayBuffer(30+n.length),v=new DataView(b);v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);[6,8,10,12].forEach(i=>v.setUint16(i,0,true));v.setUint32(14,c,true);v.setUint32(18,sz,true);v.setUint32(22,sz,true);v.setUint16(26,n.length,true);v.setUint16(28,0,true);new Uint8Array(b).set(n,30);return new Uint8Array(b);}
-function cHdr(n,sz,c,o){const b=new ArrayBuffer(46+n.length),v=new DataView(b);v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);[8,10,12,14].forEach(i=>v.setUint16(i,0,true));v.setUint32(16,c,true);v.setUint32(20,sz,true);v.setUint32(24,sz,true);[28,30,32,34,36].forEach(i=>v.setUint16(i,0,true));v.setUint32(38,0,true);v.setUint32(42,o,true);new Uint8Array(b).set(n,46);return new Uint8Array(b);}
+function cHdr(n,sz,c,o){const b=new ArrayBuffer(46+n.length),v=new DataView(b);v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);[8,10,12,14].forEach(i=>v.setUint16(i,0,true));v.setUint32(16,c,true);v.setUint32(20,sz,true);v.setUint32(24,sz,true);v.setUint16(28,n.length,true);/* filename length */[30,32,34,36].forEach(i=>v.setUint16(i,0,true));v.setUint32(38,0,true);v.setUint32(42,o,true);new Uint8Array(b).set(n,46);return new Uint8Array(b);}
 function eocd(cnt,cdsz,cdoff){const b=new ArrayBuffer(22),v=new DataView(b);v.setUint32(0,0x06054b50,true);v.setUint16(4,0,true);v.setUint16(6,0,true);v.setUint16(8,cnt,true);v.setUint16(10,cnt,true);v.setUint32(12,cdsz,true);v.setUint32(16,cdoff,true);v.setUint16(20,0,true);return new Uint8Array(b);}
-function cat(bufs){const t=bufs.reduce((s,b)=>s+b.length,0),o=new Uint8Array(t);let p=0;bufs.forEach(b=>{o.set(b,p);p+=b.length;});return o;}
+function cat(bufs){const t=bufs.reduce((s,b)=>s+b.length,0),o=new Uint8Array(t);let p=0;bufs.forEach(b=>{o.set(new Uint8Array(b.buffer,b.byteOffset,b.byteLength),p);p+=b.length;});return o;}
 function crc32(d){let c=0xFFFFFFFF;for(let i=0;i<d.length;i++){c^=d[i];for(let j=0;j<8;j++)c=(c>>>1)^(0xEDB88320&-(c&1));}return(c^0xFFFFFFFF)>>>0;}
 </script>
 
