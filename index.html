@@ -851,151 +851,215 @@ function d3Drawer(c,W,H){
 }
 
 // ══════════════════════════════════════════════════════════
-// MESH GENERATION
-// Every wall = a closed thin-plate (6 faces) → watertight manifold.
-// Coordinate system: X=width, Y=height(up), Z=depth(front=Z-)
+// MESH GENERATION — watertight thin-plate approach
+// Coordinate: X=width, Y=height(up), Z=depth(front=small Z, back=large Z)
+// Each "wall" is a thinPlate() — a 6-faced closed box — so slicers see hollow.
 // ══════════════════════════════════════════════════════════
 
-// 2 triangles from a quad, counter-clockwise = outward normal
 function addQuad(t,a,b,cc,d,n){
   t.push({v:[a,b,cc],n},{v:[a,cc,d],n});
 }
 
-// Fully-closed thin box from (x0,y0,z0) to (x1,y1,z1)
+// Fully-closed thin box spanning (x0,y0,z0)→(x1,y1,z1)
 function thinPlate(t,x0,y0,z0,x1,y1,z1){
+  if(Math.abs(x1-x0)<1e-6||Math.abs(y1-y0)<1e-6||Math.abs(z1-z0)<1e-6) return;
   const A=[x0,y0,z0],B=[x1,y0,z0],C=[x1,y1,z0],D=[x0,y1,z0];
   const E=[x0,y0,z1],F=[x1,y0,z1],G=[x1,y1,z1],H=[x0,y1,z1];
-  addQuad(t,A,B,C,D,[0,-1,0]);  // bottom Y-
-  addQuad(t,E,H,G,F,[0, 1,0]);  // top    Y+
-  addQuad(t,A,E,F,B,[0,0,-1]);  // front  Z-
-  addQuad(t,D,C,G,H,[0,0, 1]);  // back   Z+
-  addQuad(t,A,D,H,E,[-1,0,0]);  // left   X-
-  addQuad(t,B,F,G,C,[ 1,0,0]);  // right  X+
+  addQuad(t,A,B,C,D,[0,-1,0]);
+  addQuad(t,E,H,G,F,[0, 1,0]);
+  addQuad(t,A,E,F,B,[0,0,-1]);
+  addQuad(t,D,C,G,H,[0,0, 1]);
+  addQuad(t,A,D,H,E,[-1,0,0]);
+  addQuad(t,B,F,G,C,[ 1,0,0]);
 }
 
-// ── Hollow open-top box shell (e.g. Daiso-style tray) ──
-// ox,oy,oz = outer origin. ow,oh,od = outer dims. wt = wall thickness.
-// openTop: true = no top plate (open box). openBack: true = no back wall (Z+).
-function buildShell(t,ox,oy,oz,ow,oh,od,wt,openTop,openBack){
-  thinPlate(t, ox,oy,oz,             ox+ow,oy+wt,   oz+od);           // bottom
-  if(!openTop) thinPlate(t, ox,oy+oh-wt,oz, ox+ow,oy+oh,oz+od);      // top
-  thinPlate(t, ox,oy+wt,oz,          ox+ow,oy+oh-wt,oz+wt);          // front (Z-)
-  if(!openBack) thinPlate(t, ox,oy+wt,oz+od-wt, ox+ow,oy+oh-wt,oz+od); // back (Z+)
-  thinPlate(t, ox,oy+wt,oz+wt,       ox+wt,oy+oh-wt,oz+od-wt);      // left  (X-)
-  thinPlate(t, ox+ow-wt,oy+wt,oz+wt, ox+ow,oy+oh-wt,oz+od-wt);     // right (X+)
-  // Close open edges if openBack: cap the side walls at Z+
-  if(openBack){
-    thinPlate(t, ox,oy+wt,oz+od-wt, ox+wt,oy+oh-wt,oz+od);          // left back cap
-    thinPlate(t, ox+ow-wt,oy+wt,oz+od-wt, ox+ow,oy+oh-wt,oz+od);   // right back cap
-    thinPlate(t, ox,oy+wt,oz+od-wt, ox+ow,oy+oh-wt,oz+od);          // back opening lip
-  }
+// ── buildShell: open-top hollow box ──
+// Origin (0,0,0). Outer size ow×oh×od. Wall thickness wt.
+// openFront: Z- face is open (used for drawer casing).
+// openBack:  Z+ face is open (used when backType='open').
+// openTop:   Y+ face is open (always for trays/drawers).
+function buildShell(t, ow,oh,od, wt, openTop, openFront, openBack){
+  // Bottom plate — always present
+  thinPlate(t, 0,0,0, ow,wt,od);
+  // Top plate
+  if(!openTop) thinPlate(t, 0,oh-wt,0, ow,oh,od);
+  // Front wall (Z-)
+  if(!openFront) thinPlate(t, 0,wt,0, ow,oh-wt, wt);
+  // Back wall (Z+)
+  if(!openBack) thinPlate(t, 0,wt,od-wt, ow,oh-wt, od);
+  // Left wall (X-) — spans between front/back walls
+  const z0=openFront?0:wt, z1=openBack?od:od-wt;
+  thinPlate(t, 0,wt,z0, wt,oh-wt,z1);
+  // Right wall (X+)
+  thinPlate(t, ow-wt,wt,z0, ow,oh-wt,z1);
 }
 
-// ── Divider plate ──
+// ── Divider plate (solid plate) ──
 function buildDiv(t,x,y,z,w,h,d){
   thinPlate(t, x,y,z, x+w,y+h,z+d);
 }
 
-// ── Stack rim ──
-// TOP of shell: groove (凹) formed by 4 inner walls near the top opening.
-//   Upper case's bottom ledge drops into this groove.
-// BOTTOM of shell: ledge (凸) that protrudes downward, fits into groove of lower case.
-// groove width = rw (same as ledge width), groove depth = rh.
-// Clearance of 0.2mm is baked in (ledge is 0.2mm smaller than groove).
-function buildStackRim(t,ow,oh,od,wt){
-  const rw=S.rimW, rh=S.rimH, cl=0.2; // cl = print clearance
-
-  // ── TOP GROOVE (凹) ── sits at Y=[oh-wt-rh .. oh-wt], inset from outer wall by nothing
-  // (groove outer edge IS the outer wall; the inner walls are added here)
-  const gY0=oh-wt-rh, gY1=oh-wt;
-  thinPlate(t, rw,      gY0,wt,     ow-rw,   gY1,wt+rw   );  // front inner
-  thinPlate(t, rw,      gY0,od-wt-rw, ow-rw, gY1,od-wt   );  // back inner
-  thinPlate(t, wt,      gY0,wt+rw,  wt+rw,   gY1,od-wt-rw);  // left inner
-  thinPlate(t, ow-wt-rw,gY0,wt+rw,  ow-wt,   gY1,od-wt-rw);  // right inner
-
-  // ── BOTTOM LEDGE (凸) ── protrudes below Y=0, slightly smaller than groove (clearance)
-  const lw=rw-cl; // ledge is slightly narrower than groove
-  const lY0=-rh, lY1=0;
-  thinPlate(t, lw,    lY0,cl,      ow-lw,   lY1,lw+cl  );  // front ledge
-  thinPlate(t, lw,    lY0,od-lw-cl,ow-lw,   lY1,od-cl  );  // back ledge
-  thinPlate(t, cl,    lY0,lw+cl,   lw+cl,   lY1,od-lw-cl); // left ledge
-  thinPlate(t, ow-lw-cl,lY0,lw+cl,ow-cl,   lY1,od-lw-cl); // right ledge
-  // Floor of ledge (closes the bottom of the ring)
-  thinPlate(t, cl,lY0,cl, ow-cl,lY0+rw*0.3,od-cl);
+// ── X-divider with notch for Y-crossing ──
+// Makes half-depth notch at each Y-divider crossing so they interlock
+function buildXDivWithNotches(t, xDiv, yDivs, wt, iW, iH, iD, dT){
+  const p=xDiv;
+  const x0=wt+p-dT/2, x1=wt+p+dT/2;
+  // Sort Y dividers
+  const ys=[...[...yDivs].sort((a,b)=>a-b)];
+  // Build divider in segments between Y-divider notches
+  let z=wt;
+  for(const yp of ys){
+    const zn0=wt+yp-dT/2, zn1=wt+yp+dT/2;
+    // Full-height segment before notch
+    if(zn0>z) thinPlate(t, x0,wt,z, x1,wt+iH,zn0);
+    // Half-height at notch (bottom half — top half belongs to Y-divider)
+    thinPlate(t, x0,wt,zn0, x1,wt+iH/2,zn1);
+    z=zn1;
+  }
+  // Remaining segment after last notch
+  if(z<wt+iD) thinPlate(t, x0,wt,z, x1,wt+iH,wt+iD);
 }
 
-// ── Case mesh ──
-// type 'case' / 'case-fixed': open-top box
-// type 'case-movable': open-top box + vertical guide slots on inner left/right walls
-//   for movable dividers. Slot width = dT+0.4mm (0.2mm clearance each side).
+// ── Y-divider with notch for X-crossing ──
+function buildYDivWithNotches(t, yDiv, xDivs, wt, iW, iH, iD, dT){
+  const p=yDiv;
+  const z0=wt+p-dT/2, z1=wt+p+dT/2;
+  const xs=[...[...xDivs].sort((a,b)=>a-b)];
+  let x=wt;
+  for(const xp of xs){
+    const xn0=wt+xp-dT/2, xn1=wt+xp+dT/2;
+    if(xn0>x) thinPlate(t, x,wt,z0, xn0,wt+iH,z1);
+    // Upper half at notch (top half — bottom half belongs to X-divider)
+    thinPlate(t, xn0,wt+iH/2,z0, xn1,wt+iH,z1);
+    x=xn1;
+  }
+  if(x<wt+iW) thinPlate(t, x,wt,z0, wt+iW,wt+iH,z1);
+}
+
+// ── Stack rim ──
+// Groove (凹) at top inner perimeter, ledge (凸) below bottom.
+function buildStackRim(t,ow,oh,od,wt){
+  const rw=S.rimW, rh=S.rimH, cl=0.2;
+  // TOP GROOVE: 4 inner walls at top, forming a channel
+  const gY0=oh-wt-rh, gY1=oh-wt;
+  thinPlate(t, rw,      gY0,wt,     ow-rw,   gY1,wt+rw   );
+  thinPlate(t, rw,      gY0,od-wt-rw,ow-rw,  gY1,od-wt   );
+  thinPlate(t, wt,      gY0,wt+rw,  wt+rw,   gY1,od-wt-rw);
+  thinPlate(t, ow-wt-rw,gY0,wt+rw,  ow-wt,   gY1,od-wt-rw);
+  // BOTTOM LEDGE: ring protruding downward, 0.2mm smaller than groove
+  const lw=rw-cl, lY0=-rh, lY1=0;
+  thinPlate(t, lw,    lY0,cl,      ow-lw,   lY1,lw+cl   );
+  thinPlate(t, lw,    lY0,od-lw-cl,ow-lw,   lY1,od-cl   );
+  thinPlate(t, cl,    lY0,lw+cl,   lw+cl,   lY1,od-lw-cl);
+  thinPlate(t, ow-lw-cl,lY0,lw+cl, ow-cl,   lY1,od-lw-cl);
+  thinPlate(t, cl,lY0,cl, ow-cl,lY0+Math.max(0.1,rw*0.3),od-cl);
+}
+
+// ═══════════════════════════
+// CASE MESHES
+// ═══════════════════════════
+
+// Plain case / case-fixed (one piece)
 function meshCase(){
-  const t=[];
-  const wt=S.wT, iW=S.iW, iD=S.iD, iH=S.iH;
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, iH=S.iH;
   const ow=iW+wt*2, oh=iH+wt*2, od=iD+wt*2;
-  buildShell(t,0,0,0,ow,oh,od,wt,true,false);
-
+  buildShell(t, ow,oh,od, wt, true/*openTop*/, false, false);
   if(S.type==='case-fixed'){
-    S.xDiv.forEach(p=>buildDiv(t,wt+p-S.dT/2,wt,wt,S.dT,iH,iD));
-    S.yDiv.forEach(p=>buildDiv(t,wt,wt,wt+p-S.dT/2,iW,iH,S.dT));
+    // Interlocking dividers
+    S.xDiv.forEach(p=> buildXDivWithNotches(t, p, S.yDiv, wt,iW,iH,iD,S.dT));
+    S.yDiv.forEach(p=> buildYDivWithNotches(t, p, S.xDiv, wt,iW,iH,iD,S.dT));
   }
-
-  if(S.type==='case-movable'){
-    // Guide slots in left and right inner walls for X-direction dividers
-    // Slot = a thin channel cut into the wall. We model it as a thinPlate indentation.
-    const sc=0.3; // slot clearance per side (total slot width = dT + 0.6)
-    const sw=S.dT+sc*2; // slot width (X direction)
-    const sd2=wt*0.6;   // slot depth (into the wall)
-    const sh2=iH*0.8;   // slot height (doesn't go all the way down, stops above bottom)
-    const sy=wt+iH*0.1; // slot starts 10% above inner floor
-    S.xDiv.forEach(p=>{
-      const sx=wt+p-sw/2;
-      // Left wall slot (wall at X=[0..wt]): slot cuts from inner face inward
-      thinPlate(t, sx,sy,wt, sx+sw,sy+sh2,wt+sd2);
-      // Right wall slot (wall at X=[ow-wt..ow])
-      thinPlate(t, sx,sy,od-wt-sd2, sx+sw,sy+sh2,od-wt);
-      // Divider itself (slightly shorter/thinner to slide in)
-      buildDiv(t, wt+p-S.dT/2-sc,wt,wt+sc, S.dT+sc*2,iH,iD-sc*2);
-    });
-    // Y-direction dividers: slots in front/back walls
-    S.yDiv.forEach(p=>{
-      const sz2=wt+p-sw/2;
-      thinPlate(t, wt,sy,sz2, wt+sd2,sy+sh2,sz2+sw);
-      thinPlate(t, od-wt-sd2,sy,sz2, od-wt,sy+sh2,sz2+sw);
-      buildDiv(t, wt+sc,wt,wt+p-S.dT/2-sc, iW-sc*2,iH,S.dT+sc*2);
-    });
-  }
-
   if(S.useS) buildStackRim(t,ow,oh,od,wt);
   return t;
 }
 
-// ── Drawer outer casing mesh ──
-// The outer casing has an open front (Z-) where drawers slide in/out.
-// Inner cavity is (iW+gap)*1 x stageHeight x (iD+gap) per stage, stacked vertically.
-// gap = 1.5mm clearance so drawers slide smoothly.
+// Case-movable: shell only (no dividers) + vertical guide slots through full height
+// Slots run from top opening all the way down to the floor so dividers can be inserted.
+function meshCaseMovable(){
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, iH=S.iH;
+  const ow=iW+wt*2, oh=iH+wt*2, od=iD+wt*2;
+  buildShell(t, ow,oh,od, wt, true, false, false);
+  // Guide slots for X-direction dividers: pairs of slot walls on front & back inner faces
+  // Slot goes full height (Y: wt → oh) so divider can drop straight in from top
+  const sc=0.3; // clearance per side
+  S.xDiv.forEach(p=>{
+    const sx0=wt+p-S.dT/2-sc, sx1=wt+p+S.dT/2+sc;
+    const sd=wt*0.7; // slot depth into front/back wall
+    // Front wall (Z-) inner groove
+    thinPlate(t, sx0,0,wt,    sx1,oh, wt+sd  );
+    // Back wall (Z+) inner groove
+    thinPlate(t, sx0,0,od-wt-sd, sx1,oh, od-wt);
+  });
+  // Guide slots for Y-direction dividers: on left & right inner faces
+  S.yDiv.forEach(p=>{
+    const sz0=wt+p-S.dT/2-sc, sz1=wt+p+S.dT/2+sc;
+    const sd=wt*0.7;
+    // Left wall (X-) inner groove
+    thinPlate(t, wt,0,sz0,    wt+sd,oh, sz1);
+    // Right wall (X+) inner groove
+    thinPlate(t, ow-wt-sd,0,sz0, ow-wt,oh, sz1);
+  });
+  if(S.useS) buildStackRim(t,ow,oh,od,wt);
+  return t;
+}
+
+// Movable dividers for case-movable (with interlocking notches, with clearance)
+function meshCaseMovableXDiv(p){
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, iH=S.iH, dT=S.dT, sc=0.2;
+  // Divider is full height (drops in from top) and inner-depth in Z
+  // Notches at Y-crossing points (upper half cut out, matching lower-half of X-div)
+  const x0=wt+p-dT/2+sc, x1=wt+p+dT/2-sc;
+  const ys=[...[...S.yDiv].sort((a,b)=>a-b)];
+  let z=wt+sc;
+  for(const yp of ys){
+    const zn0=wt+yp-dT/2-sc, zn1=wt+yp+dT/2+sc;
+    if(zn0>z) thinPlate(t, x0,wt+sc,z, x1,wt+iH-sc,zn0);
+    // notch: only bottom half
+    thinPlate(t, x0,wt+sc,zn0, x1,wt+iH/2,zn1);
+    z=zn1;
+  }
+  if(z<wt+iD-sc) thinPlate(t, x0,wt+sc,z, x1,wt+iH-sc,wt+iD-sc);
+  return t;
+}
+function meshCaseMovableYDiv(p){
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, iH=S.iH, dT=S.dT, sc=0.2;
+  const z0=wt+p-dT/2+sc, z1=wt+p+dT/2-sc;
+  const xs=[...[...S.xDiv].sort((a,b)=>a-b)];
+  let x=wt+sc;
+  for(const xp of xs){
+    const xn0=wt+xp-dT/2-sc, xn1=wt+xp+dT/2+sc;
+    if(xn0>x) thinPlate(t, x,wt+sc,z0, xn0,wt+iH-sc,z1);
+    // notch: only upper half
+    thinPlate(t, xn0,wt+iH/2,z0, xn1,wt+iH-sc,z1);
+    x=xn1;
+  }
+  if(x<wt+iW-sc) thinPlate(t, x,wt+sc,z0, wt+iW-sc,wt+iH-sc,z1);
+  return t;
+}
+
+// ═══════════════════════════
+// DRAWER MESHES
+// ═══════════════════════════
+
+// Outer casing for drawers
+// - Front face (Z-) is OPEN — drawers slide in/out from front
+// - Back face: closed or open per backType
+// - Top/bottom: closed
+// - Inner cavity per stage: iW+gap x stageH x iD+gap (gap=1.5mm)
+const DRAWER_GAP=1.5;
+
 function meshDrawerOuter(){
-  const t=[];
-  const wt=S.wT, iW=S.iW, iD=S.iD, gap=1.5;
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, gap=DRAWER_GAP;
   const tH=S.stages.reduce((s,st)=>s+st.h,0);
-  // Outer casing outer dimensions
-  const ow=iW+wt*2+gap*2, oh=tH+wt*2+gap*2, od=iD+wt*2+gap*2;
-  // The outer casing is a closed box with the front face open (drawers slide in from front)
-  // "back" here = Z+ is the real back of the unit (closed or open per setting)
-  // "front" Z- = the opening where drawers come out (always open)
-  buildShell(t,0,0,0,ow,oh,od,wt,false,true); // openTop=false(has top), openBack=true(front open)
-  // Also add a front frame ring (top/bottom/left/right strips at Z=0 face)
-  // so there's a visible frame around the opening
-  const fw=wt; // frame width
-  thinPlate(t, 0,0,0,          ow,    fw,    fw); // bottom frame strip
-  thinPlate(t, 0,oh-fw,0,      ow,    oh,    fw); // top frame strip
-  thinPlate(t, 0,fw,0,         fw,    oh-fw, fw); // left frame strip
-  thinPlate(t, ow-fw,fw,0,     ow,    oh-fw, fw); // right frame strip
-  // Horizontal dividers between stages (thin shelves inside the casing)
-  let y=wt+gap;
+  // Outer dims include gap so each drawer slides freely
+  const ow=iW+wt*2+gap*2, oh=tH+wt*(S.stages.length+1)+gap*2, od=iD+wt*2+gap*2;
+  // Shell: open front, closed top, closed back (or open if setting says so)
+  buildShell(t, ow,oh,od, wt, false/*openTop*/, true/*openFront*/, S.backType==='open');
+  // Horizontal shelves between stages
+  let y=wt;
   S.stages.forEach((st,si)=>{
     y+=st.h+gap*2;
     if(si<S.stages.length-1){
-      // shelf plate between stages
       thinPlate(t, wt,y,wt, ow-wt,y+wt,od-wt);
       y+=wt;
     }
@@ -1004,51 +1068,93 @@ function meshDrawerOuter(){
   return t;
 }
 
-// ── Single drawer (inner box) mesh ──
-// Dimensions: (iW x sh x iD) inner, with wall thickness wt.
-// Open top (contents accessible from top).
-// Front face has handle: groove or hole.
-// withDiv: integrate fixed dividers.
-function meshDrawerInner(si,withDiv){
-  const t=[];
-  const wt=S.wT, iW=S.iW, iD=S.iD, st=S.stages[si], sh=st.h;
-  const ow=iW+wt*2, od=iD+wt*2, oh=sh+wt; // oh = sh + bottom plate only (open top)
-  // Open-top tray (same as Daiso case), with back closed or open per setting
-  buildShell(t,0,0,0,ow,oh,od,wt,true,S.backType==='open');
-  // Handle on front face (Z- face, at Y~80% height)
-  const hcy=wt+sh*0.82; // center Y of handle
+// Single drawer inner box
+// Outer = (iW+wt*2) x (sh+wt) x (iD+wt*2)
+// Open top. Front panel = solid with handle cutout.
+// withDiv: fixed dividers with interlocking notches.
+function meshDrawerInner(si, withDiv){
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, st=S.stages[si], sh=st.h;
+  const ow=iW+wt*2, oh=sh+wt, od=iD+wt*2;
+  // Bottom plate
+  thinPlate(t, 0,0,0, ow,wt,od);
+  // Left wall
+  thinPlate(t, 0,wt,wt, wt,oh,od-wt);
+  // Right wall
+  thinPlate(t, ow-wt,wt,wt, ow,oh,od-wt);
+  // Back wall (Z+) — closed or open
+  if(S.backType==='closed') thinPlate(t, 0,wt,od-wt, ow,oh,od);
+  // Front panel (Z-) with handle
   if(S.handleType==='groove'){
-    const gw=Math.min(S.gW,iW-4), gh=S.gH;
-    const gx=(ow-gw)/2;
-    // Groove = a rectangular channel in the front wall
-    // Model as thin plate (the groove slot geometry)
-    thinPlate(t, gx,hcy-gh/2,0, gx+gw,hcy+gh/2,wt*0.5);
+    const gw=Math.min(S.gW,iW-4), gh=S.gH, gx=(ow-gw)/2;
+    const hy=wt+sh*0.82;
+    // Front panel in 3 parts: left of groove, right of groove, and above+below groove
+    // Above groove
+    thinPlate(t, 0,wt,0, ow,hy-gh/2, wt);
+    // Below groove (near bottom — small strip)
+    if(hy+gh/2<oh) thinPlate(t, 0,hy+gh/2,0, ow,oh, wt);
+    // Left of groove
+    thinPlate(t, 0,hy-gh/2,0, gx,hy+gh/2, wt);
+    // Right of groove
+    thinPlate(t, gx+gw,hy-gh/2,0, ow,hy+gh/2, wt);
+    // Groove back face (the recess bottom)
+    thinPlate(t, gx,hy-gh/2,wt*0.5, gx+gw,hy+gh/2,wt);
   }else{
-    // Hole = cylinder approx (octagonal)
-    const r=Math.min(S.hD/2,iW/4,sh/4);
-    const segs=8;
+    // Front panel with circular hole
+    const r=Math.min(S.hD/2,iW/4,sh/4), hy=wt+sh*0.82, cx=ow/2;
+    const segs=12;
+    const pts=[];
     for(let i=0;i<segs;i++){
-      const a0=i/segs*Math.PI*2, a1=(i+1)/segs*Math.PI*2;
-      const x0=ow/2+Math.cos(a0)*r, x1=ow/2+Math.cos(a1)*r;
-      const y0=hcy+Math.sin(a0)*r, y1=hcy+Math.sin(a1)*r;
-      // Hole wall segment
-      thinPlate(t, x0,y0,0, x1,y1,wt);
+      const a=i/segs*Math.PI*2;
+      pts.push([cx+Math.cos(a)*r, hy+Math.sin(a)*r]);
+    }
+    // Panel minus hole: approximate with radial sectors
+    // Left strip + right strip + top strip + bottom strip
+    thinPlate(t, 0,wt,0, cx-r,oh, wt);
+    thinPlate(t, cx+r,wt,0, ow,oh, wt);
+    thinPlate(t, cx-r,wt,0, cx+r,hy-r, wt);
+    thinPlate(t, cx-r,hy+r,0, cx+r,oh, wt);
+    // Hole perimeter (cylinder walls)
+    for(let i=0;i<segs;i++){
+      const p0=pts[i], p1=pts[(i+1)%segs];
+      thinPlate(t, p0[0],p0[1],0, p1[0],p1[1],wt);
     }
   }
-  // Fixed dividers
+  // Fixed dividers with interlocking notches
   if(withDiv){
-    st.xDiv.forEach(p=>buildDiv(t,wt+p-S.dT/2,wt,wt,S.dT,sh,iD));
-    st.yDiv.forEach(p=>buildDiv(t,wt,wt,wt+p-S.dT/2,iW,sh,S.dT));
+    st.xDiv.forEach(p=> buildXDivWithNotches(t, p, st.yDiv, wt,iW,sh,iD,S.dT));
+    st.yDiv.forEach(p=> buildYDivWithNotches(t, p, st.xDiv, wt,iW,sh,iD,S.dT));
   }
   return t;
 }
 
-// Movable divider for drawer (slightly smaller than inner cavity for clearance)
-function meshDrawerDiv(p,axis,sh){
-  const t=[];
-  const wt=S.wT, iW=S.iW, iD=S.iD, sc=0.2;
-  if(axis==='x') buildDiv(t, wt+p-S.dT/2,wt+sc,wt+sc, S.dT,sh-sc,iD-sc*2);
-  else            buildDiv(t, wt+sc,wt+sc,wt+p-S.dT/2, iW-sc*2,sh-sc,S.dT);
+// Movable drawer dividers (X-axis) with interlocking notches
+function meshDrawerXDiv(p, si){
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, st=S.stages[si], sh=st.h, dT=S.dT, sc=0.2;
+  const x0=wt+p-dT/2+sc, x1=wt+p+dT/2-sc;
+  const ys=[...[...st.yDiv].sort((a,b)=>a-b)];
+  let z=wt+sc;
+  for(const yp of ys){
+    const zn0=wt+yp-dT/2-sc, zn1=wt+yp+dT/2+sc;
+    if(zn0>z) thinPlate(t, x0,wt+sc,z, x1,wt+sh-sc,zn0);
+    thinPlate(t, x0,wt+sc,zn0, x1,wt+sh/2,zn1);
+    z=zn1;
+  }
+  if(z<wt+iD-sc) thinPlate(t, x0,wt+sc,z, x1,wt+sh-sc,wt+iD-sc);
+  return t;
+}
+// Movable drawer dividers (Y-axis) with interlocking notches
+function meshDrawerYDiv(p, si){
+  const t=[], wt=S.wT, iW=S.iW, iD=S.iD, st=S.stages[si], sh=st.h, dT=S.dT, sc=0.2;
+  const z0=wt+p-dT/2+sc, z1=wt+p+dT/2-sc;
+  const xs=[...[...st.xDiv].sort((a,b)=>a-b)];
+  let x=wt+sc;
+  for(const xp of xs){
+    const xn0=wt+xp-dT/2-sc, xn1=wt+xp+dT/2+sc;
+    if(xn0>x) thinPlate(t, x,wt+sc,z0, xn0,wt+sh-sc,z1);
+    thinPlate(t, xn0,wt+sh/2,z0, xn1,wt+sh-sc,z1);
+    x=xn1;
+  }
+  if(x<wt+iW-sc) thinPlate(t, x,wt+sc,z0, wt+iW-sc,wt+sh-sc,z1);
   return t;
 }
 
@@ -1072,36 +1178,26 @@ function closeExp(){g('expOv').classList.remove('on');}
 async function doExport(){
   const fmt=S.fmt;
   const wt=S.wT,iW=S.iW,iD=S.iD,iH=S.iH;
-  const sc=0.3; // clearance for sliding fit
 
   if(S.type==='case'||S.type==='case-fixed'){
     dlText(encMesh(meshCase(),fmt,'model'),`case.${fmt}`);
 
   }else if(S.type==='case-movable'){
     const f={};
-    // Case with guide slots built-in
-    f[`case.${fmt}`]=encMesh(meshCase(),fmt,'case');
-    // Dividers with clearance for sliding fit
-    S.xDiv.forEach((p,i)=>{
-      const dt=[];buildDiv(dt,wt+p-S.dT/2-sc,wt+sc,wt+sc,S.dT+sc*2,iH-sc,iD-sc*2);
-      f[`divider_x${i+1}.${fmt}`]=encMesh(dt,fmt,'div');
-    });
-    S.yDiv.forEach((p,i)=>{
-      const dt=[];buildDiv(dt,wt+sc,wt+sc,wt+p-S.dT/2-sc,iW-sc*2,iH-sc,S.dT+sc*2);
-      f[`divider_y${i+1}.${fmt}`]=encMesh(dt,fmt,'div');
-    });
+    f[`case.${fmt}`]=encMesh(meshCaseMovable(),fmt,'case');
+    S.xDiv.forEach((p,i)=>{ f[`divider_x${i+1}.${fmt}`]=encMesh(meshCaseMovableXDiv(p),fmt,'div'); });
+    S.yDiv.forEach((p,i)=>{ f[`divider_y${i+1}.${fmt}`]=encMesh(meshCaseMovableYDiv(p),fmt,'div'); });
     await dlZip(f,'case_movable.zip');
 
   }else{
-    // All drawer types
     const f={};
     f[`outer.${fmt}`]=encMesh(meshDrawerOuter(),fmt,'outer');
     S.stages.forEach((st,si)=>{
       const withFixed=(S.type==='drawer-fixed');
       f[`drawer_stage${si+1}.${fmt}`]=encMesh(meshDrawerInner(si,withFixed),fmt,`drawer${si+1}`);
       if(S.type==='drawer-movable'){
-        st.xDiv.forEach((p,i)=>{f[`stage${si+1}_divX${i+1}.${fmt}`]=encMesh(meshDrawerDiv(p,'x',st.h),fmt,'div');});
-        st.yDiv.forEach((p,i)=>{f[`stage${si+1}_divY${i+1}.${fmt}`]=encMesh(meshDrawerDiv(p,'y',st.h),fmt,'div');});
+        st.xDiv.forEach((p,i)=>{ f[`stage${si+1}_divX${i+1}.${fmt}`]=encMesh(meshDrawerXDiv(p,si),fmt,'div'); });
+        st.yDiv.forEach((p,i)=>{ f[`stage${si+1}_divY${i+1}.${fmt}`]=encMesh(meshDrawerYDiv(p,si),fmt,'div'); });
       }
     });
     await dlZip(f,`drawer_${S.type}.zip`);
